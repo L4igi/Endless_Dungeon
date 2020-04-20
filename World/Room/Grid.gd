@@ -1,6 +1,6 @@
 extends TileMap
 
-enum objectTyped { EMPTY, PLAYER, WALL, ENEMY, PUZZLEPIECE, ITEM, DOOR}
+enum objectTyped { EMPTY, PLAYER, WALL, ENEMY, PUZZLEPIECE, ITEM, DOOR, UNLOCKEDDOOR}
 
 var Enemy = preload("res://GameObjects/Enemy/Enemy.tscn")
 
@@ -8,9 +8,25 @@ var Wall = preload("res://GameObjects/Wall/Wall.tscn")
 
 var Door = preload("res://GameObjects/Door/Door.tscn")
 
-var roomDimensions = 5
+var roomDimensions = 9
 
 var evenOddModifier = 0 
+
+var maxNumberRooms = 1000
+
+var currentNumberRoomsgenerated = 0
+
+var activeRoom = null
+
+var movedThroughDoor = false
+
+var enemyRoomChance = 33
+var puzzleRoomChance = 33
+var emptyTreasureRoomChance = 34
+
+var enemiesInActiveRoom = []
+
+var enemiesMadeMoveCounter = 0
 
 func match_Enum(var index):
 	match index:
@@ -26,6 +42,8 @@ func match_Enum(var index):
 			return "ITEM"
 		5:
 			return "DOOR"
+		6:
+			return "UNLOCKEDDOOR"
 		-1:
 			return "EMPTY"
 		_:
@@ -46,6 +64,8 @@ func set_enum_index(var enumName, var setTo):
 			objectTyped.ITEM=setTo
 		"DOOR":
 			objectTyped.DOOR=setTo
+		"UNLOCKEDDOOR":
+			objectTyped.UNLOCKEDDOOR=setTo
 		"EMPTY":
 			objectTyped.EMPTY=-1
 		_:
@@ -61,6 +81,7 @@ func _ready():
 	if(roomDimensions%2 == 0):
 		evenOddModifier = 1
 	create_starting_room(true)
+	get_node("Player").connect("playerMadeMove", self, "_on_Player_Made_Move")
 		
 
 func get_cell_pawn(coordinates):
@@ -76,60 +97,168 @@ func request_move(pawn, direction):
 	var cell_target_type = get_cellv(cell_target)
 	
 #	cell_target_type = get_tileset().find_tile_by_name(matchEnum(cell_target_type))
-#	print(get_tileset().find_tile_by_name(matchEnum(cell_target_type)))
+#	#print(get_tileset().find_tile_by_name(matchEnum(cell_target_type)))
 		#print("Got Cell V: " + str(cell_target_type))
-	match cell_target_type:
-		objectTyped.EMPTY:
-			#print("EMPTY")
-			#print("Player Position " + str(cell_target))
-			return update_pawn_position(pawn, cell_start, cell_target)
-		objectTyped.ENEMY:
-			var object_pawn = get_cell_pawn(cell_target)
-			object_pawn.queue_free()
-			#print("ENEMY")
-			return update_pawn_position(pawn, cell_start, cell_target)
-		objectTyped.WALL:
-			print("WALL")
-		objectTyped.DOOR:
-			if(pawn.name == "Player"):
-				var object_pawn = get_cell_pawn(cell_target)
-				object_pawn.unlock_Door()
+	if(pawn.name == "Player"):
+		match cell_target_type:
+			objectTyped.EMPTY:
+				#print("EMPTY")
+				#print("Player Position " + str(cell_target))
 				return update_pawn_position(pawn, cell_start, cell_target)
-			
+			objectTyped.ENEMY:
+				var object_pawn = get_cell_pawn(cell_target)
+				activeRoom.elementsInRoom.erase(object_pawn)
+				object_pawn.queue_free()
+				#print("ENEMY")
+				return update_pawn_position(pawn, cell_start, cell_target)
+			objectTyped.WALL:
+				#print("WALL")
+				pass
+			objectTyped.DOOR:
+				if(pawn.name == "Player"):
+					var object_pawn = get_cell_pawn(cell_target)
+					object_pawn.unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance)
+					return update_pawn_position(pawn, cell_start, cell_target)
+			objectTyped.UNLOCKEDDOOR:
+				return update_pawn_position(pawn, cell_start, cell_target)
+				
+#	if(pawn.type == objectTyped.ENEMY):
+	else:
+		#print("MOVED enemy in room")
+		match cell_target_type:
+			objectTyped.EMPTY:
+				return update_pawn_position(pawn, cell_start, cell_target)
+			objectTyped.ENEMY:
+				return pawn.position
+			objectTyped.PLAYER:
+				return pawn.position
+			objectTyped.WALL:
+				return pawn.position
+			objectTyped.DOOR:
+				return pawn.position
+			objectTyped.UNLOCKEDDOOR:
+				return pawn.position
 
 
-
+#movedThroughDoor
 func update_pawn_position(pawn, cell_start, cell_target):
+	var oldCellTargetType = get_cellv(cell_target)
+	var oldCellTargetNode = get_cell_pawn(cell_target)
 	set_cellv(cell_target, get_tileset().find_tile_by_name(match_Enum(pawn.type)))
 	set_cellv(cell_start, objectTyped.EMPTY)
+	if(pawn.name == "Player"):
+		if(movedThroughDoor == true):
+			set_cellv(cell_start, objectTyped.UNLOCKEDDOOR)
+			movedThroughDoor = false
+		if(oldCellTargetType == get_tileset().find_tile_by_name("DOOR") || oldCellTargetType == get_tileset().find_tile_by_name("UNLOCKEDDOOR")):
+			movedThroughDoor = true
+			var direction 
+			if(cell_target.x-cell_start.x < 0):
+				direction = "LEFT"
+				pawn.playerPassedDoor = Vector2(-1,0)
+			if(cell_target.x-cell_start.x > 0):
+				direction = "RIGHT"
+				pawn.playerPassedDoor = Vector2(1,0)
+			if(cell_target.y-cell_start.y < 0):
+				direction = "UP"
+				pawn.playerPassedDoor = Vector2(0,-1)
+			if(cell_target.y-cell_start.y > 0):
+				direction = "DOWN"
+				pawn.playerPassedDoor = Vector2(0,1)
+			if(oldCellTargetType == get_tileset().find_tile_by_name("DOOR")):
+				oldCellTargetNode.set_other_adjacent_room(activeRoom, direction)
+				activeRoom = oldCellTargetNode
+			if(oldCellTargetType == get_tileset().find_tile_by_name("UNLOCKEDDOOR")):
+				activeRoom=oldCellTargetNode.get_room_by_movement_direction(direction)
+			
+			if(activeRoom != null && enemiesInActiveRoom.size() != 0):
+				#disable elements in room just left
+				for element in activeRoom.elementsInRoom:
+					element.isDisabled = true
+				activeRoom.elementsInRoom = enemiesInActiveRoom.duplicate()
+				enemiesInActiveRoom.clear()
+				#set new elements if in room to be active 
+				for element in activeRoom.elementsInRoom:
+					element.isDisabled = false
+			if(activeRoom != null):
+				print("current active room " + str(activeRoom) + " enemies in active room " + str(activeRoom.elementsInRoom))
+			else:
+				print("current active room " + str(activeRoom))
+			pawn.madeMove = true
+			
 	return map_to_world(cell_target) + cell_size / 2
 	
 
-func _spawn_enemy_after_move(player):
+func create_enemy_room(unlockedDoor):
 	randomize()
-	#print("player pos "+ str(player.position))
-	var spawn_pos = player.position
-	while(player.position == spawn_pos):
-		var posx = randi()%11+1
-		var posy = randi()%11+1
-		spawn_pos = map_to_world(Vector2(posx, posy))-Vector2(16,16)
-	#spawn_pos=Vector2(16,16)
-	var spawn_pos_type = get_cellv(world_to_map(spawn_pos))
-	print("Enemy Spawn Position Type " + str(spawn_pos_type))
-	match spawn_pos_type:
-		objectTyped.EMPTY:
-			var newEnemy = Enemy.instance()
-			newEnemy.position = spawn_pos
-			add_child(newEnemy)
-			set_cellv(world_to_map(newEnemy.position), get_tileset().find_tile_by_name(match_Enum(newEnemy.type)))
-			print(newEnemy.name)
-			#setEnumIndex(newEnemy.type, get_tileset().find_tile_by_name(matchEnum(newEnemy.type)))
-		objectTyped.PLAYER:
-			print("Cell is Player")
-		objectTyped.WALL:
-			print("Wall hit")
-		_:
-			print("Cell not available")
+	#add adjustment for enemy amount 
+	#-2 because of walls on both sides
+	var enemiesToSpawn = randi()%4+1
+	var sizecounter = 0
+	var spawnCellArray = []
+	for enemie in enemiesToSpawn: 
+		var alreadyinArray = true
+		while(alreadyinArray == true):
+			var spawnCellX = randi()%(int(unlockedDoor.roomSize.x-2))+1
+			var spawnCellY = randi()%(int(unlockedDoor.roomSize.y-2))+1
+			var spawnCell = spawnCellX*spawnCellY
+			if(!spawnCellArray.has(spawnCell)):
+				alreadyinArray = false
+				spawnCellArray.append(spawnCell)
+				var newEnemy = Enemy.instance()
+				#create enemy typ here (enemy. createEnemyType
+				newEnemy.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(spawnCellX, spawnCellY))
+				newEnemy.get_node("Sprite").set_modulate(Color(randf(),randf(),randf(),1.0))
+				newEnemy.connect("enemyMadeMove", self, "_on_enemy_made_move_ready")
+				add_child(newEnemy)
+				set_cellv(world_to_map(newEnemy.position), get_tileset().find_tile_by_name(match_Enum(newEnemy.type)))
+				enemiesInActiveRoom.append(get_cell_pawn(world_to_map(newEnemy.position)))
+	#print(spawnCellArray)
+
+func _on_enemy_made_move_ready():
+	enemiesMadeMoveCounter += 1
+	print("Currently Enemies made move " + str(enemiesMadeMoveCounter) + " of all enemies active " + str(activeRoom.elementsInRoom.size()))
+	if(enemiesMadeMoveCounter == activeRoom.elementsInRoom.size()):
+		print("All Enemies made move " + str(enemiesMadeMoveCounter))
+		enemiesMadeMoveCounter = 0
+		get_node("Player").madeMove = false
+		
+func _on_Player_Made_Move():
+	if(activeRoom!=null):
+		for element in activeRoom.elementsInRoom:
+				element.madeMove = false
+		if(activeRoom.elementsInRoom.empty()):
+			get_node("Player").madeMove = false
+	if(activeRoom == null):
+		get_node("Player").madeMove = false
+#func _spawn_enemy_after_move(player):
+#	randomize()
+#	#print("player pos "+ str(player.position))
+#	var spawn_pos = player.position
+#	while(player.position == spawn_pos):
+#		var posx = randi()%11+1
+#		var posy = randi()%11+1
+#		spawn_pos = map_to_world(Vector2(posx, posy))-Vector2(16,16)
+#	#spawn_pos=Vector2(16,16)
+#	var spawn_pos_type = get_cellv(world_to_map(spawn_pos))
+#	#print("Enemy Spawn Position Type " + str(spawn_pos_type))
+#	match spawn_pos_type:
+#		objectTyped.EMPTY:
+#			var newEnemy = Enemy.instance()
+#			newEnemy.position = spawn_pos
+#			add_child(newEnemy)
+#			set_cellv(world_to_map(newEnemy.position), get_tileset().find_tile_by_name(match_Enum(newEnemy.type)))
+#			#print(newEnemy.name)
+#			#setEnumIndex(newEnemy.type, get_tileset().find_tile_by_name(matchEnum(newEnemy.type)))
+#		objectTyped.PLAYER:
+#			#print("Cell is Player")
+#			pass
+#		objectTyped.WALL:
+#			pass
+#			#print("Wall hit")
+#		_:
+#			#print("Cell not available")
+#			pass
 
 
 func create_starting_room(startingRoom=false):
@@ -158,23 +287,23 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 			"LEFT":
 				#see if there are any cross section and diasble this option to keep tiles from intersecting
 				leftmostCorner=world_to_map(door.position-map_to_world(Vector2(minRoomSize, minRoomSize/2-evenOddModifier)))
-				print("LEFT LEftMost Corner " + str(leftmostCorner) + " door position " + str(world_to_map(door.position)))
+				#print("LEFT LEftMost Corner " + str(leftmostCorner) + " door position " + str(world_to_map(door.position)))
 				#check for wall up for room to be created 
-				print("LEFT Up Modifier : " + str(leftmostCorner-Vector2(0,1)) + " " + str(get_cellv(leftmostCorner-Vector2(0,1))))
+				#print("LEFT Up Modifier : " + str(leftmostCorner-Vector2(0,1)) + " " + str(get_cellv(leftmostCorner-Vector2(0,1))))
 				if(get_cellv(leftmostCorner-Vector2(0,1)) == objectTyped.WALL):
 					disableUp = true
 				#check for wall down for room to be created 
-				print("LEFT Down modifier : " + str(leftmostCorner+Vector2(0,minRoomSize)) + " " + str(get_cellv(leftmostCorner+Vector2(0,minRoomSize))))
+				#print("LEFT Down modifier : " + str(leftmostCorner+Vector2(0,minRoomSize)) + " " + str(get_cellv(leftmostCorner+Vector2(0,minRoomSize))))
 				if(get_cellv(leftmostCorner+Vector2(0,minRoomSize)) == objectTyped.WALL):
 					disableDown = true
 				#check for wall long for room to be created 
 				if(get_cellv(leftmostCorner-Vector2(1,0)) == objectTyped.WALL):
 					disableLong = true
-				print("LEFT LONG modifier : " + str(leftmostCorner-Vector2(1,0))+ " " + str(get_cellv(leftmostCorner-Vector2(1,0))))
+				#print("LEFT LONG modifier : " + str(leftmostCorner-Vector2(1,0))+ " " + str(get_cellv(leftmostCorner-Vector2(1,0))))
 				#randomize and create different room sizes and layout types
 				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == objectTyped.WALL):
 					disableBig = true
-				print("Corner Location: " + str(leftmostCorner+Vector2(minRoomSize, minRoomSize)) + " LEFT disableBig " + str(disableBig))
+				#print("Corner Location: " + str(leftmostCorner+Vector2(minRoomSize, minRoomSize)) + " LEFT disableBig " + str(disableBig))
 				
 				var horizontalRandom = randi()%2+1
 				var verticalRandom = randi()%2+1
@@ -203,7 +332,7 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 				roomSizeHorizontal = roomSizeHorizontal * horizontalRandom
 				roomSizeVertical = roomSizeVertical* verticalRandom
 					
-				print(str(disableUp) +  " disableup " + str(disableDown) + " disableDown " + str(disableLong) + " disablelong ")
+				#print(str(disableUp) +  " disableup " + str(disableDown) + " disableDown " + str(disableLong) + " disablelong ")
 				if(horizontalRandom == 2 && verticalRandom == 2):
 					if(randUpDown==1):
 						leftmostCorner=door.position-map_to_world(Vector2(roomSizeHorizontal, roomSizeVertical - roomSizeVertical/4 - 1))
@@ -231,22 +360,22 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 			"RIGHT":
 				#see if there are any cross section and diasble this option to keep tiles from intersecting
 				leftmostCorner=world_to_map(door.position+map_to_world(Vector2(1,0)-Vector2(0, minRoomSize/2 - evenOddModifier)))
-				print("RIGHT LEftMost Corner " + str(leftmostCorner))
+				#print("RIGHT LEftMost Corner " + str(leftmostCorner))
 				#check for wall up for room to be created 
 				if(get_cellv(leftmostCorner-Vector2(0,1)) == objectTyped.WALL):
 					disableUp = true
-				print("RIGHT Up Modifier : " + str(leftmostCorner-Vector2(0,1)) + " " + str(get_cellv(leftmostCorner-Vector2(0,1))))
+				#print("RIGHT Up Modifier : " + str(leftmostCorner-Vector2(0,1)) + " " + str(get_cellv(leftmostCorner-Vector2(0,1))))
 				#check for wall down for room to be created 
 				if(get_cellv(leftmostCorner+Vector2(0,minRoomSize)) == objectTyped.WALL):
 					disableDown = true
-				print("RIGHT Down modifier : " + str(leftmostCorner+Vector2(0,minRoomSize)) + " " + str(get_cellv(leftmostCorner+Vector2(0,minRoomSize))))
+				#print("RIGHT Down modifier : " + str(leftmostCorner+Vector2(0,minRoomSize)) + " " + str(get_cellv(leftmostCorner+Vector2(0,minRoomSize))))
 				#check for wall long for room to be created 
 				if(get_cellv(leftmostCorner+Vector2(minRoomSize,0)) == objectTyped.WALL):
 					disableLong = true
-				print("RIGHT LONG modifier : " + str(leftmostCorner+Vector2(minRoomSize,0))+ " " + str(get_cellv(leftmostCorner+Vector2(minRoomSize,0))))
+				#print("RIGHT LONG modifier : " + str(leftmostCorner+Vector2(minRoomSize,0))+ " " + str(get_cellv(leftmostCorner+Vector2(minRoomSize,0))))
 				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == objectTyped.WALL):
 					disableBig = true
-				print("Corner Location: " + str(leftmostCorner+Vector2(minRoomSize, minRoomSize)) + " RIGHT disableBig " + str(disableBig))
+				#print("Corner Location: " + str(leftmostCorner+Vector2(minRoomSize, minRoomSize)) + " RIGHT disableBig " + str(disableBig))
 				
 				var horizontalRandom = randi()%2+1
 				var verticalRandom = randi()%2+1
@@ -275,7 +404,7 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 				roomSizeHorizontal = roomSizeHorizontal * horizontalRandom
 				roomSizeVertical = roomSizeVertical* verticalRandom
 				
-				print(str(disableUp) +  " disableup " + str(disableDown) + " disableDown " + str(disableLong) + " disablelong ")
+				#print(str(disableUp) +  " disableup " + str(disableDown) + " disableDown " + str(disableLong) + " disablelong ")
 				
 				if(horizontalRandom == 2 && verticalRandom == 2):
 					#move block up 
@@ -302,22 +431,22 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 			"UP":
 				#see if there are any cross section and diasble this option to keep tiles from intersecting
 				leftmostCorner=world_to_map(door.position-map_to_world(Vector2(minRoomSize/2  - evenOddModifier, minRoomSize)))
-				print("UP LEftMost Corner " + str(leftmostCorner))	
+				#print("UP LEftMost Corner " + str(leftmostCorner))	
 				#check left top corner of minimum size minus 1 y tile 
 				if(get_cellv(leftmostCorner-Vector2(1,0)) == objectTyped.WALL):
 					disableLeft = true
-				print("UP Left Modifier : " + str(leftmostCorner-Vector2(1,0)) + " " + str(get_cellv(leftmostCorner-Vector2(1,0))))
+				#print("UP Left Modifier : " + str(leftmostCorner-Vector2(1,0)) + " " + str(get_cellv(leftmostCorner-Vector2(1,0))))
 				#check left bottom corner of minimum size plus 1 y tile 
 				if(get_cellv(leftmostCorner+Vector2(minRoomSize,0)) == objectTyped.WALL):
 					disableRight = true
-				print("UP Right modifier : " + str(leftmostCorner+Vector2(minRoomSize,0)) + " " + str(get_cellv(leftmostCorner+Vector2(minRoomSize,0))))
+				#print("UP Right modifier : " + str(leftmostCorner+Vector2(minRoomSize,0)) + " " + str(get_cellv(leftmostCorner+Vector2(minRoomSize,0))))
 				#randomize and create different room sizes and layout types 
 				if(get_cellv(leftmostCorner-Vector2(0,1)) == objectTyped.WALL):
 					disableLong = true
-				print("UP LONG modifier : " + str(leftmostCorner-Vector2(0,1))+ " " + str(get_cellv(leftmostCorner-Vector2(0,1))))
+				#print("UP LONG modifier : " + str(leftmostCorner-Vector2(0,1))+ " " + str(get_cellv(leftmostCorner-Vector2(0,1))))
 				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == objectTyped.WALL):
 					disableBig = true
-				print("Corner Location: " + str(leftmostCorner+Vector2(minRoomSize, minRoomSize)) + " UP disableBig " + str(disableBig))
+				#print("Corner Location: " + str(leftmostCorner+Vector2(minRoomSize, minRoomSize)) + " UP disableBig " + str(disableBig))
 				
 				var horizontalRandom = randi()%2+1
 				var verticalRandom = randi()%2+1
@@ -346,7 +475,7 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 				roomSizeHorizontal = roomSizeHorizontal * horizontalRandom
 				roomSizeVertical = roomSizeVertical* verticalRandom
 
-				print(str(disableRight) +  " disableRight " + str(disableLeft) + " disableLeft " + str(disableLong) + " disablelong ")
+				#print(str(disableRight) +  " disableRight " + str(disableLeft) + " disableLeft " + str(disableLong) + " disablelong ")
 				
 				if(horizontalRandom == 2 && verticalRandom == 2):
 					#move block up 
@@ -377,18 +506,18 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 				#check left top corner of minimum size minus 1 y tile 
 				if(get_cellv(leftmostCorner-Vector2(1,0)) == objectTyped.WALL):
 					disableLeft = true
-				print("DOWN Left Modifier : " + str(leftmostCorner-Vector2(1,0)) + " " + str(get_cellv(leftmostCorner-Vector2(1,0))))
+				#print("DOWN Left Modifier : " + str(leftmostCorner-Vector2(1,0)) + " " + str(get_cellv(leftmostCorner-Vector2(1,0))))
 				#check left bottom corner of minimum size plus 1 y tile 
 				if(get_cellv(leftmostCorner+Vector2(minRoomSize,0)) == objectTyped.WALL):
 					disableRight = true
-				print("DOWN Right modifier : " + str(leftmostCorner+Vector2(minRoomSize,0)) + " " + str(get_cellv(leftmostCorner+Vector2(minRoomSize,0))))
+				#print("DOWN Right modifier : " + str(leftmostCorner+Vector2(minRoomSize,0)) + " " + str(get_cellv(leftmostCorner+Vector2(minRoomSize,0))))
 				#randomize and create different room sizes and layout types 
 				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == objectTyped.WALL):
 					disableLong = true
-				print("DOWN LONG modifier : "  + str(leftmostCorner+Vector2(0,minRoomSize))+ " " + str(get_cellv(leftmostCorner+Vector2(0,minRoomSize))))
+				#print("DOWN LONG modifier : "  + str(leftmostCorner+Vector2(0,minRoomSize))+ " " + str(get_cellv(leftmostCorner+Vector2(0,minRoomSize))))
 				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == objectTyped.WALL):
 					disableBig = true
-				print("Corner Location: " + str(leftmostCorner+Vector2(minRoomSize, minRoomSize)) + " DOWN disableBig " + str(disableBig))
+				#print("Corner Location: " + str(leftmostCorner+Vector2(minRoomSize, minRoomSize)) + " DOWN disableBig " + str(disableBig))
 				
 				var horizontalRandom = randi()%2+1
 				var verticalRandom = randi()%2+1
@@ -420,8 +549,8 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 				roomSizeHorizontal = roomSizeHorizontal * horizontalRandom
 				roomSizeVertical = roomSizeVertical* verticalRandom
 
-				print(str(disableRight) +  " disableRight " + str(disableLeft) + " disableLeft " + str(disableLong) + " disablelong ")
-				print("hor "+str(horizontalRandom) + " vert " + str(verticalRandom) + " randleftright " + str(randLeftRight))
+				#print(str(disableRight) +  " disableRight " + str(disableLeft) + " disableLeft " + str(disableLong) + " disablelong ")
+				#print("hor "+str(horizontalRandom) + " vert " + str(verticalRandom) + " randleftright " + str(randLeftRight))
 				if(horizontalRandom == 2 && verticalRandom == 2):
 					#move block up 
 					if(randLeftRight==1):
@@ -437,10 +566,10 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 						leftmostCorner=door.position-map_to_world(Vector2(roomSizeHorizontal/4  - evenOddModifier, -1))
 				else:
 					leftmostCorner=(door.position-map_to_world(Vector2(int(minRoomSize/2)-evenOddModifier, -1)))
-					print("in last else wehe nicht...")
-				print("DOWN LEftMost Corner " + str(world_to_map(leftmostCorner)))	
-				print(str(world_to_map((door.position-map_to_world(Vector2(int(minRoomSize/2)-evenOddModifier, -1))))))
-				print("Door location " + str(world_to_map(door.position)) + " modificator " + str(Vector2(int(minRoomSize/2)-evenOddModifier, -1)))
+					#print("in last else wehe nicht...")
+				#print("DOWN LEftMost Corner " + str(world_to_map(leftmostCorner)))	
+				#print(str(world_to_map((door.position-map_to_world(Vector2(int(minRoomSize/2)-evenOddModifier, -1))))))
+				#print("Door location " + str(world_to_map(door.position)) + " modificator " + str(Vector2(int(minRoomSize/2)-evenOddModifier, -1)))
 				#set room size and door leftmost corner in door connecting to room to be used for further room creation
 				door.doorRoomLeftMostCorner = leftmostCorner
 				door.doorLocationDirection = "DOWN"
@@ -482,6 +611,7 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 			object_pawn.queue_free()
 		
 	if(createDoors == true):
+
 		create_doors(leftmostCorner, startingRoom, roomSizeHorizontal, roomSizeVertical)
 
 
@@ -492,7 +622,7 @@ func create_doors(roomLeftMostCorner, startingRoom=false, roomSizeHorizontal = 1
 	var doorLocationDirectionsArray = ["LEFT", "RIGHT", "UP", "DOWN"]
 	var doorLocationArray = []
 	var doorArray = []
-	var doorCount = 1
+	var doorCount = randi()%4+1
 	var canCreateDoor = true
 	var doorEvenOddModifier = 0
 			
@@ -597,6 +727,8 @@ func create_doors(roomLeftMostCorner, startingRoom=false, roomSizeHorizontal = 1
 				if (get_cellv(world_to_map(newDoor.position)+Vector2(0,1)) == objectTyped.WALL):
 					canCreateDoor = false
 
+		if(currentNumberRoomsgenerated >= maxNumberRooms):
+			canCreateDoor=false
 		if(canCreateDoor == true):
 			add_child(newDoor)
 			#delete the wall piece before creating the door
@@ -605,11 +737,11 @@ func create_doors(roomLeftMostCorner, startingRoom=false, roomSizeHorizontal = 1
 			set_cellv(world_to_map(newDoor.position), get_tileset().find_tile_by_name(match_Enum(newDoor.type)))
 			doorArray.append(newDoor)
 			
-		else:
-			print(str(element) + " cant create door because path is blocked ")
 		canCreateDoor = true
 		
 	for door in doorArray:
+		currentNumberRoomsgenerated+=1
+		#print(currentNumberRoomsgenerated)
 		create_walls(door, false, false)
 		#print(str(newDoor.position) + " element "+ str(element))
 
