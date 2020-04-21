@@ -8,11 +8,13 @@ var Wall = preload("res://GameObjects/Wall/Wall.tscn")
 
 var Door = preload("res://GameObjects/Door/Door.tscn")
 
+var Item = preload("res://GameObjects/Item/Item.tscn")
+
 var roomDimensions = 9
 
 var evenOddModifier = 0 
 
-var maxNumberRooms = 1000
+var maxNumberRooms = 12
 
 var currentNumberRoomsgenerated = 0
 
@@ -27,6 +29,10 @@ var emptyTreasureRoomChance = 34
 var enemiesInActiveRoom = []
 
 var enemiesMadeMoveCounter = 0
+
+var barrierKeysNoSolution = []
+
+var barrierKeysSolutionSpawned = []
 
 func match_Enum(var index):
 	match index:
@@ -116,9 +122,16 @@ func request_move(pawn, direction):
 			objectTyped.WALL:
 				#print("WALL")
 				pass
+			objectTyped.ITEM:
+				var object_pawn = get_cell_pawn(cell_target)
+				print("Item spawned key value " + object_pawn.keyValue)
+				pawn.itemsInPosession.append(object_pawn)
+				object_pawn.get_node("Sprite").queue_free()
+				#print("Player has Items in posession " + str(pawn.itemsInPosession))
+				return update_pawn_position(pawn, cell_start, cell_target)
 			objectTyped.DOOR:
-				if(pawn.name == "Player"):
-					var object_pawn = get_cell_pawn(cell_target)
+				var object_pawn = get_cell_pawn(cell_target)
+				if(object_pawn.request_door_unlock(pawn.itemsInPosession)):
 					object_pawn.unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance)
 					return update_pawn_position(pawn, cell_start, cell_target)
 			objectTyped.UNLOCKEDDOOR:
@@ -265,6 +278,7 @@ func _on_Player_Made_Move():
 		get_node("Player").alreadyMovedThisTurn = false
 		
 func _on_Player_Attacked(player, attack_direction, attackDamage):
+	randomize()
 	if(get_cellv(world_to_map(player.position) + attack_direction) == objectTyped.ENEMY):
 		print("Woosh Player Attack hit")
 		var attackedEnemy = get_cell_pawn(world_to_map(player.position) + attack_direction)
@@ -273,6 +287,28 @@ func _on_Player_Attacked(player, attack_direction, attackDamage):
 			set_cellv(world_to_map(attackedEnemy.position),get_tileset().find_tile_by_name("EMPTY")) 
 			attackedEnemy.queue_free()
 			print("Batsuuum Enemy was defeated")
+			#set room to cleared if all enemies were defeated
+			if(activeRoom.enemiesInRoom.size() == 0):
+				activeRoom.roomCleared=true
+				if activeRoom.dropLoot():
+					#create loot currently matching with closed doord 
+					if !barrierKeysNoSolution.empty():
+						#create key and spawn it on floor spawn one left of player if player is in the middle of the room
+						var itemToGenerate = barrierKeysNoSolution[randi()%barrierKeysNoSolution.size()]
+						barrierKeysSolutionSpawned.append(itemToGenerate)
+						barrierKeysNoSolution.erase(itemToGenerate)
+						var newItem = Item.instance()
+						var newItemPosition = activeRoom.doorRoomLeftMostCorner + map_to_world(activeRoom.roomSize/2)
+						print("Player position " + str(world_to_map(player.position)) + " newItem Position " + str(newItemPosition))
+						if(get_cellv(world_to_map(newItemPosition)) == objectTyped.PLAYER):
+							newItemPosition += map_to_world(Vector2(0,1))
+						newItem.position = newItemPosition
+						newItem.keyValue = itemToGenerate
+						add_child(newItem)
+
+						set_cellv(world_to_map(newItem.position), get_tileset().find_tile_by_name(match_Enum(newItem.type)))
+						#set type of item 
+					
 	elif(get_cellv(world_to_map(player.position) + attack_direction) == objectTyped.EMPTY):
 		print("ZZZ Attack missed")
 
@@ -285,35 +321,6 @@ func _on_enemy_attacked(enemy, attackCell, attackDamage):
 			attackedPlayer.position = Vector2(48,48)
 			attackedPlayer.lifePoints = 5
 			print("Batsuuum Player was defeated reset to start")
-
-#func _spawn_enemy_after_move(player):
-#	randomize()
-#	#print("player pos "+ str(player.position))
-#	var spawn_pos = player.position
-#	while(player.position == spawn_pos):
-#		var posx = randi()%11+1
-#		var posy = randi()%11+1
-#		spawn_pos = map_to_world(Vector2(posx, posy))-Vector2(16,16)
-#	#spawn_pos=Vector2(16,16)
-#	var spawn_pos_type = get_cellv(world_to_map(spawn_pos))
-#	#print("Enemy Spawn Position Type " + str(spawn_pos_type))
-#	match spawn_pos_type:
-#		objectTyped.EMPTY:
-#			var newEnemy = Enemy.instance()
-#			newEnemy.position = spawn_pos
-#			add_child(newEnemy)
-#			set_cellv(world_to_map(newEnemy.position), get_tileset().find_tile_by_name(match_Enum(newEnemy.type)))
-#			#print(newEnemy.name)
-#			#setEnumIndex(newEnemy.type, get_tileset().find_tile_by_name(matchEnum(newEnemy.type)))
-#		objectTyped.PLAYER:
-#			#print("Cell is Player")
-#			pass
-#		objectTyped.WALL:
-#			pass
-#			#print("Wall hit")
-#		_:
-#			#print("Cell not available")
-#			pass
 
 
 func create_starting_room(startingRoom=false):

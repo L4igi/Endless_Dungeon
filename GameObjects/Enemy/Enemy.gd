@@ -19,7 +19,7 @@ var lifePoints = 2
 
 var barrierEnemy = false
 
-var attackDamage = 1 
+var attackDamage = 0.1 
 
 signal enemmyAttacked 
 

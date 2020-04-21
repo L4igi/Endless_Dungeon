@@ -21,6 +21,10 @@ var attackDamage = 1
 
 var lifePoints = 5
 
+var itemsInPosession = []
+
+var usedItems = []
+
 func _ready():
 	pass
 
