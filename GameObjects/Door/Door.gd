@@ -17,7 +17,7 @@ var doorLocationDirection
 
 var otherAdjacentRoom = {}
 
-var elementsInRoom = []
+var enemiesInRoom = []
 
 func _ready():
 	pass
@@ -29,17 +29,17 @@ func _process(delta):
 func unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance):
 	isUnlocked=true
 	Grid.create_doors(doorRoomLeftMostCorner, false, roomSize.x, roomSize.y, roomSizeMultiplier, doorLocationDirection)
-	Grid.create_enemy_room(self)
+#	Grid.create_enemy_room(self)
 	#print("Door was unlocked")
 	#choose type of room to be created 
-#	var randRoomType = randi()%100
-#	if(randRoomType < enemyRoomChance):
-#		print("create enemy room " + str(randRoomType))
-#		Grid.create_enemy_room(self)
-#	elif(randRoomType > enemyRoomChance && randRoomType < (enemyRoomChance+puzzleRoomChance)):
-#		print("creating puzzle room " + str(randRoomType))
-#	elif(randRoomType > (enemyRoomChance+puzzleRoomChance)):
-#		print("creating empty/Treasure room " + str(randRoomType))
+	var randRoomType = randi()%100
+	if(randRoomType < enemyRoomChance):
+		print("create enemy room " + str(randRoomType))
+		Grid.create_enemy_room(self)
+	elif(randRoomType > enemyRoomChance && randRoomType < (enemyRoomChance+puzzleRoomChance)):
+		print("creating puzzle room " + str(randRoomType))
+	elif(randRoomType > (enemyRoomChance+puzzleRoomChance)):
+		print("creating empty/Treasure room " + str(randRoomType))
 
 func set_other_adjacent_room(otherRoom, direction):
 	var reversedDirection 

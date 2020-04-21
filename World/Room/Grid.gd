@@ -82,6 +82,7 @@ func _ready():
 		evenOddModifier = 1
 	create_starting_room(true)
 	get_node("Player").connect("playerMadeMove", self, "_on_Player_Made_Move")
+	get_node("Player").connect("playerAttacked", self, "_on_Player_Attacked")
 		
 
 func get_cell_pawn(coordinates):
@@ -106,11 +107,12 @@ func request_move(pawn, direction):
 				#print("Player Position " + str(cell_target))
 				return update_pawn_position(pawn, cell_start, cell_target)
 			objectTyped.ENEMY:
-				var object_pawn = get_cell_pawn(cell_target)
-				activeRoom.elementsInRoom.erase(object_pawn)
-				object_pawn.queue_free()
-				#print("ENEMY")
-				return update_pawn_position(pawn, cell_start, cell_target)
+#				var object_pawn = get_cell_pawn(cell_target)
+#				activeRoom.enemiesInRoom.erase(object_pawn)
+#				object_pawn.queue_free()
+#				#print("ENEMY")
+#				return update_pawn_position(pawn, cell_start, cell_target)
+				pass
 			objectTyped.WALL:
 				#print("WALL")
 				pass
@@ -173,21 +175,47 @@ func update_pawn_position(pawn, cell_start, cell_target):
 			
 			if(activeRoom != null && enemiesInActiveRoom.size() != 0):
 				#disable elements in room just left
-				for element in activeRoom.elementsInRoom:
+				for element in activeRoom.enemiesInRoom:
 					element.isDisabled = true
-				activeRoom.elementsInRoom = enemiesInActiveRoom.duplicate()
+				activeRoom.enemiesInRoom = enemiesInActiveRoom.duplicate()
 				enemiesInActiveRoom.clear()
 				#set new elements if in room to be active 
-				for element in activeRoom.elementsInRoom:
+				for element in activeRoom.enemiesInRoom:
 					element.isDisabled = false
 			if(activeRoom != null):
-				print("current active room " + str(activeRoom) + " enemies in active room " + str(activeRoom.elementsInRoom))
+				print("current active room " + str(activeRoom) + " enemies in active room " + str(activeRoom.enemiesInRoom))
 			else:
 				print("current active room " + str(activeRoom))
-			pawn.madeMove = true
+			pawn.alreadyMovedThisTurn = true
 			
 	return map_to_world(cell_target) + cell_size / 2
 	
+func enablePlayerAttack(player):
+	if(activeRoom == null || activeRoom.enemiesInRoom.empty()):
+		player.playerCanAttack=false
+		return
+	for element in activeRoom.enemiesInRoom:
+#		print("Enemy Position " + str(element.position) + " player left position " + str(player.position+ map_to_world(Vector2(1,0))))
+#		print("Enemy Position " + str(element.position) + " player right position " + str(player.position+ map_to_world(Vector2(-1,0))))
+#		print("Enemy Position " + str(element.position) + " player down position " + str(player.position+ map_to_world(Vector2(0,1))))
+#		print("Enemy Position " + str(element.position) + " player up position " + str(player.position+ map_to_world(Vector2(0,-1))))
+		if(element.position == player.position + map_to_world(Vector2(1,0)) || element.position == player.position + map_to_world(Vector2(-1,0)) || element.position == player.position + map_to_world(Vector2(0,1)) || element.position == player.position + map_to_world(Vector2(0,-1))):
+			#print("player can attack in enable function ")
+			player.playerCanAttack=true
+			return 
+	player.playerCanAttack=false
+
+func enableEnemyAttack(enemy):
+	if(get_cellv(world_to_map(enemy.position)+Vector2(1,0)) == objectTyped.PLAYER):
+		return world_to_map(enemy.position)+Vector2(1,0)
+	elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,0)) == objectTyped.PLAYER):
+		return world_to_map(enemy.position)+Vector2(-1,0)
+	elif(get_cellv(world_to_map(enemy.position)+Vector2(0,1)) == objectTyped.PLAYER):
+		return world_to_map(enemy.position)+Vector2(0,1)
+	elif(get_cellv(world_to_map(enemy.position)+Vector2(0,-1)) == objectTyped.PLAYER):
+		return world_to_map(enemy.position)+Vector2(0,-1)
+		#print("player can attack in enable function ")
+	return Vector2.ZERO
 
 func create_enemy_room(unlockedDoor):
 	randomize()
@@ -210,6 +238,7 @@ func create_enemy_room(unlockedDoor):
 				newEnemy.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(spawnCellX, spawnCellY))
 				newEnemy.get_node("Sprite").set_modulate(Color(randf(),randf(),randf(),1.0))
 				newEnemy.connect("enemyMadeMove", self, "_on_enemy_made_move_ready")
+				newEnemy.connect("enemyAttacked", self, "_on_enemy_attacked")
 				add_child(newEnemy)
 				set_cellv(world_to_map(newEnemy.position), get_tileset().find_tile_by_name(match_Enum(newEnemy.type)))
 				enemiesInActiveRoom.append(get_cell_pawn(world_to_map(newEnemy.position)))
@@ -217,20 +246,46 @@ func create_enemy_room(unlockedDoor):
 
 func _on_enemy_made_move_ready():
 	enemiesMadeMoveCounter += 1
-	print("Currently Enemies made move " + str(enemiesMadeMoveCounter) + " of all enemies active " + str(activeRoom.elementsInRoom.size()))
-	if(enemiesMadeMoveCounter == activeRoom.elementsInRoom.size()):
-		print("All Enemies made move " + str(enemiesMadeMoveCounter))
+	#print("Currently Enemies made move " + str(enemiesMadeMoveCounter) + " of all enemies active " + str(activeRoom.enemiesInRoom.size()))
+	if(enemiesMadeMoveCounter == activeRoom.enemiesInRoom.size()):
+		#print("All Enemies made move " + str(enemiesMadeMoveCounter))
 		enemiesMadeMoveCounter = 0
-		get_node("Player").madeMove = false
+		get_node("Player").alreadyAttackedThisMove = false
+		get_node("Player").alreadyMovedThisTurn = false
 		
 func _on_Player_Made_Move():
+	#print("Player position " + str(world_to_map(get_node("Player").position)))
 	if(activeRoom!=null):
-		for element in activeRoom.elementsInRoom:
-				element.madeMove = false
-		if(activeRoom.elementsInRoom.empty()):
-			get_node("Player").madeMove = false
+		for element in activeRoom.enemiesInRoom:
+				element.alreadyMovedThisTurn = false
+				element.alreadyAttackedThisTurn = false
+		if(activeRoom.enemiesInRoom.empty()):
+			get_node("Player").alreadyMovedThisTurn = false
 	if(activeRoom == null):
-		get_node("Player").madeMove = false
+		get_node("Player").alreadyMovedThisTurn = false
+		
+func _on_Player_Attacked(player, attack_direction, attackDamage):
+	if(get_cellv(world_to_map(player.position) + attack_direction) == objectTyped.ENEMY):
+		print("Woosh Player Attack hit")
+		var attackedEnemy = get_cell_pawn(world_to_map(player.position) + attack_direction)
+		if attackedEnemy.enemyDefeated(attackDamage):
+			activeRoom.enemiesInRoom.erase(attackedEnemy)
+			set_cellv(world_to_map(attackedEnemy.position),get_tileset().find_tile_by_name("EMPTY")) 
+			attackedEnemy.queue_free()
+			print("Batsuuum Enemy was defeated")
+	elif(get_cellv(world_to_map(player.position) + attack_direction) == objectTyped.EMPTY):
+		print("ZZZ Attack missed")
+
+func _on_enemy_attacked(enemy, attackCell, attackDamage):
+	if(get_cellv(attackCell) == objectTyped.PLAYER):
+		print("Woosh ENEMY Attack hit")
+		var attackedPlayer = get_cell_pawn(attackCell)
+		if attackedPlayer.playerDefeated(attackDamage):
+			set_cellv(attackCell,get_tileset().find_tile_by_name("EMPTY")) 
+			attackedPlayer.position = Vector2(48,48)
+			attackedPlayer.lifePoints = 5
+			print("Batsuuum Player was defeated reset to start")
+
 #func _spawn_enemy_after_move(player):
 #	randomize()
 #	#print("player pos "+ str(player.position))
