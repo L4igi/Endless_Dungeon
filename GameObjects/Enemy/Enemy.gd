@@ -15,6 +15,8 @@ signal enemyMadeMove
 
 signal enemyAttacked (enemy, attackDirection, attackDamange )
 
+signal enemyDefeated (enemy)
+
 var lifePoints = 2
 
 var barrierEnemy = false
@@ -30,6 +32,17 @@ func _ready():
 func _process(delta): 
 	randomize()
 	if(isDisabled == false): 
+		if lifePoints == 0:
+			set_process(false)
+			#play defeat animation 
+			$AnimationPlayer.play("defeat", -1, 2.0)
+			$Tween.interpolate_property($Sprite, "position", 0, 0, 0.1, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			$Tween.start()
+			yield($AnimationPlayer, "animation_finished")
+			set_process(true)
+			emit_signal("enemyDefeated", self)
+			return
+			
 		if(!alreadyMovedThisTurn || !alreadyAttackedThisTurn):
 			var attackCell = Grid.enableEnemyAttack(self)
 			if(attackCell != Vector2.ZERO):
@@ -61,42 +74,12 @@ func _process(delta):
 						alreadyAttackedThisTurn = true
 			if(alreadyMovedThisTurn && alreadyAttackedThisTurn):
 				emit_signal("enemyMadeMove")
-			
-#func _process(delta): 
-#	randomize()
-#	if(!isDisabled):
-#		var attackDirection = Grid.enableEnemyAttack(self)
-#		if(attackDirection != Vector2.ZERO):
-#			pass
-#			#alreadyAttackedThisTurn = true
-#		if(alreadyMovedThisTurn == false):
-#			var upDownLeftRight = randi()%4+1
-#			var movement_direction = Vector2.ZERO
-#			match upDownLeftRight:
-#				1:
-#					movement_direction = Vector2(1,0)
-#				2:
-#					movement_direction = Vector2(-1,0)
-#				3: 
-#					movement_direction = Vector2(0,1)
-#				4:
-#					movement_direction = Vector2(0,-1)
-#
-#			var target_position = Grid.request_move(self, movement_direction)
-#			if(target_position):
-#				position=target_position
-#				alreadyMovedThisTurn = true
-#
-#		if(alreadyMovedThisTurn == true):
-#			emit_signal("enemyMadeMove")
+				
 
+			
 func generateEnemy(): 
 	pass 
 
-func enemyDefeated(attackDamage):
+func inflictDamage(attackDamage):
 	lifePoints -= attackDamage
-	if lifePoints == 0:
-		return true
-	return false
 	#set enemy difficulty and type set enemy stats based on difficulty set amount of enemies to spawn based on room size and difficulty 
-

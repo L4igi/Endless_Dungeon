@@ -37,23 +37,78 @@ func _process(delta):
 			if(movement_direction || attack_direction):
 				if attack_direction && !alreadyAttackedThisMove:
 					#do attack stuff
+					set_process(false)
+					#play attack animation 
+					var animationPlay = str("attack_right")
+					match attack_direction:
+						Vector2(1,0):
+							animationPlay = str("attack_right")
+						Vector2(-1,0):
+							animationPlay = str("attack_left")
+						Vector2(0,1):
+							animationPlay = str("attack_down")
+						Vector2(0,-1):
+							animationPlay = str("attack_up")
+					$AnimationPlayer.play(animationPlay, -1, 2.5)
+					$Tween.interpolate_property($Sprite, "position", attack_direction * 32, Vector2.ZERO, 0.3, Tween.TRANS_LINEAR, Tween.EASE_IN)
+					$Tween.start()
+					yield($AnimationPlayer, "animation_finished")
+					$AnimationPlayer.play("Idle")
+					set_process(true)
+					
 					emit_signal("playerAttacked", self, attack_direction, attackDamage)
 					alreadyAttackedThisMove=true
 				if movement_direction && !alreadyMovedThisTurn:
 					var targetPosition = Grid.request_move(self, movement_direction)
 					if targetPosition:
+						set_process(false)
+						#play attack animation 
+						var animationPlay = str("walk_right")
+						match movement_direction:
+							Vector2(1,0):
+								animationPlay = str("walk_right")
+							Vector2(-1,0):
+								animationPlay = str("walk_left")
+							Vector2(0,1):
+								animationPlay = str("walk_down")
+							Vector2(0,-1):
+								animationPlay = str("walk_up")
+						$AnimationPlayer.play(animationPlay, -1, 10.0)
+						$Tween.interpolate_property($Sprite, "position", -movement_direction * 32, Vector2.ZERO, 0.1, Tween.TRANS_LINEAR, Tween.EASE_IN)
+						alreadyMovedThisTurn=true
 						playerPreviousPosition = position
 						position = targetPosition
-						alreadyMovedThisTurn=true
+						$Tween.start()
+						yield($AnimationPlayer, "animation_finished")
+						$AnimationPlayer.play("Idle")
+						set_process(true)
 
 		
 		else:
 			if movement_direction:
 				var targetPosition = Grid.request_move(self, movement_direction)
 				if targetPosition:
+					set_process(false)
+					#play attack animation 
+					var animationPlay = str("walk_right")
+					match movement_direction:
+						Vector2(1,0):
+							animationPlay = str("walk_right")
+						Vector2(-1,0):
+							animationPlay = str("walk_left")
+						Vector2(0,1):
+							animationPlay = str("walk_down")
+						Vector2(0,-1):
+							animationPlay = str("walk_up")
+					$AnimationPlayer.play(animationPlay, -1, 8.0)
+					$Tween.interpolate_property($Sprite, "position", -movement_direction * 32, Vector2.ZERO, 0.2, Tween.TRANS_LINEAR, Tween.EASE_IN)
 					alreadyMovedThisTurn=true
 					playerPreviousPosition = position
 					position = targetPosition
+					$Tween.start()
+					yield($AnimationPlayer, "animation_finished")
+					$AnimationPlayer.play("Idle")
+					set_process(true)
 					
 					Grid.enablePlayerAttack(self)
 					if !playerCanAttack:
@@ -68,34 +123,6 @@ func _process(delta):
 			position = target_position
 		playerPassedDoor = Vector2.ZERO
 		
-#func _process(delta):
-#	if(madeMove == false):
-#		var movement_direction = get_movement_direction()
-#		var attack_direction = get_attack_direction()
-#
-#		if(attack_direction):
-#			print("Attackdirection: " + str(attack_direction))
-#
-#		if(playerPassedDoor == Vector2.ZERO):
-#			var target_position = Grid.request_move(self, movement_direction)
-#		#	if (target_position && madeMove == false):
-#			if target_position:
-#				playerPreviousPosition = position
-#				position = target_position
-#
-#				emit_signal("playerMadeMove")
-#				#print("Current FrameRate: " + str(Engine.get_frames_per_second())) 
-#				#Grid._spawn_enemy_after_move(self)
-#				#Grid.create_doors(self.position, Vector2(16,16), true)
-#		else:
-#			var target_position = Grid.request_move(self,playerPassedDoor)
-#			if (target_position):
-#				playerPreviousPosition = position
-#				position = target_position
-#			playerPassedDoor = Vector2.ZERO
-#
-
-
 
 func get_movement_direction():
 	var UP = Input.is_action_just_pressed("player_up")
@@ -126,3 +153,5 @@ func playerDefeated(attackDamage):
 	if lifePoints == 0:
 		return true
 	return false
+
+

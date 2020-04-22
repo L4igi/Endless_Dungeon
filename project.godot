@@ -19,10 +19,14 @@ config/name="Milestone2"
 run/main_scene="res://World/World.tscn"
 config/icon="res://icon.png"
 
+[autoload]
+
+MainCamera="*res://World/Camera2D.gd"
+
 [display]
 
-window/size/width=500
-window/size/height=500
+window/size/width=150
+window/size/height=150
 window/size/resizable=false
 window/size/always_on_top=true
 window/size/test_width=1000

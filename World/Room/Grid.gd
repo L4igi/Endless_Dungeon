@@ -167,6 +167,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 			movedThroughDoor = false
 		if(oldCellTargetType == get_tileset().find_tile_by_name("DOOR") || oldCellTargetType == get_tileset().find_tile_by_name("UNLOCKEDDOOR")):
 			movedThroughDoor = true
+			enemiesMadeMoveCounter = 0
 			var direction 
 			if(cell_target.x-cell_start.x < 0):
 				direction = "LEFT"
@@ -195,11 +196,21 @@ func update_pawn_position(pawn, cell_start, cell_target):
 				#set new elements if in room to be active 
 				for element in activeRoom.enemiesInRoom:
 					element.isDisabled = false
-			if(activeRoom != null):
-				print("current active room " + str(activeRoom) + " enemies in active room " + str(activeRoom.enemiesInRoom))
-			else:
-				print("current active room " + str(activeRoom))
+#			if(activeRoom != null):
+#				print("current active room " + str(activeRoom) + " enemies in active room " + str(activeRoom.enemiesInRoom))
+#			else:
+#				print("current active room " + str(activeRoom))
 			pawn.alreadyMovedThisTurn = true
+			
+			#update camera position 
+			var mainCamera = get_node("/root/MainCamera")
+			if(activeRoom != null):
+				mainCamera.move_and_zoom_camera_to_room(activeRoom.doorRoomLeftMostCorner, map_to_world(activeRoom.roomSize/2), activeRoom.roomSizeMultiplier)
+			else:
+				mainCamera.position = map_to_world(Vector2(roomDimensions/2, roomDimensions/2))
+			#mainCamera.zoom = mainCamera.zoom + Vector2(1,1)
+			mainCamera.make_current()
+			
 			
 	return map_to_world(cell_target) + cell_size / 2
 	
@@ -252,6 +263,7 @@ func create_enemy_room(unlockedDoor):
 				newEnemy.get_node("Sprite").set_modulate(Color(randf(),randf(),randf(),1.0))
 				newEnemy.connect("enemyMadeMove", self, "_on_enemy_made_move_ready")
 				newEnemy.connect("enemyAttacked", self, "_on_enemy_attacked")
+				newEnemy.connect("enemyDefeated", self, "_on_enemy_defeated")
 				add_child(newEnemy)
 				set_cellv(world_to_map(newEnemy.position), get_tileset().find_tile_by_name(match_Enum(newEnemy.type)))
 				enemiesInActiveRoom.append(get_cell_pawn(world_to_map(newEnemy.position)))
@@ -259,8 +271,9 @@ func create_enemy_room(unlockedDoor):
 
 func _on_enemy_made_move_ready():
 	enemiesMadeMoveCounter += 1
+	print("Enemies made move " + str(enemiesMadeMoveCounter) + " enemies in active room " + str(activeRoom.enemiesInRoom.size()))
 	#print("Currently Enemies made move " + str(enemiesMadeMoveCounter) + " of all enemies active " + str(activeRoom.enemiesInRoom.size()))
-	if(enemiesMadeMoveCounter == activeRoom.enemiesInRoom.size()):
+	if(enemiesMadeMoveCounter >= activeRoom.enemiesInRoom.size()):
 		#print("All Enemies made move " + str(enemiesMadeMoveCounter))
 		enemiesMadeMoveCounter = 0
 		get_node("Player").alreadyAttackedThisMove = false
@@ -282,33 +295,7 @@ func _on_Player_Attacked(player, attack_direction, attackDamage):
 	if(get_cellv(world_to_map(player.position) + attack_direction) == objectTyped.ENEMY):
 		print("Woosh Player Attack hit")
 		var attackedEnemy = get_cell_pawn(world_to_map(player.position) + attack_direction)
-		if attackedEnemy.enemyDefeated(attackDamage):
-			activeRoom.enemiesInRoom.erase(attackedEnemy)
-			set_cellv(world_to_map(attackedEnemy.position),get_tileset().find_tile_by_name("EMPTY")) 
-			attackedEnemy.queue_free()
-			print("Batsuuum Enemy was defeated")
-			#set room to cleared if all enemies were defeated
-			if(activeRoom.enemiesInRoom.size() == 0):
-				activeRoom.roomCleared=true
-				if activeRoom.dropLoot():
-					#create loot currently matching with closed doord 
-					if !barrierKeysNoSolution.empty():
-						#create key and spawn it on floor spawn one left of player if player is in the middle of the room
-						var itemToGenerate = barrierKeysNoSolution[randi()%barrierKeysNoSolution.size()]
-						barrierKeysSolutionSpawned.append(itemToGenerate)
-						barrierKeysNoSolution.erase(itemToGenerate)
-						var newItem = Item.instance()
-						var newItemPosition = activeRoom.doorRoomLeftMostCorner + map_to_world(activeRoom.roomSize/2)
-						print("Player position " + str(world_to_map(player.position)) + " newItem Position " + str(newItemPosition))
-						if(get_cellv(world_to_map(newItemPosition)) == objectTyped.PLAYER):
-							newItemPosition += map_to_world(Vector2(0,1))
-						newItem.position = newItemPosition
-						newItem.keyValue = itemToGenerate
-						add_child(newItem)
-
-						set_cellv(world_to_map(newItem.position), get_tileset().find_tile_by_name(match_Enum(newItem.type)))
-						#set type of item 
-					
+		attackedEnemy.inflictDamage(attackDamage)
 	elif(get_cellv(world_to_map(player.position) + attack_direction) == objectTyped.EMPTY):
 		print("ZZZ Attack missed")
 
@@ -322,6 +309,32 @@ func _on_enemy_attacked(enemy, attackCell, attackDamage):
 			attackedPlayer.lifePoints = 5
 			print("Batsuuum Player was defeated reset to start")
 
+func _on_enemy_defeated(enemy):
+	activeRoom.enemiesInRoom.erase(enemy)
+	set_cellv(world_to_map(enemy.position),get_tileset().find_tile_by_name("EMPTY")) 
+	enemy.queue_free()
+	print("Batsuuum Enemy was defeated")
+	#set room to cleared if all enemies were defeated
+	if(activeRoom.enemiesInRoom.size() == 0):
+		activeRoom.roomCleared=true
+		if activeRoom.dropLoot():
+			#create loot currently matching with closed doord 
+			print(barrierKeysNoSolution)
+			if !barrierKeysNoSolution.empty():
+				#create key and spawn it on floor spawn one left of player if player is in the middle of the room
+				var itemToGenerate = barrierKeysNoSolution[randi()%barrierKeysNoSolution.size()]
+				barrierKeysSolutionSpawned.append(itemToGenerate)
+				barrierKeysNoSolution.erase(itemToGenerate)
+				var newItem = Item.instance()
+				var newItemPosition = activeRoom.doorRoomLeftMostCorner + map_to_world(activeRoom.roomSize/2)
+				if(get_cellv(world_to_map(newItemPosition)) == objectTyped.PLAYER):
+					newItemPosition += map_to_world(Vector2(0,1))
+				newItem.position = newItemPosition
+				newItem.keyValue = itemToGenerate
+				add_child(newItem)
+				set_cellv(world_to_map(newItem.position), get_tileset().find_tile_by_name(match_Enum(newItem.type)))
+					#set type of item 
+					
 
 func create_starting_room(startingRoom=false):
 	create_walls(null, startingRoom, true)
@@ -637,6 +650,7 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 				door.doorLocationDirection = "DOWN"
 				door.roomSizeMultiplier = Vector2(horizontalRandom, verticalRandom)
 				door.roomSize = Vector2(roomSizeHorizontal, roomSizeVertical)
+						
 
 	var verticalAddcount = 0
 	while verticalAddcount < roomSizeVertical:

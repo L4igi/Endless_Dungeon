@@ -8,6 +8,7 @@ export(CELL_TYPES) var type = CELL_TYPES.DOOR
 enum ROOM_TYPE{ENEMYROOM = 0, PUZZLEROOM = 1, EMPTYTREASUREROOM = 2}
 export(ROOM_TYPE) var roomtype = ROOM_TYPE.EMPTYTREASUREROOM
 
+
 var isUnlocked = false
 
 var isBarrier = false 
