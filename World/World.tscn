@@ -1,6 +1,5 @@
 [gd_scene load_steps=14 format=2]
 
-[ext_resource path="res://GameObjects/Player/Player.tscn" type="PackedScene" id=1]
 [ext_resource path="res://World/Room/Grid.gd" type="Script" id=2]
 [ext_resource path="res://World/WorldSprites/Door.png" type="Texture" id=3]
 [ext_resource path="res://World/WorldSprites/Puzzle.png" type="Texture" id=4]
@@ -12,6 +11,7 @@
 [ext_resource path="res://GameObjects/ColorTest.png" type="Texture" id=10]
 [ext_resource path="res://World/Camera2D.gd" type="Script" id=11]
 [ext_resource path="res://World/World.gd" type="Script" id=12]
+[ext_resource path="res://World/WorldSprites/MagicProjectileTile.png" type="Texture" id=13]
 
 [sub_resource type="TileSet" id=1]
 2/name = "PUZZLEPIECE"
@@ -198,6 +198,29 @@
 9/shape_one_way_margin = 0.0
 9/shapes = [  ]
 9/z_index = 0
+10/name = "MAGICPROJECTILE"
+10/texture = ExtResource( 13 )
+10/tex_offset = Vector2( 0, 0 )
+10/modulate = Color( 1, 1, 1, 1 )
+10/region = Rect2( 0, 0, 32, 32 )
+10/tile_mode = 1
+10/autotile/bitmask_mode = 0
+10/autotile/bitmask_flags = [  ]
+10/autotile/icon_coordinate = Vector2( 0, 0 )
+10/autotile/tile_size = Vector2( 32, 32 )
+10/autotile/spacing = 0
+10/autotile/occluder_map = [  ]
+10/autotile/navpoly_map = [  ]
+10/autotile/priority_map = [  ]
+10/autotile/z_index_map = [  ]
+10/occluder_offset = Vector2( 0, 0 )
+10/navigation_offset = Vector2( 0, 0 )
+10/shape_offset = Vector2( 0, 0 )
+10/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+10/shape_one_way = false
+10/shape_one_way_margin = 0.0
+10/shapes = [  ]
+10/z_index = 0
 
 [node name="World" type="Node2D"]
 script = ExtResource( 12 )
@@ -207,9 +230,6 @@ tile_set = SubResource( 1 )
 cell_size = Vector2( 32, 32 )
 format = 1
 script = ExtResource( 2 )
-
-[node name="Player" parent="Grid" instance=ExtResource( 1 )]
-position = Vector2( 48, 48 )
 
 [node name="Tween" type="Tween" parent="."]
 

@@ -1,6 +1,8 @@
 extends TileMap
 
-enum objectTyped { EMPTY, PLAYER, WALL, ENEMY, PUZZLEPIECE, ITEM, DOOR, UNLOCKEDDOOR}
+enum objectTyped { EMPTY, PLAYER, WALL, ENEMY, PUZZLEPIECE, ITEM, DOOR, UNLOCKEDDOOR, MAGICPROJECTILE}
+
+enum attackTyped{SWORD = 1, MAGIC = 2} 
 
 var Enemy = preload("res://GameObjects/Enemy/Enemy.tscn")
 
@@ -9,6 +11,10 @@ var Wall = preload("res://GameObjects/Wall/Wall.tscn")
 var Door = preload("res://GameObjects/Door/Door.tscn")
 
 var Item = preload("res://GameObjects/Item/Item.tscn")
+
+var MagicProjectile = preload("res://GameObjects/Projectile/MagicProjectile.tscn")
+
+var Player = preload("res://GameObjects/Player/Player.tscn")
 
 var roomDimensions = 9
 
@@ -28,11 +34,15 @@ var emptyTreasureRoomChance = 34
 
 var enemiesInActiveRoom = []
 
+var projectilesInActiveRoom = []
+
 var enemiesMadeMoveCounter = 0
 
 var barrierKeysNoSolution = []
 
 var barrierKeysSolutionSpawned = []
+
+var mainPlayer 
 
 func match_Enum(var index):
 	match index:
@@ -50,6 +60,8 @@ func match_Enum(var index):
 			return "DOOR"
 		6:
 			return "UNLOCKEDDOOR"
+		7:
+			return "MAGICPROJECTILE"
 		-1:
 			return "EMPTY"
 		_:
@@ -72,6 +84,8 @@ func set_enum_index(var enumName, var setTo):
 			objectTyped.DOOR=setTo
 		"UNLOCKEDDOOR":
 			objectTyped.UNLOCKEDDOOR=setTo
+		"MAGICPROJECTILE":
+			objectTyped.MAGICPROJECTILE=setTo
 		"EMPTY":
 			objectTyped.EMPTY=-1
 		_:
@@ -87,8 +101,13 @@ func _ready():
 	if(roomDimensions%2 == 0):
 		evenOddModifier = 1
 	create_starting_room(true)
+	var newPlayer = Player.instance()
+	newPlayer.position = Vector2(84,84)
+	add_child(newPlayer)
+	set_cellv(world_to_map(newPlayer.position), get_tileset().find_tile_by_name(match_Enum(newPlayer.type)))
 	get_node("Player").connect("playerMadeMove", self, "_on_Player_Made_Move")
 	get_node("Player").connect("playerAttacked", self, "_on_Player_Attacked")
+	mainPlayer = get_node("Player")
 		
 
 func get_cell_pawn(coordinates):
@@ -106,21 +125,14 @@ func request_move(pawn, direction):
 #	cell_target_type = get_tileset().find_tile_by_name(matchEnum(cell_target_type))
 #	#print(get_tileset().find_tile_by_name(matchEnum(cell_target_type)))
 		#print("Got Cell V: " + str(cell_target_type))
-	if(pawn.name == "Player"):
+	#print("requesting move " + str(pawn.type) + "Player Type " + str(objectTyped.PLAYER))
+	if(match_Enum(pawn.type) == "PLAYER"):
 		match cell_target_type:
 			objectTyped.EMPTY:
-				#print("EMPTY")
-				#print("Player Position " + str(cell_target))
 				return update_pawn_position(pawn, cell_start, cell_target)
 			objectTyped.ENEMY:
-#				var object_pawn = get_cell_pawn(cell_target)
-#				activeRoom.enemiesInRoom.erase(object_pawn)
-#				object_pawn.queue_free()
-#				#print("ENEMY")
-#				return update_pawn_position(pawn, cell_start, cell_target)
 				pass
 			objectTyped.WALL:
-				#print("WALL")
 				pass
 			objectTyped.ITEM:
 				var object_pawn = get_cell_pawn(cell_target)
@@ -138,7 +150,7 @@ func request_move(pawn, direction):
 				return update_pawn_position(pawn, cell_start, cell_target)
 				
 #	if(pawn.type == objectTyped.ENEMY):
-	else:
+	elif match_Enum(pawn.type) == "ENEMY":
 		#print("MOVED enemy in room")
 		match cell_target_type:
 			objectTyped.EMPTY:
@@ -153,7 +165,55 @@ func request_move(pawn, direction):
 				return pawn.position
 			objectTyped.UNLOCKEDDOOR:
 				return pawn.position
+			objectTyped.MAGICPROJECTILE:
+				var tempMagicProjectile = get_cell_pawn(cell_target)
+				if tempMagicProjectile.playerProjectile :
+					projectilesInActiveRoom.erase(tempMagicProjectile)
+					set_cellv(world_to_map(tempMagicProjectile.position),get_tileset().find_tile_by_name("EMPTY"))
+					tempMagicProjectile.queue_free()
+					pawn.inflictDamage(tempMagicProjectile.attackDamage)
+					return update_pawn_position(pawn, cell_start, cell_target)
+				else:
+					return pawn.position
 
+	elif match_Enum(pawn.type) == "MAGICPROJECTILE":
+		#print("MOVED enemy in room")
+		match cell_target_type:
+			objectTyped.EMPTY:
+				return update_pawn_position(pawn, cell_start, cell_target)
+			objectTyped.ENEMY:
+				var tempEnemy = get_cell_pawn(cell_target)
+				if pawn.playerProjectile :
+					print("Projectile inflicted damage on enemy")
+					tempEnemy.inflictDamage(pawn.attackDamage)
+					projectilesInActiveRoom.erase(pawn)
+					set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
+					pawn.queue_free()
+				else:
+					return pawn.position
+			objectTyped.PLAYER:
+				var tempPlayer = get_cell_pawn(cell_target)
+				if !pawn.playerProjectile :
+					tempPlayer.inflict_damage_playerDefeated(pawn.attackDamage)
+					projectilesInActiveRoom.erase(pawn)
+					set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
+					pawn.queue_free()
+				else:
+					return pawn.position
+			objectTyped.WALL:
+				projectilesInActiveRoom.erase(pawn)
+				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
+				pawn.queue_free()
+			objectTyped.DOOR:
+				projectilesInActiveRoom.erase(pawn)
+				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
+				pawn.queue_free()
+			objectTyped.UNLOCKEDDOOR:
+				projectilesInActiveRoom.erase(pawn)
+				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
+				pawn.queue_free()
+			objectTyped.MAGICPROJECTILE:
+				return pawn.position
 
 #movedThroughDoor
 func update_pawn_position(pawn, cell_start, cell_target):
@@ -161,7 +221,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 	var oldCellTargetNode = get_cell_pawn(cell_target)
 	set_cellv(cell_target, get_tileset().find_tile_by_name(match_Enum(pawn.type)))
 	set_cellv(cell_start, objectTyped.EMPTY)
-	if(pawn.name == "Player"):
+	if(match_Enum(pawn.type) == "PLAYER"):
 		if(movedThroughDoor == true):
 			set_cellv(cell_start, objectTyped.UNLOCKEDDOOR)
 			movedThroughDoor = false
@@ -205,11 +265,19 @@ func update_pawn_position(pawn, cell_start, cell_target):
 			#update camera position 
 			var mainCamera = get_node("/root/MainCamera")
 			if(activeRoom != null):
-				mainCamera.move_and_zoom_camera_to_room(activeRoom.doorRoomLeftMostCorner, map_to_world(activeRoom.roomSize/2), activeRoom.roomSizeMultiplier)
+				print(activeRoom.doorRoomLeftMostCorner) 
+				mainCamera.move_and_zoom_camera_to_room(activeRoom.doorRoomLeftMostCorner, Vector2(float(activeRoom.roomSize.x)/2, float(activeRoom.roomSize.y)/2) * 32 - Vector2(16,16), activeRoom.roomSizeMultiplier) 
 			else:
-				mainCamera.position = map_to_world(Vector2(roomDimensions/2, roomDimensions/2))
+				mainCamera.position = Vector2(float(roomDimensions)/2, float(roomDimensions)/2)*32
+				mainCamera.zoom = mainCamera.standardZoomLevel
 			#mainCamera.zoom = mainCamera.zoom + Vector2(1,1)
 			mainCamera.make_current()
+			
+			#let player move freely if room is cleared
+			if(activeRoom == null || activeRoom.roomCleared):
+				pawn.inClearedRoom = true
+			else:
+				pawn.inClearedRoom = false
 			
 			
 	return map_to_world(cell_target) + cell_size / 2
@@ -218,16 +286,14 @@ func enablePlayerAttack(player):
 	if(activeRoom == null || activeRoom.enemiesInRoom.empty()):
 		player.playerCanAttack=false
 		return
-	for element in activeRoom.enemiesInRoom:
-#		print("Enemy Position " + str(element.position) + " player left position " + str(player.position+ map_to_world(Vector2(1,0))))
-#		print("Enemy Position " + str(element.position) + " player right position " + str(player.position+ map_to_world(Vector2(-1,0))))
-#		print("Enemy Position " + str(element.position) + " player down position " + str(player.position+ map_to_world(Vector2(0,1))))
-#		print("Enemy Position " + str(element.position) + " player up position " + str(player.position+ map_to_world(Vector2(0,-1))))
-		if(element.position == player.position + map_to_world(Vector2(1,0)) || element.position == player.position + map_to_world(Vector2(-1,0)) || element.position == player.position + map_to_world(Vector2(0,1)) || element.position == player.position + map_to_world(Vector2(0,-1))):
-			#print("player can attack in enable function ")
-			player.playerCanAttack=true
-			return 
-	player.playerCanAttack=false
+	player.playerCanAttack = true
+		#player can always attack if in enemy room
+#	for element in activeRoom.enemiesInRoom:
+#		if(element.position == player.position + map_to_world(Vector2(1,0)) || element.position == player.position + map_to_world(Vector2(-1,0)) || element.position == player.position + map_to_world(Vector2(0,1)) || element.position == player.position + map_to_world(Vector2(0,-1))):
+#			#print("player can attack in enable function ")
+#			player.playerCanAttack=true
+#			return 
+#	player.playerCanAttack=false
 
 func enableEnemyAttack(enemy):
 	if(get_cellv(world_to_map(enemy.position)+Vector2(1,0)) == objectTyped.PLAYER):
@@ -271,13 +337,16 @@ func create_enemy_room(unlockedDoor):
 
 func _on_enemy_made_move_ready():
 	enemiesMadeMoveCounter += 1
-	print("Enemies made move " + str(enemiesMadeMoveCounter) + " enemies in active room " + str(activeRoom.enemiesInRoom.size()))
+	#print("Enemies made move " + str(enemiesMadeMoveCounter) + " enemies in active room " + str(activeRoom.enemiesInRoom.size()))
 	#print("Currently Enemies made move " + str(enemiesMadeMoveCounter) + " of all enemies active " + str(activeRoom.enemiesInRoom.size()))
 	if(enemiesMadeMoveCounter >= activeRoom.enemiesInRoom.size()):
 		#print("All Enemies made move " + str(enemiesMadeMoveCounter))
 		enemiesMadeMoveCounter = 0
+		for projectile in projectilesInActiveRoom:
+			projectile.move_projectile()
 		get_node("Player").alreadyAttackedThisMove = false
 		get_node("Player").alreadyMovedThisTurn = false
+		#if all enemies made their move move all player projectiles 
 		
 func _on_Player_Made_Move():
 	#print("Player position " + str(world_to_map(get_node("Player").position)))
@@ -290,20 +359,33 @@ func _on_Player_Made_Move():
 	if(activeRoom == null):
 		get_node("Player").alreadyMovedThisTurn = false
 		
-func _on_Player_Attacked(player, attack_direction, attackDamage):
+func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 	randomize()
 	if(get_cellv(world_to_map(player.position) + attack_direction) == objectTyped.ENEMY):
 		print("Woosh Player Attack hit")
 		var attackedEnemy = get_cell_pawn(world_to_map(player.position) + attack_direction)
 		attackedEnemy.inflictDamage(attackDamage)
 	elif(get_cellv(world_to_map(player.position) + attack_direction) == objectTyped.EMPTY):
-		print("ZZZ Attack missed")
+		match attackType:
+			attackTyped.SWORD:
+				print("Sword was used to attack")
+				print("ZZZ Attack missed")
+			attackTyped.MAGIC:
+				print("Magic was used to attack")
+				var newMagicProjectile = MagicProjectile.instance()
+				newMagicProjectile.position = player.position + map_to_world(attack_direction)
+				newMagicProjectile.playerProjectile = true
+				newMagicProjectile.movementDirection = attack_direction
+				add_child(newMagicProjectile)
+				projectilesInActiveRoom.append(newMagicProjectile)
+				set_cellv(world_to_map(newMagicProjectile.position), get_tileset().find_tile_by_name("MAGICPROJECTILE"))
+			
 
 func _on_enemy_attacked(enemy, attackCell, attackDamage):
 	if(get_cellv(attackCell) == objectTyped.PLAYER):
 		print("Woosh ENEMY Attack hit")
 		var attackedPlayer = get_cell_pawn(attackCell)
-		if attackedPlayer.playerDefeated(attackDamage):
+		if attackedPlayer.inflict_damage_playerDefeated(attackDamage):
 			set_cellv(attackCell,get_tileset().find_tile_by_name("EMPTY")) 
 			attackedPlayer.position = Vector2(48,48)
 			attackedPlayer.lifePoints = 5
@@ -317,6 +399,14 @@ func _on_enemy_defeated(enemy):
 	#set room to cleared if all enemies were defeated
 	if(activeRoom.enemiesInRoom.size() == 0):
 		activeRoom.roomCleared=true
+		mainPlayer.inClearedRoom = true
+		#delete all projectiles 
+		for projectile in projectilesInActiveRoom:
+			print("Projectiles in active room : " + str(projectilesInActiveRoom.size()))
+			set_cellv(world_to_map(projectile.position),get_tileset().find_tile_by_name("EMPTY")) 
+			projectile.queue_free()
+		projectilesInActiveRoom.clear()
+			
 		if activeRoom.dropLoot():
 			#create loot currently matching with closed doord 
 			print(barrierKeysNoSolution)

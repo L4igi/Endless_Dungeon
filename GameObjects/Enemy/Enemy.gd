@@ -2,7 +2,7 @@ extends Node2D
 
 onready var Grid = get_parent()
 
-enum CELL_TYPES{PLAYER=0, WALL=1, ENEMY=2, PUZZLEPIECE=3, ITEM=4, DOOR=5, UNLOCKEDDOOR = 6}
+enum CELL_TYPES{PLAYER=0, WALL=1, ENEMY=2, PUZZLEPIECE=3, ITEM=4, DOOR=5, UNLOCKEDDOOR = 6, MAGICPROJECTILE=7}
 export(CELL_TYPES) var type = CELL_TYPES.ENEMY
 
 var alreadyMovedThisTurn = false
@@ -17,7 +17,7 @@ signal enemyAttacked (enemy, attackDirection, attackDamange )
 
 signal enemyDefeated (enemy)
 
-var lifePoints = 2
+var lifePoints = 1
 
 var barrierEnemy = false
 
