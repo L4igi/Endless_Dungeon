@@ -5,6 +5,8 @@ onready var Grid = get_parent()
 enum CELL_TYPES{PLAYER=0, WALL=1, ENEMY=2, PUZZLEPIECE=3, ITEM=4, DOOR=5, UNLOCKEDDOOR = 6, MAGICPROJECTILE=7}
 export(CELL_TYPES) var type = CELL_TYPES.ENEMY
 
+enum ENEMYTYPE{BARRIERENEMY=0, MAGEENEMY=1, WARRIROENEMY=2, THIEFENEMY=3}
+
 var alreadyMovedThisTurn = false
 
 var alreadyAttackedThisTurn = false
@@ -21,9 +23,9 @@ var lifePoints = 1
 
 var barrierEnemy = false
 
-var attackDamage = 0.1 
+var attackDamage = 1
 
-signal enemmyAttacked 
+var enemyType 
 
 func _ready():
 	pass
@@ -77,8 +79,22 @@ func _process(delta):
 				
 
 			
-func generateEnemy(): 
-	pass 
+func generateEnemy(enemiesInRoom): 
+#	var enemieToGenerate = randi()%4
+#generate warrior for testing purposes
+	var enemieToGenerate = 2
+	match enemieToGenerate:
+		ENEMYTYPE.BARRIERENEMY:
+			enemyType = ENEMYTYPE.BARRIERENEMY
+		ENEMYTYPE.MAGEENEMY:
+			enemyType = ENEMYTYPE.MAGEENEMY
+		ENEMYTYPE.WARRIROENEMY:
+			enemyType = ENEMYTYPE.WARRIROENEMY
+			lifePoints = 1
+			attackDamage = 1 
+			
+		ENEMYTYPE.THIEFENEMY:
+			enemyType = ENEMYTYPE.THIEFENEMY
 
 func inflictDamage(attackDamage):
 	lifePoints -= attackDamage

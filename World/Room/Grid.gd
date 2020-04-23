@@ -108,6 +108,8 @@ func _ready():
 	get_node("Player").connect("playerMadeMove", self, "_on_Player_Made_Move")
 	get_node("Player").connect("playerAttacked", self, "_on_Player_Attacked")
 	mainPlayer = get_node("Player")
+
+	
 		
 
 func get_cell_pawn(coordinates):
@@ -136,7 +138,10 @@ func request_move(pawn, direction):
 				pass
 			objectTyped.ITEM:
 				var object_pawn = get_cell_pawn(cell_target)
-				print("Item spawned key value " + object_pawn.keyValue)
+				print("Item spawned key value " + str(object_pawn.keyValue))
+				#add additional items with || 
+				if(object_pawn.itemType == "POTION"):
+					pawn.add_nonkey_items(object_pawn.itemType)
 				pawn.itemsInPosession.append(object_pawn)
 				object_pawn.get_node("Sprite").queue_free()
 				#print("Player has Items in posession " + str(pawn.itemsInPosession))
@@ -352,6 +357,7 @@ func _on_Player_Made_Move():
 	#print("Player position " + str(world_to_map(get_node("Player").position)))
 	if(activeRoom!=null):
 		for element in activeRoom.enemiesInRoom:
+			if(element != null):
 				element.alreadyMovedThisTurn = false
 				element.alreadyAttackedThisTurn = false
 		if(activeRoom.enemiesInRoom.empty()):
@@ -388,7 +394,9 @@ func _on_enemy_attacked(enemy, attackCell, attackDamage):
 		if attackedPlayer.inflict_damage_playerDefeated(attackDamage):
 			set_cellv(attackCell,get_tileset().find_tile_by_name("EMPTY")) 
 			attackedPlayer.position = Vector2(48,48)
-			attackedPlayer.lifePoints = 5
+			#todo: dont hardcode life
+			attackedPlayer.lifePoints = 10
+			MainCamera.set_camera_starting_room()
 			print("Batsuuum Player was defeated reset to start")
 
 func _on_enemy_defeated(enemy):
@@ -424,7 +432,16 @@ func _on_enemy_defeated(enemy):
 				add_child(newItem)
 				set_cellv(world_to_map(newItem.position), get_tileset().find_tile_by_name(match_Enum(newItem.type)))
 					#set type of item 
-					
+			else:
+				var newItem = Item.instance()
+				var newItemPosition = activeRoom.doorRoomLeftMostCorner + map_to_world(activeRoom.roomSize/2)
+				if(get_cellv(world_to_map(newItemPosition)) == objectTyped.PLAYER):
+					newItemPosition += map_to_world(Vector2(0,1))
+				newItem.position = newItemPosition
+				newItem.keyValue = 0
+				newItem.setTexture("POTION")
+				add_child(newItem)
+				set_cellv(world_to_map(newItem.position), get_tileset().find_tile_by_name(match_Enum(newItem.type)))
 
 func create_starting_room(startingRoom=false):
 	create_walls(null, startingRoom, true)

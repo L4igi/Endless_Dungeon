@@ -3,18 +3,23 @@ extends Node2D
 enum CELL_TYPES{PLAYER=0, WALL=1, ENEMY=2, PUZZLEPIECE=3, ITEM=4, DOOR=5, UNLOCKEDDOOR = 6, MAGICPROJECTILE=7}
 export(CELL_TYPES) var type = CELL_TYPES.ITEM
 
+onready var Grid = get_parent()
+
+var potionTexture = preload ("res://GameObjects/Enemy/Magic_Flask_Item.png")
+
 var keyValue 
 
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
+var itemType
 
-
-# Called when the node enters the scene tree for the first time.
 func _ready():
 	pass # Replace with function body.
 
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
+func setTexture(type):
+	match type:
+		"POTION":
+			get_node("Sprite").set_texture(potionTexture)
+			itemType = "POTION"
+		"KEY":
+			itemType = "KEY"
+		"WEAPON":
+			itemType = "WEAPON"

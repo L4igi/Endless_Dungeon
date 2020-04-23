@@ -16,6 +16,8 @@ signal playerMadeMove
 
 signal playerAttacked (player, attackDirection, attackDamage)
 
+signal playerTakeDamage (player, lifepoints)
+
 var playerPassedDoor = Vector2.ZERO
 
 var alreadyAttackedThisMove = false
@@ -24,7 +26,9 @@ var alreadyMovedThisTurn = false
 
 var attackDamage = 1
 
-var lifePoints = 5
+var maxLifePoints = 10
+
+var lifePoints = 10
 
 var itemsInPosession = []
 
@@ -34,12 +38,17 @@ var inClearedRoom = true
 
 var attackType = attackTyped.SWORD
 
-			
+var GUI = preload("res://GUI/GuiScene.tscn")
+
+var guiElements = null
 
 func _ready():
-	pass
+	guiElements = GUI.instance()
+	guiElements.set_health(lifePoints)
+	add_child(guiElements)
 
 func _process(delta):
+	get_use_nonkey_items()
 	var  attackMode = get_attack_mode()
 	if attackMode:
 		attackType = attackMode
@@ -130,36 +139,36 @@ func _process(delta):
 							$AnimationPlayer.play("Idle")
 							set_process(true)
 	
-			
-			else:
-				if movement_direction:
-					var targetPosition = Grid.request_move(self, movement_direction)
-					if targetPosition:
-						set_process(false)
-						#play attack animation 
-						var animationPlay = str("walk_right")
-						match movement_direction:
-							Vector2(1,0):
-								animationPlay = str("walk_right")
-							Vector2(-1,0):
-								animationPlay = str("walk_left")
-							Vector2(0,1):
-								animationPlay = str("walk_down")
-							Vector2(0,-1):
-								animationPlay = str("walk_up")
-						$AnimationPlayer.play(animationPlay, -1, 8.0)
-						$Tween.interpolate_property($Sprite, "position", Vector2.ZERO, Vector2.ZERO, 0.2, Tween.TRANS_LINEAR, Tween.EASE_IN)
-						alreadyMovedThisTurn=true
-						playerPreviousPosition = position
-						position = targetPosition
-						$Tween.start()
-						yield($AnimationPlayer, "animation_finished")
-						$AnimationPlayer.play("Idle")
-						set_process(true)
-						
-						Grid.enablePlayerAttack(self)
-						if !playerCanAttack:
-							alreadyAttackedThisMove=true
+#
+#			else:
+#				if movement_direction:
+#					var targetPosition = Grid.request_move(self, movement_direction)
+#					if targetPosition:
+#						set_process(false)
+#						#play attack animation 
+#						var animationPlay = str("walk_right")
+#						match movement_direction:
+#							Vector2(1,0):
+#								animationPlay = str("walk_right")
+#							Vector2(-1,0):
+#								animationPlay = str("walk_left")
+#							Vector2(0,1):
+#								animationPlay = str("walk_down")
+#							Vector2(0,-1):
+#								animationPlay = str("walk_up")
+#						$AnimationPlayer.play(animationPlay, -1, 8.0)
+#						$Tween.interpolate_property($Sprite, "position", Vector2.ZERO, Vector2.ZERO, 0.2, Tween.TRANS_LINEAR, Tween.EASE_IN)
+#						alreadyMovedThisTurn=true
+#						playerPreviousPosition = position
+#						position = targetPosition
+#						$Tween.start()
+#						yield($AnimationPlayer, "animation_finished")
+#						$AnimationPlayer.play("Idle")
+#						set_process(true)
+#
+#						Grid.enablePlayerAttack(self)
+#						if !playerCanAttack:
+#							alreadyAttackedThisMove=true
 			
 			if(alreadyAttackedThisMove && alreadyMovedThisTurn):
 				emit_signal("playerMadeMove")
@@ -208,14 +217,44 @@ func get_attack_direction():
 
 func get_attack_mode():
 	if Input.is_action_just_pressed("Mode_Sword"):
+		guiElements.change_attack_mode(1)
 		return attackTyped.SWORD
+		
 	if Input.is_action_just_pressed("Mode_Magic"):
+		guiElements.change_attack_mode(2)
 		return attackTyped.MAGIC
+		
+		
+func get_use_nonkey_items():
+	if lifePoints < maxLifePoints:
+		if Input.is_action_just_pressed("Potion"):
+			if guiElements.use_potion():
+				if lifePoints + 5 > maxLifePoints:
+					lifePoints = maxLifePoints
+					guiElements.set_health(maxLifePoints)
+				else:
+					lifePoints += 5 
+					guiElements.change_health(-5)
 			
 func inflict_damage_playerDefeated(attackDamage):
 	lifePoints -= attackDamage
+	guiElements.change_health(attackDamage)
+	emit_signal("playerTakeDamage", self, lifePoints)
 	if lifePoints == 0:
+		guiElements.set_health(10)
 		return true
 	return false
 
+func add_nonkey_items(itemtype):
+	match itemtype:
+		"POTION":
+			guiElements.fill_one_potion()
 
+
+func _unhandled_input(event):
+	if event is InputEventMouseButton:
+		if event.button_index == BUTTON_WHEEL_UP:
+			if event.pressed:
+				MainCamera.zoomInOut("IN")
+		if event.button_index == BUTTON_WHEEL_DOWN:
+			MainCamera.zoomInOut("OUT")

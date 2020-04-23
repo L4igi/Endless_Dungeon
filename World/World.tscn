@@ -1,5 +1,6 @@
 [gd_scene load_steps=14 format=2]
 
+[ext_resource path="res://World/WorldSprites/MagicProjectileTile.png" type="Texture" id=1]
 [ext_resource path="res://World/Room/Grid.gd" type="Script" id=2]
 [ext_resource path="res://World/WorldSprites/Door.png" type="Texture" id=3]
 [ext_resource path="res://World/WorldSprites/Puzzle.png" type="Texture" id=4]
@@ -11,7 +12,6 @@
 [ext_resource path="res://GameObjects/ColorTest.png" type="Texture" id=10]
 [ext_resource path="res://World/Camera2D.gd" type="Script" id=11]
 [ext_resource path="res://World/World.gd" type="Script" id=12]
-[ext_resource path="res://World/WorldSprites/MagicProjectileTile.png" type="Texture" id=13]
 
 [sub_resource type="TileSet" id=1]
 2/name = "PUZZLEPIECE"
@@ -199,7 +199,7 @@
 9/shapes = [  ]
 9/z_index = 0
 10/name = "MAGICPROJECTILE"
-10/texture = ExtResource( 13 )
+10/texture = ExtResource( 1 )
 10/tex_offset = Vector2( 0, 0 )
 10/modulate = Color( 1, 1, 1, 1 )
 10/region = Rect2( 0, 0, 32, 32 )
