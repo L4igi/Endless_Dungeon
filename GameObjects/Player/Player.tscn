@@ -19,6 +19,30 @@ tracks/0/keys = {
 "update": 1,
 "values": [ 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 51 ]
 }
+tracks/1/type = "value"
+tracks/1/path = NodePath("../Sprite:self_modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 0.5, 1 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ), Color( 0.0196078, 0.329412, 0.596078, 1 ), Color( 1, 1, 1, 1 ) ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("../Sprite:scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0, 0.5, 1 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Vector2( 1, 1 ), Vector2( 0.5, 0.5 ), Vector2( 1, 1 ) ]
+}
 
 [sub_resource type="Animation" id=2]
 resource_name = "attack_down"
@@ -148,9 +172,11 @@ tracks/0/keys = {
 script = ExtResource( 2 )
 
 [node name="Sprite" type="Sprite" parent="."]
+self_modulate = Color( 0.340502, 0.548904, 0.728287, 1 )
+scale = Vector2( 0.663656, 0.663656 )
 texture = ExtResource( 1 )
 hframes = 100
-frame = 40
+frame = 43
 __meta__ = {
 "_edit_lock_": true
 }

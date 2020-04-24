@@ -22,7 +22,7 @@ config/icon="res://icon.png"
 [autoload]
 
 MainCamera="*res://World/Camera2D.gd"
-GameObject="*res://GameObjects/gameObject.gd"
+GlobalVariables="*res://GlobalVariables/GlobalVariables.gd"
 
 [display]
 
@@ -144,4 +144,5 @@ Potion={
 [rendering]
 
 quality/2d/use_pixel_snap=true
+environment/default_clear_color=Color( 0.286275, 0.286275, 0.286275, 1 )
 environment/default_environment="res://default_env.tres"

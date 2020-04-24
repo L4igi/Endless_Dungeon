@@ -4,6 +4,8 @@ enum objectTyped { EMPTY, PLAYER, WALL, ENEMY, PUZZLEPIECE, ITEM, DOOR, UNLOCKED
 
 enum attackTyped{SWORD = 1, MAGIC = 2} 
 
+enum MOVEMENTDIRECTION{LEFT=0, RIGHT=1, UP=2, DOWN=3, MIDDLE=4}
+
 var Enemy = preload("res://GameObjects/Enemy/Enemy.tscn")
 
 var Wall = preload("res://GameObjects/Wall/Wall.tscn")
@@ -16,7 +18,7 @@ var MagicProjectile = preload("res://GameObjects/Projectile/MagicProjectile.tscn
 
 var Player = preload("res://GameObjects/Player/Player.tscn")
 
-var roomDimensions = 9
+var roomDimensions = GlobalVariables.roomDimensions
 
 var evenOddModifier = 0 
 
@@ -93,6 +95,12 @@ func set_enum_index(var enumName, var setTo):
 			
 
 func _ready():
+	var newPlayer = Player.instance()
+	newPlayer.position = Vector2(84,84)
+	add_child(newPlayer)
+	get_node("Player").connect("playerMadeMove", self, "_on_Player_Made_Move")
+	get_node("Player").connect("playerAttacked", self, "_on_Player_Attacked")
+	mainPlayer = get_node("Player")
 	for child in get_children():
 		set_cellv(world_to_map(child.position), get_tileset().find_tile_by_name(match_Enum(child.type)))
 	for element in objectTyped:
@@ -101,13 +109,6 @@ func _ready():
 	if(roomDimensions%2 == 0):
 		evenOddModifier = 1
 	create_starting_room(true)
-	var newPlayer = Player.instance()
-	newPlayer.position = Vector2(84,84)
-	add_child(newPlayer)
-	set_cellv(world_to_map(newPlayer.position), get_tileset().find_tile_by_name(match_Enum(newPlayer.type)))
-	get_node("Player").connect("playerMadeMove", self, "_on_Player_Made_Move")
-	get_node("Player").connect("playerAttacked", self, "_on_Player_Attacked")
-	mainPlayer = get_node("Player")
 
 	
 		
@@ -122,6 +123,10 @@ func request_move(pawn, direction):
 	var cell_start = world_to_map(pawn.position)
 	
 	var cell_target = cell_start + direction
+	if match_Enum(pawn.type) == "ENEMY":
+		if pawn.enemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY:
+			cell_target = direction
+		
 	var cell_target_type = get_cellv(cell_target)
 	
 #	cell_target_type = get_tileset().find_tile_by_name(matchEnum(cell_target_type))
@@ -161,6 +166,16 @@ func request_move(pawn, direction):
 			objectTyped.EMPTY:
 				return update_pawn_position(pawn, cell_start, cell_target)
 			objectTyped.ENEMY:
+				if pawn.enemyType == GlobalVariables.ENEMYTYPE.NINJAENEMY:
+					match pawn.movementdirection:
+						MOVEMENTDIRECTION.LEFT:
+							pawn.movementdirection = MOVEMENTDIRECTION.UP
+						MOVEMENTDIRECTION.RIGHT:
+							pawn.movementdirection = MOVEMENTDIRECTION.DOWN
+						MOVEMENTDIRECTION.UP:
+							pawn.movementdirection = MOVEMENTDIRECTION.RIGHT
+						MOVEMENTDIRECTION.DOWN:
+							pawn.movementdirection = MOVEMENTDIRECTION.LEFT
 				return pawn.position
 			objectTyped.PLAYER:
 				return pawn.position
@@ -273,8 +288,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 				print(activeRoom.doorRoomLeftMostCorner) 
 				mainCamera.move_and_zoom_camera_to_room(activeRoom.doorRoomLeftMostCorner, Vector2(float(activeRoom.roomSize.x)/2, float(activeRoom.roomSize.y)/2) * 32 - Vector2(16,16), activeRoom.roomSizeMultiplier) 
 			else:
-				mainCamera.position = Vector2(float(roomDimensions)/2, float(roomDimensions)/2)*32
-				mainCamera.zoom = mainCamera.standardZoomLevel
+				mainCamera.set_camera_starting_room()
 			#mainCamera.zoom = mainCamera.zoom + Vector2(1,1)
 			mainCamera.make_current()
 			
@@ -300,30 +314,66 @@ func enablePlayerAttack(player):
 #			return 
 #	player.playerCanAttack=false
 
-func enableEnemyAttack(enemy):
-	if(get_cellv(world_to_map(enemy.position)+Vector2(1,0)) == objectTyped.PLAYER):
-		return world_to_map(enemy.position)+Vector2(1,0)
-	elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,0)) == objectTyped.PLAYER):
-		return world_to_map(enemy.position)+Vector2(-1,0)
-	elif(get_cellv(world_to_map(enemy.position)+Vector2(0,1)) == objectTyped.PLAYER):
-		return world_to_map(enemy.position)+Vector2(0,1)
-	elif(get_cellv(world_to_map(enemy.position)+Vector2(0,-1)) == objectTyped.PLAYER):
-		return world_to_map(enemy.position)+Vector2(0,-1)
-		#print("player can attack in enable function ")
+func enableEnemyAttack(enemy, horizontalVerticalAttack, diagonalAttack):
+	if horizontalVerticalAttack && !diagonalAttack:
+		if(get_cellv(world_to_map(enemy.position)+Vector2(1,0)) == objectTyped.PLAYER):
+			return world_to_map(enemy.position)+Vector2(1,0)
+		elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,0)) == objectTyped.PLAYER):
+			return world_to_map(enemy.position)+Vector2(-1,0)
+		elif(get_cellv(world_to_map(enemy.position)+Vector2(0,1)) == objectTyped.PLAYER):
+			return world_to_map(enemy.position)+Vector2(0,1)
+		elif(get_cellv(world_to_map(enemy.position)+Vector2(0,-1)) == objectTyped.PLAYER):
+			return world_to_map(enemy.position)+Vector2(0,-1)
+	elif !horizontalVerticalAttack && diagonalAttack:
+		if(get_cellv(world_to_map(enemy.position)+Vector2(1,1)) == objectTyped.PLAYER):
+			return world_to_map(enemy.position)+Vector2(1,1)
+		elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,-1)) == objectTyped.PLAYER):
+			return world_to_map(enemy.position)+Vector2(-1,-1)
+		elif(get_cellv(world_to_map(enemy.position)+Vector2(1,-1)) == objectTyped.PLAYER):
+			return world_to_map(enemy.position)+Vector2(1,-1)
+		elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,1)) == objectTyped.PLAYER):
+			return world_to_map(enemy.position)+Vector2(-1,1)
+	else:
+		if(get_cellv(world_to_map(enemy.position)+Vector2(1,0)) == objectTyped.PLAYER):
+			return world_to_map(enemy.position)+Vector2(1,0)
+		elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,0)) == objectTyped.PLAYER):
+			return world_to_map(enemy.position)+Vector2(-1,0)
+		elif(get_cellv(world_to_map(enemy.position)+Vector2(0,1)) == objectTyped.PLAYER):
+			return world_to_map(enemy.position)+Vector2(0,1)
+		elif(get_cellv(world_to_map(enemy.position)+Vector2(0,-1)) == objectTyped.PLAYER):
+			return world_to_map(enemy.position)+Vector2(0,-1)
+		if(get_cellv(world_to_map(enemy.position)+Vector2(1,1)) == objectTyped.PLAYER):
+			return world_to_map(enemy.position)+Vector2(1,1)
+		elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,-1)) == objectTyped.PLAYER):
+			return world_to_map(enemy.position)+Vector2(-1,-1)
+		elif(get_cellv(world_to_map(enemy.position)+Vector2(1,-1)) == objectTyped.PLAYER):
+			return world_to_map(enemy.position)+Vector2(1,-1)
+		elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,1)) == objectTyped.PLAYER):
+			return world_to_map(enemy.position)+Vector2(-1,1)
 	return Vector2.ZERO
 
 func create_enemy_room(unlockedDoor):
 	randomize()
 	#add adjustment for enemy amount 
 	#-2 because of walls on both sides
-	var enemiesToSpawn = randi()%4+1
+	var enemiesToSpawn = 1
 	var sizecounter = 0
 	var spawnCellArray = []
+	var tooCloseToDoor = true
 	for enemie in enemiesToSpawn: 
 		var alreadyinArray = true
 		while(alreadyinArray == true):
 			var spawnCellX = randi()%(int(unlockedDoor.roomSize.x-2))+1
 			var spawnCellY = randi()%(int(unlockedDoor.roomSize.y-2))+1
+			while tooCloseToDoor:
+				var spawnCords = world_to_map(unlockedDoor.doorRoomLeftMostCorner) + Vector2(spawnCellX, spawnCellY)
+				print("Spawn Coords" + str(spawnCords))
+				if get_cellv(spawnCords - Vector2(1,0)) == objectTyped.DOOR || get_cellv(spawnCords - Vector2(-1,0)) == objectTyped.DOOR || get_cellv(spawnCords - Vector2(0,1)) == objectTyped.DOOR || get_cellv(spawnCords - Vector2(0,-1)) == objectTyped.DOOR || get_cellv(spawnCords - Vector2(1,0)) == objectTyped.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(-1,0)) == objectTyped.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,1)) == objectTyped.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,-1)) == objectTyped.UNLOCKEDDOOR:
+					pass
+				else:
+					tooCloseToDoor = false
+				spawnCellX = randi()%(int(unlockedDoor.roomSize.x-2))+1
+				spawnCellY = randi()%(int(unlockedDoor.roomSize.y-2))+1
 			var spawnCell = spawnCellX*spawnCellY
 			if(!spawnCellArray.has(spawnCell)):
 				alreadyinArray = false
@@ -331,6 +381,7 @@ func create_enemy_room(unlockedDoor):
 				var newEnemy = Enemy.instance()
 				#create enemy typ here (enemy. createEnemyType
 				newEnemy.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(spawnCellX, spawnCellY))
+				newEnemy.generateEnemy()
 				newEnemy.get_node("Sprite").set_modulate(Color(randf(),randf(),randf(),1.0))
 				newEnemy.connect("enemyMadeMove", self, "_on_enemy_made_move_ready")
 				newEnemy.connect("enemyAttacked", self, "_on_enemy_attacked")
@@ -340,6 +391,52 @@ func create_enemy_room(unlockedDoor):
 				enemiesInActiveRoom.append(get_cell_pawn(world_to_map(newEnemy.position)))
 	#print(spawnCellArray)
 
+func get_enemy_move_towards_player(enemy):
+	var distance = world_to_map(mainPlayer.position) - world_to_map(enemy.position)
+	var direction = 0
+	if abs(distance.x) >= abs(distance.y):
+		return Vector2(distance.x/abs(distance.x),0)
+	else:
+		return Vector2(0,distance.y/abs(distance.y))
+
+func get_enemy_move_ninja_pattern(enemy, movementdirection, moveCellCount):
+	match movementdirection:
+		MOVEMENTDIRECTION.LEFT:
+			if get_cellv(world_to_map(enemy.position) - Vector2(moveCellCount,0)) == objectTyped.WALL || get_cellv(world_to_map(enemy.position) - Vector2(1,0)) == objectTyped.WALL:
+				enemy.movementdirection = MOVEMENTDIRECTION.RIGHT
+				return Vector2(moveCellCount,0)
+			return Vector2(-moveCellCount,0)
+		MOVEMENTDIRECTION.RIGHT:
+			if get_cellv(world_to_map(enemy.position) + Vector2(moveCellCount,0)) == objectTyped.WALL || get_cellv(world_to_map(enemy.position) + Vector2(1,0)) == objectTyped.WALL:
+				enemy.movementdirection = MOVEMENTDIRECTION.LEFT
+				return Vector2(-moveCellCount,0)
+			return Vector2(moveCellCount,0)
+		MOVEMENTDIRECTION.UP:
+			if get_cellv(world_to_map(enemy.position) - Vector2(0,moveCellCount)) == objectTyped.WALL || get_cellv(world_to_map(enemy.position) - Vector2(0,1)) == objectTyped.WALL:
+				enemy.movementdirection = MOVEMENTDIRECTION.DOWN
+				return Vector2(0,moveCellCount)
+			return Vector2(0,-moveCellCount)
+		MOVEMENTDIRECTION.DOWN:
+			if get_cellv(world_to_map(enemy.position) + Vector2(0,moveCellCount)) == objectTyped.WALL || get_cellv(world_to_map(enemy.position) + Vector2(0,1)) == objectTyped.WALL:
+				enemy.movementdirection = MOVEMENTDIRECTION.UP
+				return Vector2(0,-moveCellCount)
+			return Vector2(0,moveCellCount)
+	
+func get_enemy_move_mage_pattern(enemy, movementdirection):
+	#return corner of the room according to movementdirection
+	match movementdirection:
+		MOVEMENTDIRECTION.MIDDLE:
+			return world_to_map(activeRoom.doorRoomLeftMostCorner)+ Vector2(int(activeRoom.roomSize.x/2), int(activeRoom.roomSize.y/2))
+		MOVEMENTDIRECTION.RIGHT:
+			return world_to_map(activeRoom.doorRoomLeftMostCorner)+ Vector2(activeRoom.roomSize.x-2,1)
+		MOVEMENTDIRECTION.DOWN:
+			return world_to_map(activeRoom.doorRoomLeftMostCorner)+ Vector2(activeRoom.roomSize.x-2,activeRoom.roomSize.y-2)
+		MOVEMENTDIRECTION.LEFT:
+			return world_to_map(activeRoom.doorRoomLeftMostCorner)+ Vector2(1,activeRoom.roomSize.y-2)
+		MOVEMENTDIRECTION.UP:
+			return world_to_map(activeRoom.doorRoomLeftMostCorner)+ Vector2(1,1)
+	return Vector2.ZERO
+			
 func _on_enemy_made_move_ready():
 	enemiesMadeMoveCounter += 1
 	#print("Enemies made move " + str(enemiesMadeMoveCounter) + " enemies in active room " + str(activeRoom.enemiesInRoom.size()))
@@ -401,7 +498,6 @@ func _on_enemy_attacked(enemy, attackCell, attackDamage):
 
 func _on_enemy_defeated(enemy):
 	activeRoom.enemiesInRoom.erase(enemy)
-	set_cellv(world_to_map(enemy.position),get_tileset().find_tile_by_name("EMPTY")) 
 	enemy.queue_free()
 	print("Batsuuum Enemy was defeated")
 	#set room to cleared if all enemies were defeated
@@ -425,8 +521,13 @@ func _on_enemy_defeated(enemy):
 				barrierKeysNoSolution.erase(itemToGenerate)
 				var newItem = Item.instance()
 				var newItemPosition = activeRoom.doorRoomLeftMostCorner + map_to_world(activeRoom.roomSize/2)
-				if(get_cellv(world_to_map(newItemPosition)) == objectTyped.PLAYER):
-					newItemPosition += map_to_world(Vector2(0,1))
+				var itemPosMover = Vector2(0,1)
+				while(get_cellv(world_to_map(newItemPosition)) == objectTyped.PLAYER):
+					newItemPosition += map_to_world(itemPosMover)
+					if itemPosMover.x >= itemPosMover.y:
+						itemPosMover += Vector2(0,1)
+					else:
+						itemPosMover += Vector2(1,0)
 				newItem.position = newItemPosition
 				newItem.keyValue = itemToGenerate
 				add_child(newItem)
@@ -438,11 +539,12 @@ func _on_enemy_defeated(enemy):
 				if(get_cellv(world_to_map(newItemPosition)) == objectTyped.PLAYER):
 					newItemPosition += map_to_world(Vector2(0,1))
 				newItem.position = newItemPosition
-				newItem.keyValue = 0
+				newItem.keyValue = str(0)
 				newItem.setTexture("POTION")
 				add_child(newItem)
 				set_cellv(world_to_map(newItem.position), get_tileset().find_tile_by_name(match_Enum(newItem.type)))
-
+	
+	
 func create_starting_room(startingRoom=false):
 	create_walls(null, startingRoom, true)
 
