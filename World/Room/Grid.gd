@@ -305,7 +305,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 			else:
 				pawn.inClearedRoom = false
 
-	print("Map to world " + str(cell_target))
+	#print("Map to world " + str(cell_target))
 	return map_to_world(cell_target) + cell_size / 2
 	
 func enablePlayerAttack(player):
@@ -363,8 +363,9 @@ func create_enemy_room(unlockedDoor):
 	randomize()
 	#add adjustment for enemy amount 
 	#-2 because of walls on both sides
-	var enemiesToSpawn = 1
+	var enemiesToSpawn = 4
 	var sizecounter = 0
+	var mageEnemyCount = 0
 	var spawnCellArray = []
 	for enemie in enemiesToSpawn: 
 		var tooCloseToDoor = true
@@ -392,7 +393,9 @@ func create_enemy_room(unlockedDoor):
 				var newEnemy = Enemy.instance()
 				#create enemy typ here (enemy. createEnemyType
 				newEnemy.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(spawnCellX, spawnCellY))
-				newEnemy.generateEnemy()
+				var generatedEnemyType = newEnemy.generateEnemy(mageEnemyCount)
+				if(generatedEnemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY):
+					mageEnemyCount += 1
 				newEnemy.get_node("Sprite").set_modulate(Color(randf(),randf(),randf(),1.0))
 				newEnemy.connect("enemyMadeMove", self, "_on_enemy_made_move_ready")
 				newEnemy.connect("enemyAttacked", self, "_on_enemy_attacked")

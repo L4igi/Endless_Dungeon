@@ -35,7 +35,7 @@ var moveCellCount = 1
 #depending if the player is moving up/down, left/right decides in which of the two he is moving 
 var movementdirection = randi()%4
 
-var mageMoveCount = randi()%5
+var mageMoveCount = 0
 
 var enemyDefeated = false
 
@@ -54,69 +54,15 @@ func _process(delta):
 			if !enemyTurnDone:
 				if movementCount >= 1 && attackCount >= 1 :
 					enemyTurnDone = true 
-					print("SIGNAL ENEMY MADE MOVE TO PLAYER")
+					#print("SIGNAL ENEMY MADE MOVE TO PLAYER")
 					emit_signal("enemyMadeMove")
 
-#
-#func barrierenemy_type_actions():
-#	if(!alreadyMovedThisTurn || !alreadyAttackedThisTurn):
-#		var attackCell = Grid.enableEnemyAttack(self, horizontalVerticalAttack, diagonalAttack)
-#		if(attackCell != Vector2.ZERO):
-#			emit_signal("enemyAttacked", self, attackCell, attackDamage)
-#			alreadyAttackedThisTurn = true
-#		if(alreadyMovedThisTurn == false):
-#			var upDownLeftRight = randi()%4+1
-#			var movement_direction = Vector2.ZERO
-#			match upDownLeftRight:
-#				1:
-#					movement_direction = Vector2(1,0)
-#				2:
-#					movement_direction = Vector2(-1,0)
-#				3: 
-#					movement_direction = Vector2(0,1)
-#				4:
-#					movement_direction = Vector2(0,-1)
-#
-#			var target_position = Grid.request_move(self, movement_direction)
-#			if(target_position):
-#				position=target_position
-#				alreadyMovedThisTurn = true
-#
-#				if(alreadyAttackedThisTurn == false):
-#					attackCell = Grid.enableEnemyAttack(self)
-#					if(attackCell != Vector2.ZERO):
-#						#attack player
-#						emit_signal("enemyAttacked", self, attackCell, attackDamage)
-#					alreadyAttackedThisTurn = true
-#		if(alreadyMovedThisTurn && alreadyAttackedThisTurn):
-#			emit_signal("enemyMadeMove")
-#
-#
-#
-#func ninjaenemy_type_actions():
-#	if !alreadyMovedThisTurn:
-#	#move towards enemy get direction from the grid
-#		if movementdirection == MOVEMENTDIRECTION.LEFT:
-#			movementdirection = MOVEMENTDIRECTION.RIGHT
-#		elif movementdirection == MOVEMENTDIRECTION.RIGHT:
-#			movementdirection = MOVEMENTDIRECTION.LEFT
-#		elif movementdirection == MOVEMENTDIRECTION.UP:
-#			movementdirection = MOVEMENTDIRECTION.DOWN
-#		elif movementdirection == MOVEMENTDIRECTION.DOWN:
-#			movementdirection = MOVEMENTDIRECTION.UP
-#		if moveCellCount == 1:
-#			moveCellCount = 2
-#		elif moveCellCount == 2: 
-#			moveCellCount = 1
-#		var movement_direction = Grid.get_enemy_move_ninja_pattern(self, movementdirection, moveCellCount)
-#		print(movement_direction)
-#		var target_position = Grid.request_move(self, movement_direction)
-#		if(target_position):
-#			position=target_position
-#			alreadyMovedThisTurn = true
-#		alreadyAttackedThisTurn=true
-#		if(alreadyMovedThisTurn && alreadyAttackedThisTurn):
-#			emit_signal("enemyMadeMove")
+
+func barrierenemy_type_actions():
+	enemyMovement()
+
+func ninjaenemy_type_actions():
+	enemyMovement()
 
 func mageenemy_type_actions():
 	enemyMovement()
@@ -170,7 +116,47 @@ func enemyMovement():
 				mageMoveCount += 1
 				movementCount += 1
 				attackCount += 1
+				
+		GlobalVariables.ENEMYTYPE.NINJAENEMY:
+			if movementdirection == MOVEMENTDIRECTION.LEFT:
+				movementdirection = MOVEMENTDIRECTION.RIGHT
+			elif movementdirection == MOVEMENTDIRECTION.RIGHT:
+				movementdirection = MOVEMENTDIRECTION.LEFT
+			elif movementdirection == MOVEMENTDIRECTION.UP:
+				movementdirection = MOVEMENTDIRECTION.DOWN
+			elif movementdirection == MOVEMENTDIRECTION.DOWN:
+				movementdirection = MOVEMENTDIRECTION.UP
+			if moveCellCount == 1:
+				moveCellCount = 2
+			elif moveCellCount == 2: 
+				moveCellCount = 1
+			var movement_direction = Grid.get_enemy_move_ninja_pattern(self, movementdirection, moveCellCount)
+			var target_position = Grid.request_move(self, movement_direction)
+			if(target_position):
+				position=target_position
+				movementCount += 1
+				attackCount += 1
+				
+		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
+			var upDownLeftRight = randi()%4+1
+			var movement_direction = Vector2.ZERO
+			match upDownLeftRight:
+				1:
+					movement_direction = Vector2(1,0)
+				2:
+					movement_direction = Vector2(-1,0)
+				3: 
+					movement_direction = Vector2(0,1)
+				4:
+					movement_direction = Vector2(0,-1)
+
+			var target_position = Grid.request_move(self, movement_direction)
+			if(target_position):
+				position=target_position
+				movementCount += 1
+				attackCount += 1
 	
+			
 func enemyAttack(): 
 	match enemyType:
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
@@ -203,19 +189,19 @@ func _on_player_turn_done_signal():
 			enemyTurnDone = false
 		
 			match enemyType:
-		#		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
-		#			barrierenemy_type_actions()
+				GlobalVariables.ENEMYTYPE.BARRIERENEMY:
+					barrierenemy_type_actions()
 				GlobalVariables.ENEMYTYPE.MAGEENEMY:
 					mageenemy_type_actions()
-		#		GlobalVariables.ENEMYTYPE.NINJAENEMY:
-		#			ninjaenemy_type_actions()
+				GlobalVariables.ENEMYTYPE.NINJAENEMY:
+					ninjaenemy_type_actions()
 				GlobalVariables.ENEMYTYPE.WARRIROENEMY:
 						warriorenemy_type_actions()
 	
-func generateEnemy(): 
+func generateEnemy(mageEnemyCount): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = GlobalVariables.ENEMYTYPE.MAGEENEMY
+	var enemieToGenerate = GlobalVariables.ENEMYTYPE.BARRIERENEMY
 	match enemieToGenerate:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
@@ -228,6 +214,8 @@ func generateEnemy():
 			diagonalAttack = true
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.MAGEENEMY
+			mageMoveCount = mageEnemyCount
+	return enemyType
 
 func inflictDamage(attackDamage, attackType):
 	lifePoints -= attackDamage
