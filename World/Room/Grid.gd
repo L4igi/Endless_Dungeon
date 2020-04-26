@@ -1,10 +1,7 @@
 extends TileMap
 
-enum objectTyped { EMPTY, PLAYER, WALL, ENEMY, PUZZLEPIECE, ITEM, DOOR, UNLOCKEDDOOR, MAGICPROJECTILE}
+enum TILETYPES { EMPTY, PLAYER, WALL, ENEMY, PUZZLEPIECE, ITEM, DOOR, UNLOCKEDDOOR, MAGICPROJECTILE}
 
-enum attackTyped{SWORD = 1, MAGIC = 2} 
-
-enum MOVEMENTDIRECTION{LEFT=0, RIGHT=1, UP=2, DOWN=3, MIDDLE=4}
 
 var Enemy = preload("res://GameObjects/Enemy/Enemy.tscn")
 
@@ -75,23 +72,23 @@ func match_Enum(var index):
 func set_enum_index(var enumName, var setTo):
 	match enumName:
 		"PLAYER":
-			objectTyped.PLAYER=setTo
+			TILETYPES.PLAYER=setTo
 		"WALL":
-			objectTyped.WALL=setTo
+			TILETYPES.WALL=setTo
 		"ENEMY":
-			objectTyped.ENEMY=setTo
+			TILETYPES.ENEMY=setTo
 		"PUZZLEPIECE":
-			objectTyped.PUZZLEPIECE=setTo
+			TILETYPES.PUZZLEPIECE=setTo
 		"ITEM":
-			objectTyped.ITEM=setTo
+			TILETYPES.ITEM=setTo
 		"DOOR":
-			objectTyped.DOOR=setTo
+			TILETYPES.DOOR=setTo
 		"UNLOCKEDDOOR":
-			objectTyped.UNLOCKEDDOOR=setTo
+			TILETYPES.UNLOCKEDDOOR=setTo
 		"MAGICPROJECTILE":
-			objectTyped.MAGICPROJECTILE=setTo
+			TILETYPES.MAGICPROJECTILE=setTo
 		"EMPTY":
-			objectTyped.EMPTY=-1
+			TILETYPES.EMPTY=-1
 		_:
 			pass
 			
@@ -105,7 +102,7 @@ func _ready():
 	mainPlayer = get_node("Player")
 	for child in get_children():
 		set_cellv(world_to_map(child.position), get_tileset().find_tile_by_name(match_Enum(child.type)))
-	for element in objectTyped:
+	for element in TILETYPES:
 		set_enum_index(element, get_tileset().find_tile_by_name(element))
 		#print(get_tileset().find_tile_by_name(element))
 	if(roomDimensions%2 == 0):
@@ -131,16 +128,16 @@ func request_move(pawn, direction):
 #	cell_target_type = get_tileset().find_tile_by_name(matchEnum(cell_target_type))
 #	#print(get_tileset().find_tile_by_name(matchEnum(cell_target_type)))
 		#print("Got Cell V: " + str(cell_target_type))
-	#print("requesting move " + str(pawn.type) + "Player Type " + str(objectTyped.PLAYER))
+	#print("requesting move " + str(pawn.type) + "Player Type " + str(TILETYPES.PLAYER))
 	if(match_Enum(pawn.type) == "PLAYER"):
 		match cell_target_type:
-			objectTyped.EMPTY:
+			TILETYPES.EMPTY:
 				return update_pawn_position(pawn, cell_start, cell_target)
-			objectTyped.ENEMY:
+			TILETYPES.ENEMY:
 				pass
-			objectTyped.WALL:
+			TILETYPES.WALL:
 				pass
-			objectTyped.ITEM:
+			TILETYPES.ITEM:
 				var object_pawn = get_cell_pawn(cell_target)
 				print("Item spawned key value " + str(object_pawn.keyValue))
 				#add additional items with || 
@@ -150,19 +147,19 @@ func request_move(pawn, direction):
 				object_pawn.get_node("Sprite").queue_free()
 				#print("Player has Items in posession " + str(pawn.itemsInPosession))
 				return update_pawn_position(pawn, cell_start, cell_target)
-			objectTyped.DOOR:
+			TILETYPES.DOOR:
 				var object_pawn = get_cell_pawn(cell_target)
 				if(object_pawn.request_door_unlock(pawn.itemsInPosession)):
 					object_pawn.unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance)
 					return update_pawn_position(pawn, cell_start, cell_target)
-			objectTyped.UNLOCKEDDOOR:
+			TILETYPES.UNLOCKEDDOOR:
 				return update_pawn_position(pawn, cell_start, cell_target)
 				
-#	if(pawn.type == objectTyped.ENEMY):
+#	if(pawn.type == TILETYPES.ENEMY):
 	elif match_Enum(pawn.type) == "ENEMY":
 		# add other enemies moving freely in the room 
 		if pawn.enemyType == GlobalVariables.ENEMYTYPE.WARRIROENEMY:
-			if get_cellv(cell_target+direction) == objectTyped.DOOR || get_cellv(cell_target+direction) == objectTyped.UNLOCKEDDOOR:
+			if get_cellv(cell_target+direction) == TILETYPES.DOOR || get_cellv(cell_target+direction) == TILETYPES.UNLOCKEDDOOR:
 				return pawn.position 
 		if pawn.enemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			#set mageenmy goal directly 
@@ -170,35 +167,35 @@ func request_move(pawn, direction):
 			cell_target_type = get_cellv(cell_target)
 		#print("MOVED enemy in room")
 		match cell_target_type:
-			objectTyped.EMPTY:
+			TILETYPES.EMPTY:
 				return update_pawn_position(pawn, cell_start, cell_target)
-			objectTyped.ENEMY:
+			TILETYPES.ENEMY:
 				if pawn.enemyType == GlobalVariables.ENEMYTYPE.NINJAENEMY:
 					match pawn.movementdirection:
-						MOVEMENTDIRECTION.LEFT:
-							pawn.movementdirection = MOVEMENTDIRECTION.UP
-						MOVEMENTDIRECTION.RIGHT:
-							pawn.movementdirection = MOVEMENTDIRECTION.DOWN
-						MOVEMENTDIRECTION.UP:
-							pawn.movementdirection = MOVEMENTDIRECTION.RIGHT
-						MOVEMENTDIRECTION.DOWN:
-							pawn.movementdirection = MOVEMENTDIRECTION.LEFT
+						GlobalVariables.DIRECTION.LEFT:
+							pawn.movementdirection = GlobalVariables.DIRECTION.UP
+						GlobalVariables.DIRECTION.RIGHT:
+							pawn.movementdirection = GlobalVariables.DIRECTION.DOWN
+						GlobalVariables.DIRECTION.UP:
+							pawn.movementdirection = GlobalVariables.DIRECTION.RIGHT
+						GlobalVariables.DIRECTION.DOWN:
+							pawn.movementdirection = GlobalVariables.DIRECTION.LEFT
 				return pawn.position
-			objectTyped.PLAYER:
+			TILETYPES.PLAYER:
 				return pawn.position
-			objectTyped.WALL:
+			TILETYPES.WALL:
 				return pawn.position
-			objectTyped.DOOR:
+			TILETYPES.DOOR:
 				return pawn.position
-			objectTyped.UNLOCKEDDOOR:
+			TILETYPES.UNLOCKEDDOOR:
 				return pawn.position
-			objectTyped.MAGICPROJECTILE:
+			TILETYPES.MAGICPROJECTILE:
 				var tempMagicProjectile = get_cell_pawn(cell_target)
 				if tempMagicProjectile.playerProjectile :
 					projectilesInActiveRoom.erase(tempMagicProjectile)
 					set_cellv(world_to_map(tempMagicProjectile.position),get_tileset().find_tile_by_name("EMPTY"))
 					tempMagicProjectile.queue_free()
-					pawn.inflictDamage(tempMagicProjectile.attackDamage, attackTyped.MAGIC)
+					pawn.inflictDamage(tempMagicProjectile.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC)
 					return update_pawn_position(pawn, cell_start, cell_target)
 				else:
 					return pawn.position
@@ -206,52 +203,89 @@ func request_move(pawn, direction):
 	elif match_Enum(pawn.type) == "MAGICPROJECTILE":
 		#print("MOVED enemy in room")
 		match cell_target_type:
-			objectTyped.EMPTY:
+			TILETYPES.EMPTY:
 				return update_pawn_position(pawn, cell_start, cell_target)
-			objectTyped.ENEMY:
+			TILETYPES.ENEMY:
 				var tempEnemy = get_cell_pawn(cell_target)
 				if pawn.playerProjectile :
 					print("Projectile inflicted damage on enemy")
-					tempEnemy.inflictDamage(pawn.attackDamage, attackTyped.MAGIC)
+					tempEnemy.inflictDamage(pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC)
 					projectilesInActiveRoom.erase(pawn)
 					set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
 					pawn.queue_free()
 				else:
 					return pawn.position
-			objectTyped.PLAYER:
+			TILETYPES.PLAYER:
 				var tempPlayer = get_cell_pawn(cell_target)
 				if !pawn.playerProjectile :
-					tempPlayer.inflict_damage_playerDefeated(pawn.attackDamage)
+					tempPlayer.inflict_damage_playerDefeated(pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC)
 					projectilesInActiveRoom.erase(pawn)
 					set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
 					pawn.queue_free()
 				else:
 					return pawn.position
-			objectTyped.WALL:
+			TILETYPES.WALL:
 				projectilesInActiveRoom.erase(pawn)
 				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
 				pawn.queue_free()
-			objectTyped.DOOR:
+			TILETYPES.DOOR:
 				projectilesInActiveRoom.erase(pawn)
 				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
 				pawn.queue_free()
-			objectTyped.UNLOCKEDDOOR:
+			TILETYPES.UNLOCKEDDOOR:
 				projectilesInActiveRoom.erase(pawn)
 				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
 				pawn.queue_free()
-			objectTyped.MAGICPROJECTILE:
+			TILETYPES.MAGICPROJECTILE:
+				#if two enemy projectiles hit each other they bounce back 
+				var targetProjectile = get_cell_pawn(cell_target)
+				magicProjectileMagicProjectileInteraction(pawn, targetProjectile)
 				return pawn.position
 
+func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile2):
+	#enemy enemy projectile interaction
+	if magicProjectile1.playerProjectile == false && magicProjectile2.playerProjectile == false:
+		magicProjectile2.movementDirection *=-1
+		magicProjectile1.movementDirection *=-1
+	#player enemy projectile interaction
+	elif magicProjectile1.playerProjectile == true && magicProjectile2.playerProjectile == false || magicProjectile1.playerProjectile == false && magicProjectile2.playerProjectile == true:
+			projectilesInActiveRoom.erase(magicProjectile1)
+			set_cellv(world_to_map(magicProjectile1.position),get_tileset().find_tile_by_name("EMPTY")) 
+			magicProjectile1.queue_free()
+			projectilesInActiveRoom.erase(magicProjectile2)
+			set_cellv(world_to_map(magicProjectile2.position),get_tileset().find_tile_by_name("EMPTY")) 
+			magicProjectile2.queue_free()
+	#player player projectile interaction
+	elif magicProjectile1.playerProjectile == true && magicProjectile2.playerProjectile == true:
+		print("Player projectiles hit each other " + str(magicProjectile1.movementDirection))
+		if magicProjectile1.movementDirection == magicProjectile2.movementDirection:
+			match magicProjectile1.movementDirection:
+				Vector2(0,1):
+					magicProjectile1.movementDirection = Vector2(1,0)
+					magicProjectile2.movementDirection = Vector2(-1,0)
+				Vector2(0,-1):
+					magicProjectile1.movementDirection = Vector2(1,0)
+					magicProjectile2.movementDirection = Vector2(-1,0)
+				Vector2(-1,0):
+					magicProjectile1.movementDirection = Vector2(0,1)
+					magicProjectile2.movementDirection = Vector2(0,-1)
+				Vector2(1,0):
+					magicProjectile1.movementDirection = Vector2(0,1)
+					magicProjectile2.movementDirection = Vector2(0,-1)
+			magicProjectile1.isMiniProjectile = true
+			magicProjectile2.isMiniProjectile = true
+			magicProjectile1.play_mini_projectile_animation(1)
+			magicProjectile2.play_mini_projectile_animation(2)
 
 func update_pawn_position(pawn, cell_start, cell_target):
 	var oldCellTargetType = get_cellv(cell_target)
 	var oldCellTargetNode = get_cell_pawn(cell_target)
 	set_cellv(cell_target, get_tileset().find_tile_by_name(match_Enum(pawn.type)))
-	set_cellv(cell_start, objectTyped.EMPTY)
+	set_cellv(cell_start, TILETYPES.EMPTY)
 
 	if(match_Enum(pawn.type) == "PLAYER"):
 		if(movedThroughDoor == true):
-			set_cellv(cell_start, objectTyped.UNLOCKEDDOOR)
+			set_cellv(cell_start, TILETYPES.UNLOCKEDDOOR)
 			enemiesMadeMoveCounter = 0
 			movedThroughDoor = false
 		if(oldCellTargetType == get_tileset().find_tile_by_name("DOOR") || oldCellTargetType == get_tileset().find_tile_by_name("UNLOCKEDDOOR")):
@@ -275,6 +309,11 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					#disable elements in room just left
 					for element in activeRoom.enemiesInRoom:
 						element.isDisabled = true
+					#remove rojectiles in old room
+					for projectile in projectilesInActiveRoom:
+						set_cellv(world_to_map(projectile.position),get_tileset().find_tile_by_name("EMPTY")) 
+						projectile.queue_free
+					projectilesInActiveRoom.clear()
 				activeRoom = oldCellTargetNode
 				if activeRoom != null:
 					for element in activeRoom.enemiesInRoom:
@@ -284,10 +323,16 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					#disable elements in room just left
 					for element in activeRoom.enemiesInRoom:
 						element.isDisabled = true
+					#remove rojectiles in old room
+					for projectile in projectilesInActiveRoom:
+						set_cellv(world_to_map(projectile.position),get_tileset().find_tile_by_name("EMPTY")) 
+						projectile.queue_free()
+					projectilesInActiveRoom.clear()
 				activeRoom=oldCellTargetNode.get_room_by_movement_direction(direction)
 				if activeRoom != null:
 					for element in activeRoom.enemiesInRoom:
 						element.isDisabled = false
+
 						
 			#update camera position 
 			var mainCamera = get_node("/root/MainCamera")
@@ -321,49 +366,74 @@ func enablePlayerAttack(player):
 #			return 
 #	player.playerCanAttack=false
 
-func enableEnemyAttack(enemy, horizontalVerticalAttack, diagonalAttack):
-	if horizontalVerticalAttack && !diagonalAttack:
-		if(get_cellv(world_to_map(enemy.position)+Vector2(1,0)) == objectTyped.PLAYER):
-			return Vector2(1,0)
-		elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,0)) == objectTyped.PLAYER):
-			return Vector2(-1,0)
-		elif(get_cellv(world_to_map(enemy.position)+Vector2(0,1)) == objectTyped.PLAYER):
-			return Vector2(0,1)
-		elif(get_cellv(world_to_map(enemy.position)+Vector2(0,-1)) == objectTyped.PLAYER):
-			return Vector2(0,-1)
-	elif !horizontalVerticalAttack && diagonalAttack:
-		if(get_cellv(world_to_map(enemy.position)+Vector2(1,1)) == objectTyped.PLAYER):
-			return Vector2(1,1)
-		elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,-1)) == objectTyped.PLAYER):
-			return Vector2(-1,-1)
-		elif(get_cellv(world_to_map(enemy.position)+Vector2(1,-1)) == objectTyped.PLAYER):
-			return Vector2(1,-1)
-		elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,1)) == objectTyped.PLAYER):
-			return Vector2(-1,1)
-	else:
-		if(get_cellv(world_to_map(enemy.position)+Vector2(1,0)) == objectTyped.PLAYER):
-			return Vector2(1,0)
-		elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,0)) == objectTyped.PLAYER):
-			return Vector2(-1,0)
-		elif(get_cellv(world_to_map(enemy.position)+Vector2(0,1)) == objectTyped.PLAYER):
-			return Vector2(0,1)
-		elif(get_cellv(world_to_map(enemy.position)+Vector2(0,-1)) == objectTyped.PLAYER):
-			return Vector2(0,-1)
-		if(get_cellv(world_to_map(enemy.position)+Vector2(1,1)) == objectTyped.PLAYER):
-			return Vector2(1,1)
-		elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,-1)) == objectTyped.PLAYER):
-			return Vector2(-1,-1)
-		elif(get_cellv(world_to_map(enemy.position)+Vector2(1,-1)) == objectTyped.PLAYER):
-			return Vector2(1,-1)
-		elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,1)) == objectTyped.PLAYER):
-			return Vector2(-1,1)
+func enableEnemyAttack(enemy,attackType, horizontalVerticalAttack, diagonalAttack):
+	if attackType == GlobalVariables.ATTACKTYPE.SWORD:
+		if horizontalVerticalAttack && !diagonalAttack:
+			if(get_cellv(world_to_map(enemy.position)+Vector2(1,0)) == TILETYPES.PLAYER):
+				return Vector2(1,0)
+			elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,0)) == TILETYPES.PLAYER):
+				return Vector2(-1,0)
+			elif(get_cellv(world_to_map(enemy.position)+Vector2(0,1)) == TILETYPES.PLAYER):
+				return Vector2(0,1)
+			elif(get_cellv(world_to_map(enemy.position)+Vector2(0,-1)) == TILETYPES.PLAYER):
+				return Vector2(0,-1)
+		elif !horizontalVerticalAttack && diagonalAttack:
+			if(get_cellv(world_to_map(enemy.position)+Vector2(1,1)) == TILETYPES.PLAYER):
+				return Vector2(1,1)
+			elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,-1)) == TILETYPES.PLAYER):
+				return Vector2(-1,-1)
+			elif(get_cellv(world_to_map(enemy.position)+Vector2(1,-1)) == TILETYPES.PLAYER):
+				return Vector2(1,-1)
+			elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,1)) == TILETYPES.PLAYER):
+				return Vector2(-1,1)
+		else:
+			if(get_cellv(world_to_map(enemy.position)+Vector2(1,0)) == TILETYPES.PLAYER):
+				return Vector2(1,0)
+			elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,0)) == TILETYPES.PLAYER):
+				return Vector2(-1,0)
+			elif(get_cellv(world_to_map(enemy.position)+Vector2(0,1)) == TILETYPES.PLAYER):
+				return Vector2(0,1)
+			elif(get_cellv(world_to_map(enemy.position)+Vector2(0,-1)) == TILETYPES.PLAYER):
+				return Vector2(0,-1)
+			if(get_cellv(world_to_map(enemy.position)+Vector2(1,1)) == TILETYPES.PLAYER):
+				return Vector2(1,1)
+			elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,-1)) == TILETYPES.PLAYER):
+				return Vector2(-1,-1)
+			elif(get_cellv(world_to_map(enemy.position)+Vector2(1,-1)) == TILETYPES.PLAYER):
+				return Vector2(1,-1)
+			elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,1)) == TILETYPES.PLAYER):
+				return Vector2(-1,1)
+	if attackType == GlobalVariables.ATTACKTYPE.MAGIC:
+		var possibleDirectionArray = []
+
+		if get_cellv(world_to_map(enemy.position)+Vector2(-1,0)) != TILETYPES.WALL:
+			possibleDirectionArray.append(GlobalVariables.DIRECTION.LEFT)
+		if get_cellv(world_to_map(enemy.position)+Vector2(1,0)) != TILETYPES.WALL:
+			possibleDirectionArray.append(GlobalVariables.DIRECTION.RIGHT)
+		if get_cellv(world_to_map(enemy.position)+Vector2(0,1)) != TILETYPES.WALL:
+			possibleDirectionArray.append(GlobalVariables.DIRECTION.DOWN)
+		if get_cellv(world_to_map(enemy.position)+Vector2(0,-1)) != TILETYPES.WALL:
+			possibleDirectionArray.append(GlobalVariables.DIRECTION.UP)
+		
+		#print (possibleDirectionArray)
+		if !possibleDirectionArray.empty():
+			match possibleDirectionArray[0]:
+				GlobalVariables.DIRECTION.LEFT:
+					return Vector2(-1,0)
+				GlobalVariables.DIRECTION.RIGHT:
+					return Vector2(1,0)
+				GlobalVariables.DIRECTION.UP:
+					return Vector2(0,-1)
+				GlobalVariables.DIRECTION.DOWN:
+					return Vector2(0,1)
+
 	return Vector2.ZERO
 
 func create_enemy_room(unlockedDoor):
 	randomize()
 	#add adjustment for enemy amount 
 	#-2 because of walls on both sides
-	var enemiesToSpawn = 4
+	var enemiesToSpawn = 1
 	var sizecounter = 0
 	var mageEnemyCount = 0
 	var spawnCellArray = []
@@ -376,10 +446,10 @@ func create_enemy_room(unlockedDoor):
 			while tooCloseToDoor:
 				var spawnCords = world_to_map(unlockedDoor.doorRoomLeftMostCorner) + Vector2(spawnCellX, spawnCellY)
 				#print("Spawn Coords" + str(spawnCords))
-				if get_cellv(spawnCords - Vector2(1,0)) == objectTyped.DOOR || get_cellv(spawnCords - Vector2(-1,0)) == objectTyped.DOOR || get_cellv(spawnCords - Vector2(0,1)) == objectTyped.DOOR || get_cellv(spawnCords - Vector2(0,-1)) == objectTyped.DOOR || get_cellv(spawnCords - Vector2(1,0)) == objectTyped.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(-1,0)) == objectTyped.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,1)) == objectTyped.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,-1)) == objectTyped.UNLOCKEDDOOR:
+				if get_cellv(spawnCords - Vector2(1,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(-1,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,1)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,-1)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(-1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,1)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,-1)) == TILETYPES.UNLOCKEDDOOR:
 					#print("spawned too close to door ")
 					pass
-				if get_cellv(spawnCords + Vector2(1,0)) == objectTyped.WALL && get_cellv(spawnCords + Vector2(-1,0)) == objectTyped.WALL || get_cellv(spawnCords + Vector2(0,1)) == objectTyped.WALL && get_cellv(spawnCords + Vector2(0,-1)) == objectTyped.WALL:
+				if get_cellv(spawnCords + Vector2(1,0)) == TILETYPES.WALL && get_cellv(spawnCords + Vector2(-1,0)) == TILETYPES.WALL || get_cellv(spawnCords + Vector2(0,1)) == TILETYPES.WALL && get_cellv(spawnCords + Vector2(0,-1)) == TILETYPES.WALL:
 					#print("spawned too close to door")
 					pass
 				else:
@@ -414,39 +484,39 @@ func get_enemy_move_towards_player(enemy):
 
 func get_enemy_move_ninja_pattern(enemy, movementdirection, moveCellCount):
 	match movementdirection:
-		MOVEMENTDIRECTION.LEFT:
-			if get_cellv(world_to_map(enemy.position) - Vector2(moveCellCount,0)) == objectTyped.WALL || get_cellv(world_to_map(enemy.position) - Vector2(1,0)) == objectTyped.WALL:
-				enemy.movementdirection = MOVEMENTDIRECTION.RIGHT
+		GlobalVariables.DIRECTION.LEFT:
+			if get_cellv(world_to_map(enemy.position) - Vector2(moveCellCount,0)) == TILETYPES.WALL || get_cellv(world_to_map(enemy.position) - Vector2(1,0)) == TILETYPES.WALL:
+				enemy.movementdirection = GlobalVariables.DIRECTION.RIGHT
 				return Vector2(moveCellCount,0)
 			return Vector2(-moveCellCount,0)
-		MOVEMENTDIRECTION.RIGHT:
-			if get_cellv(world_to_map(enemy.position) + Vector2(moveCellCount,0)) == objectTyped.WALL || get_cellv(world_to_map(enemy.position) + Vector2(1,0)) == objectTyped.WALL:
-				enemy.movementdirection = MOVEMENTDIRECTION.LEFT
+		GlobalVariables.DIRECTION.RIGHT:
+			if get_cellv(world_to_map(enemy.position) + Vector2(moveCellCount,0)) == TILETYPES.WALL || get_cellv(world_to_map(enemy.position) + Vector2(1,0)) == TILETYPES.WALL:
+				enemy.movementdirection = GlobalVariables.DIRECTION.LEFT
 				return Vector2(-moveCellCount,0)
 			return Vector2(moveCellCount,0)
-		MOVEMENTDIRECTION.UP:
-			if get_cellv(world_to_map(enemy.position) - Vector2(0,moveCellCount)) == objectTyped.WALL || get_cellv(world_to_map(enemy.position) - Vector2(0,1)) == objectTyped.WALL:
-				enemy.movementdirection = MOVEMENTDIRECTION.DOWN
+		GlobalVariables.DIRECTION.UP:
+			if get_cellv(world_to_map(enemy.position) - Vector2(0,moveCellCount)) == TILETYPES.WALL || get_cellv(world_to_map(enemy.position) - Vector2(0,1)) == TILETYPES.WALL:
+				enemy.movementdirection = GlobalVariables.DIRECTION.DOWN
 				return Vector2(0,moveCellCount)
 			return Vector2(0,-moveCellCount)
-		MOVEMENTDIRECTION.DOWN:
-			if get_cellv(world_to_map(enemy.position) + Vector2(0,moveCellCount)) == objectTyped.WALL || get_cellv(world_to_map(enemy.position) + Vector2(0,1)) == objectTyped.WALL:
-				enemy.movementdirection = MOVEMENTDIRECTION.UP
+		GlobalVariables.DIRECTION.DOWN:
+			if get_cellv(world_to_map(enemy.position) + Vector2(0,moveCellCount)) == TILETYPES.WALL || get_cellv(world_to_map(enemy.position) + Vector2(0,1)) == TILETYPES.WALL:
+				enemy.movementdirection = GlobalVariables.DIRECTION.UP
 				return Vector2(0,-moveCellCount)
 			return Vector2(0,moveCellCount)
 	
 func get_enemy_move_mage_pattern(enemy, movementdirection):
 	#return corner of the room according to movementdirection
 	match movementdirection:
-		MOVEMENTDIRECTION.MIDDLE:
+		GlobalVariables.DIRECTION.MIDDLE:
 			return world_to_map(activeRoom.doorRoomLeftMostCorner)+ Vector2(int(activeRoom.roomSize.x/2), int(activeRoom.roomSize.y/2))
-		MOVEMENTDIRECTION.RIGHT:
+		GlobalVariables.DIRECTION.RIGHT:
 			return world_to_map(activeRoom.doorRoomLeftMostCorner)+ Vector2(activeRoom.roomSize.x-2,1)
-		MOVEMENTDIRECTION.DOWN:
+		GlobalVariables.DIRECTION.DOWN:
 			return world_to_map(activeRoom.doorRoomLeftMostCorner)+ Vector2(activeRoom.roomSize.x-2,activeRoom.roomSize.y-2)
-		MOVEMENTDIRECTION.LEFT:
+		GlobalVariables.DIRECTION.LEFT:
 			return world_to_map(activeRoom.doorRoomLeftMostCorner)+ Vector2(1,activeRoom.roomSize.y-2)
-		MOVEMENTDIRECTION.UP:
+		GlobalVariables.DIRECTION.UP:
 			return world_to_map(activeRoom.doorRoomLeftMostCorner)+ Vector2(1,1)
 	return Vector2.ZERO
 			
@@ -481,24 +551,24 @@ func _on_Player_Made_Move():
 func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 	randomize()
 	#if player hits wall return 
-	if(get_cellv(world_to_map(player.position) + attack_direction) == objectTyped.WALL):
+	if get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.WALL || get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.DOOR || get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.UNLOCKEDDOOR:
 		return
 	#sword attacks
-	if(get_cellv(world_to_map(player.position) + attack_direction) == objectTyped.ENEMY && attackType == attackTyped.SWORD):
+	if(get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.ENEMY && attackType == GlobalVariables.ATTACKTYPE.SWORD):
 		print("Woosh Player Sword Attack hit")
 		var attackedEnemy = get_cell_pawn(world_to_map(player.position) + attack_direction)
 		attackedEnemy.inflictDamage(attackDamage, attackType)
-	elif(get_cellv(world_to_map(player.position) + attack_direction) == objectTyped.EMPTY && attackType == attackTyped.SWORD):
+	elif(get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.EMPTY && attackType == GlobalVariables.ATTACKTYPE.SWORD):
 		match attackType:
-			attackTyped.SWORD:
+			GlobalVariables.ATTACKTYPE.SWORD:
 				print("Sword was used to attack")
 				print("ZZZ Attack missed")
 	#wand attacks
-	elif (get_cellv(world_to_map(player.position) + attack_direction*2) == objectTyped.ENEMY && attackType == attackTyped.MAGIC):
+	elif (get_cellv(world_to_map(player.position) + attack_direction*2) == TILETYPES.ENEMY && attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		print("Woosh Player Wand Attack hit")
 		var attackedEnemy = get_cell_pawn(world_to_map(player.position) + attack_direction*2)
 		attackedEnemy.inflictDamage(attackDamage, attackType)
-	elif (get_cellv(world_to_map(player.position) + attack_direction*2) == objectTyped.EMPTY && attackType == attackTyped.MAGIC):
+	elif (get_cellv(world_to_map(player.position) + attack_direction*2) == TILETYPES.EMPTY && attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		print("Magic was used to attack")
 		var newMagicProjectile = MagicProjectile.instance()
 		newMagicProjectile.position = player.position + map_to_world(attack_direction*2)
@@ -507,13 +577,23 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 		add_child(newMagicProjectile)
 		projectilesInActiveRoom.append(newMagicProjectile)
 		set_cellv(world_to_map(newMagicProjectile.position), get_tileset().find_tile_by_name("MAGICPROJECTILE"))
+	elif (get_cellv(world_to_map(player.position) + attack_direction*2) == TILETYPES.MAGICPROJECTILE && attackType == GlobalVariables.ATTACKTYPE.MAGIC):
+		var newMagicProjectile = MagicProjectile.instance()
+		newMagicProjectile.position = player.position + map_to_world(attack_direction*2)
+		newMagicProjectile.playerProjectile = true
+		newMagicProjectile.movementDirection = attack_direction
+		add_child(newMagicProjectile)
+		projectilesInActiveRoom.append(newMagicProjectile)
+
+		magicProjectileMagicProjectileInteraction(newMagicProjectile, get_cell_pawn(world_to_map(player.position) + attack_direction*2))
 			
 
-func _on_enemy_attacked(enemy, attackCell, attackDamage):
-	if(get_cellv(attackCell) == objectTyped.PLAYER):
+func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage):
+	if(get_cellv(attackCell) == TILETYPES.PLAYER):
 		print("Woosh ENEMY Attack hit")
 		var attackedPlayer = get_cell_pawn(attackCell)
-		if attackedPlayer.inflict_damage_playerDefeated(attackDamage):
+		#if player died reset player ro starting room 
+		if attackedPlayer.inflict_damage_playerDefeated(attackDamage, attackType):
 			set_cellv(attackCell,get_tileset().find_tile_by_name("EMPTY")) 
 			attackedPlayer.position = Vector2(48,48)
 			attackedPlayer.inClearedRoom = true
@@ -531,6 +611,16 @@ func _on_enemy_attacked(enemy, attackCell, attackDamage):
 					element.isDisabled = false
 
 			print("Batsuuum Player was defeated reset to start")
+	elif (attackType == GlobalVariables.ATTACKTYPE.MAGIC):
+		#spawn magic projectile
+		var newMagicProjectile = MagicProjectile.instance()
+		newMagicProjectile.position = map_to_world(attackCell)+Vector2(16,16)
+		newMagicProjectile.playerProjectile = false
+		newMagicProjectile.movementDirection = attackCell-world_to_map(enemy.position)
+		newMagicProjectile.play_enemy_projectile_animation()
+		add_child(newMagicProjectile)
+		projectilesInActiveRoom.append(newMagicProjectile)
+		set_cellv(world_to_map(newMagicProjectile.position), get_tileset().find_tile_by_name("MAGICPROJECTILE"))
 
 func _on_enemy_defeated(enemy):
 	enemy.queue_free()
@@ -541,7 +631,6 @@ func _on_enemy_defeated(enemy):
 		mainPlayer.inClearedRoom = true
 		#delete all projectiles 
 		for projectile in projectilesInActiveRoom:
-			print("Projectiles in active room : " + str(projectilesInActiveRoom.size()))
 			set_cellv(world_to_map(projectile.position),get_tileset().find_tile_by_name("EMPTY")) 
 			projectile.queue_free()
 		projectilesInActiveRoom.clear()
@@ -557,7 +646,7 @@ func _on_enemy_defeated(enemy):
 				var newItem = Item.instance()
 				var newItemPosition = activeRoom.doorRoomLeftMostCorner + map_to_world(activeRoom.roomSize/2)
 				var itemPosMover = Vector2(0,1)
-				while(get_cellv(world_to_map(newItemPosition)) == objectTyped.PLAYER):
+				while(get_cellv(world_to_map(newItemPosition)) == TILETYPES.PLAYER):
 					newItemPosition += map_to_world(itemPosMover)
 					if itemPosMover.x >= itemPosMover.y:
 						itemPosMover += Vector2(0,1)
@@ -571,7 +660,7 @@ func _on_enemy_defeated(enemy):
 			else:
 				var newItem = Item.instance()
 				var newItemPosition = activeRoom.doorRoomLeftMostCorner + map_to_world(activeRoom.roomSize/2)
-				if(get_cellv(world_to_map(newItemPosition)) == objectTyped.PLAYER):
+				if(get_cellv(world_to_map(newItemPosition)) == TILETYPES.PLAYER):
 					newItemPosition += map_to_world(Vector2(0,1))
 				newItem.position = newItemPosition
 				newItem.keyValue = str(0)
@@ -609,18 +698,18 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 				#print("LEFT LEftMost Corner " + str(leftmostCorner) + " door position " + str(world_to_map(door.position)))
 				#check for wall up for room to be created 
 				#print("LEFT Up Modifier : " + str(leftmostCorner-Vector2(0,1)) + " " + str(get_cellv(leftmostCorner-Vector2(0,1))))
-				if(get_cellv(leftmostCorner-Vector2(0,1)) == objectTyped.WALL):
+				if(get_cellv(leftmostCorner-Vector2(0,1)) == TILETYPES.WALL):
 					disableUp = true
 				#check for wall down for room to be created 
 				#print("LEFT Down modifier : " + str(leftmostCorner+Vector2(0,minRoomSize)) + " " + str(get_cellv(leftmostCorner+Vector2(0,minRoomSize))))
-				if(get_cellv(leftmostCorner+Vector2(0,minRoomSize)) == objectTyped.WALL):
+				if(get_cellv(leftmostCorner+Vector2(0,minRoomSize)) == TILETYPES.WALL):
 					disableDown = true
 				#check for wall long for room to be created 
-				if(get_cellv(leftmostCorner-Vector2(1,0)) == objectTyped.WALL):
+				if(get_cellv(leftmostCorner-Vector2(1,0)) == TILETYPES.WALL):
 					disableLong = true
 				#print("LEFT LONG modifier : " + str(leftmostCorner-Vector2(1,0))+ " " + str(get_cellv(leftmostCorner-Vector2(1,0))))
 				#randomize and create different room sizes and layout types
-				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == objectTyped.WALL):
+				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == TILETYPES.WALL):
 					disableBig = true
 				#print("Corner Location: " + str(leftmostCorner+Vector2(minRoomSize, minRoomSize)) + " LEFT disableBig " + str(disableBig))
 				
@@ -681,18 +770,18 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 				leftmostCorner=world_to_map(door.position+map_to_world(Vector2(1,0)-Vector2(0, minRoomSize/2 - evenOddModifier)))
 				#print("RIGHT LEftMost Corner " + str(leftmostCorner))
 				#check for wall up for room to be created 
-				if(get_cellv(leftmostCorner-Vector2(0,1)) == objectTyped.WALL):
+				if(get_cellv(leftmostCorner-Vector2(0,1)) == TILETYPES.WALL):
 					disableUp = true
 				#print("RIGHT Up Modifier : " + str(leftmostCorner-Vector2(0,1)) + " " + str(get_cellv(leftmostCorner-Vector2(0,1))))
 				#check for wall down for room to be created 
-				if(get_cellv(leftmostCorner+Vector2(0,minRoomSize)) == objectTyped.WALL):
+				if(get_cellv(leftmostCorner+Vector2(0,minRoomSize)) == TILETYPES.WALL):
 					disableDown = true
 				#print("RIGHT Down modifier : " + str(leftmostCorner+Vector2(0,minRoomSize)) + " " + str(get_cellv(leftmostCorner+Vector2(0,minRoomSize))))
 				#check for wall long for room to be created 
-				if(get_cellv(leftmostCorner+Vector2(minRoomSize,0)) == objectTyped.WALL):
+				if(get_cellv(leftmostCorner+Vector2(minRoomSize,0)) == TILETYPES.WALL):
 					disableLong = true
 				#print("RIGHT LONG modifier : " + str(leftmostCorner+Vector2(minRoomSize,0))+ " " + str(get_cellv(leftmostCorner+Vector2(minRoomSize,0))))
-				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == objectTyped.WALL):
+				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == TILETYPES.WALL):
 					disableBig = true
 				#print("Corner Location: " + str(leftmostCorner+Vector2(minRoomSize, minRoomSize)) + " RIGHT disableBig " + str(disableBig))
 				
@@ -752,18 +841,18 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 				leftmostCorner=world_to_map(door.position-map_to_world(Vector2(minRoomSize/2  - evenOddModifier, minRoomSize)))
 				#print("UP LEftMost Corner " + str(leftmostCorner))	
 				#check left top corner of minimum size minus 1 y tile 
-				if(get_cellv(leftmostCorner-Vector2(1,0)) == objectTyped.WALL):
+				if(get_cellv(leftmostCorner-Vector2(1,0)) == TILETYPES.WALL):
 					disableLeft = true
 				#print("UP Left Modifier : " + str(leftmostCorner-Vector2(1,0)) + " " + str(get_cellv(leftmostCorner-Vector2(1,0))))
 				#check left bottom corner of minimum size plus 1 y tile 
-				if(get_cellv(leftmostCorner+Vector2(minRoomSize,0)) == objectTyped.WALL):
+				if(get_cellv(leftmostCorner+Vector2(minRoomSize,0)) == TILETYPES.WALL):
 					disableRight = true
 				#print("UP Right modifier : " + str(leftmostCorner+Vector2(minRoomSize,0)) + " " + str(get_cellv(leftmostCorner+Vector2(minRoomSize,0))))
 				#randomize and create different room sizes and layout types 
-				if(get_cellv(leftmostCorner-Vector2(0,1)) == objectTyped.WALL):
+				if(get_cellv(leftmostCorner-Vector2(0,1)) == TILETYPES.WALL):
 					disableLong = true
 				#print("UP LONG modifier : " + str(leftmostCorner-Vector2(0,1))+ " " + str(get_cellv(leftmostCorner-Vector2(0,1))))
-				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == objectTyped.WALL):
+				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == TILETYPES.WALL):
 					disableBig = true
 				#print("Corner Location: " + str(leftmostCorner+Vector2(minRoomSize, minRoomSize)) + " UP disableBig " + str(disableBig))
 				
@@ -823,18 +912,18 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 				leftmostCorner=world_to_map(door.position-map_to_world(Vector2(minRoomSize/2 - evenOddModifier, -1)))
 
 				#check left top corner of minimum size minus 1 y tile 
-				if(get_cellv(leftmostCorner-Vector2(1,0)) == objectTyped.WALL):
+				if(get_cellv(leftmostCorner-Vector2(1,0)) == TILETYPES.WALL):
 					disableLeft = true
 				#print("DOWN Left Modifier : " + str(leftmostCorner-Vector2(1,0)) + " " + str(get_cellv(leftmostCorner-Vector2(1,0))))
 				#check left bottom corner of minimum size plus 1 y tile 
-				if(get_cellv(leftmostCorner+Vector2(minRoomSize,0)) == objectTyped.WALL):
+				if(get_cellv(leftmostCorner+Vector2(minRoomSize,0)) == TILETYPES.WALL):
 					disableRight = true
 				#print("DOWN Right modifier : " + str(leftmostCorner+Vector2(minRoomSize,0)) + " " + str(get_cellv(leftmostCorner+Vector2(minRoomSize,0))))
 				#randomize and create different room sizes and layout types 
-				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == objectTyped.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == objectTyped.WALL):
+				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == TILETYPES.WALL):
 					disableLong = true
 				#print("DOWN LONG modifier : "  + str(leftmostCorner+Vector2(0,minRoomSize))+ " " + str(get_cellv(leftmostCorner+Vector2(0,minRoomSize))))
-				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == objectTyped.WALL):
+				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == TILETYPES.WALL):
 					disableBig = true
 				#print("Corner Location: " + str(leftmostCorner+Vector2(minRoomSize, minRoomSize)) + " DOWN disableBig " + str(disableBig))
 				
@@ -916,16 +1005,16 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 		var object_pawn = null
 		match door.doorDirection:
 			"LEFT":
-				set_cellv(world_to_map(door.position) - Vector2(1,0), get_tileset().find_tile_by_name(match_Enum(objectTyped.EMPTY)))
+				set_cellv(world_to_map(door.position) - Vector2(1,0), get_tileset().find_tile_by_name(match_Enum(TILETYPES.EMPTY)))
 				object_pawn = get_cell_pawn(world_to_map(door.position) - Vector2(1,0))
 			"RIGHT":
-				set_cellv(world_to_map(door.position) + Vector2(1,0), get_tileset().find_tile_by_name(match_Enum(objectTyped.EMPTY)))
+				set_cellv(world_to_map(door.position) + Vector2(1,0), get_tileset().find_tile_by_name(match_Enum(TILETYPES.EMPTY)))
 				object_pawn = get_cell_pawn(world_to_map(door.position) + Vector2(1,0))
 			"UP":
-				set_cellv(world_to_map(door.position) - Vector2(0,1), get_tileset().find_tile_by_name(match_Enum(objectTyped.EMPTY)))
+				set_cellv(world_to_map(door.position) - Vector2(0,1), get_tileset().find_tile_by_name(match_Enum(TILETYPES.EMPTY)))
 				object_pawn = get_cell_pawn(world_to_map(door.position) - Vector2(0,1))
 			"DOWN":
-				set_cellv(world_to_map(door.position) + Vector2(0,1), get_tileset().find_tile_by_name(match_Enum(objectTyped.EMPTY)))
+				set_cellv(world_to_map(door.position) + Vector2(0,1), get_tileset().find_tile_by_name(match_Enum(TILETYPES.EMPTY)))
 				object_pawn = get_cell_pawn(world_to_map(door.position) + Vector2(0,1))
 		if(object_pawn != null):
 			object_pawn.queue_free()
@@ -1035,16 +1124,16 @@ func create_doors(roomLeftMostCorner, startingRoom=false, roomSizeHorizontal = 1
 		
 		match element:
 			"LEFT":
-				if (get_cellv(world_to_map(newDoor.position)-Vector2(1,0)) == objectTyped.WALL):
+				if (get_cellv(world_to_map(newDoor.position)-Vector2(1,0)) == TILETYPES.WALL):
 					canCreateDoor = false
 			"RIGHT":
-				if (get_cellv(world_to_map(newDoor.position)+Vector2(1,0)) == objectTyped.WALL):
+				if (get_cellv(world_to_map(newDoor.position)+Vector2(1,0)) == TILETYPES.WALL):
 					canCreateDoor = false
 			"UP":
-				if (get_cellv(world_to_map(newDoor.position)-Vector2(0,1)) == objectTyped.WALL):
+				if (get_cellv(world_to_map(newDoor.position)-Vector2(0,1)) == TILETYPES.WALL):
 					canCreateDoor = false
 			"DOWN":
-				if (get_cellv(world_to_map(newDoor.position)+Vector2(0,1)) == objectTyped.WALL):
+				if (get_cellv(world_to_map(newDoor.position)+Vector2(0,1)) == TILETYPES.WALL):
 					canCreateDoor = false
 
 		if(currentNumberRoomsgenerated >= maxNumberRooms):

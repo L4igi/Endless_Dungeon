@@ -9,6 +9,7 @@ var movementDirection
 var playerProjectile 
 var attackDamage = 1
 var projectileType
+var isMiniProjectile = false
 
 func _ready():
 	pass # Replace with function body.
@@ -17,3 +18,12 @@ func move_projectile():
 	var target_position = Grid.request_move(self, movementDirection)
 	if(target_position):
 		position=target_position
+
+func play_mini_projectile_animation(animation):
+	if animation == 1:
+		$AnimationPlayer.play("mini1shoot")
+	if animation == 2:
+		$AnimationPlayer.play("mini2shoot")
+	
+func play_enemy_projectile_animation():
+	$AnimationPlayer.play("shoot_enemy")

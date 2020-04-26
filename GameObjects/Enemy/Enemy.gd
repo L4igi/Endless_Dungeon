@@ -5,7 +5,6 @@ onready var Grid = get_parent()
 enum CELL_TYPES{PLAYER=0, WALL=1, ENEMY=2, PUZZLEPIECE=3, ITEM=4, DOOR=5, UNLOCKEDDOOR = 6, MAGICPROJECTILE=7}
 export(CELL_TYPES) var type = CELL_TYPES.ENEMY
 
-enum MOVEMENTDIRECTION{LEFT=0, RIGHT=1, UP=2, DOWN=3, MIDDLE = 4}
 
 var movementCount = 0
 
@@ -27,6 +26,8 @@ var barrierEnemy = false
 
 var attackDamage = 1
 
+var attackType = GlobalVariables.ATTACKTYPE.SWORD
+
 var enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
 
 #counts how many cells are moved per turn 
@@ -36,6 +37,8 @@ var moveCellCount = 1
 var movementdirection = randi()%4
 
 var mageMoveCount = 0
+
+var mageOnOff = randi()%2
 
 var enemyDefeated = false
 
@@ -80,52 +83,60 @@ func enemyMovement():
 #			print(movement_direction)
 			var target_position = Grid.request_move(self, movementdirection)
 			if(target_position):
-				position=target_position
+				set_process(false)
+				#play defeat animation 
+				$AnimationPlayer.play("walk", -1, 0.5)
+				$Tween.interpolate_property(self, "position", position, target_position, $AnimationPlayer.current_animation_length*2, Tween.TRANS_LINEAR, Tween.EASE_IN)
+				$Tween.start()
+				yield($AnimationPlayer, "animation_finished")
+				$AnimationPlayer.play("idle")
+				set_process(true)
 				movementCount += 1
 				if attackCount < 1:
 					enemyAttack()
 		
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
-			print("MageEnemy Moving")
+			#print("MageEnemy Moving")
 			if mageMoveCount == 6:
 				mageMoveCount = 0
 		#move towards enemy get direction from the grid
 			match mageMoveCount:
 				0:
-					movementdirection = MOVEMENTDIRECTION.MIDDLE
+					movementdirection = GlobalVariables.DIRECTION.MIDDLE
 				1:
 					#moves to right top corner 
-					movementdirection = MOVEMENTDIRECTION.RIGHT
+					movementdirection = GlobalVariables.DIRECTION.RIGHT
 				2:
 					#moves to right down corner 
-					movementdirection = MOVEMENTDIRECTION.DOWN
+					movementdirection = GlobalVariables.DIRECTION.DOWN
 				3:
 					#moves to middle of the field
-					movementdirection = MOVEMENTDIRECTION.MIDDLE
+					movementdirection = GlobalVariables.DIRECTION.MIDDLE
 				4:
 					#moves to left down corner 
-					movementdirection = MOVEMENTDIRECTION.LEFT
+					movementdirection = GlobalVariables.DIRECTION.LEFT
 				5:
 					#moves to left top corner 
-					movementdirection = MOVEMENTDIRECTION.UP
+					movementdirection = GlobalVariables.DIRECTION.UP
 			var mage_target_pos = Grid.get_enemy_move_mage_pattern(self, movementdirection)
 			var target_position = Grid.request_move(self, mage_target_pos)
-			print("Enemy target position " + str(target_position))
+			#print("Enemy target position " + str(target_position))
 			if(target_position):
 				position=target_position
 				mageMoveCount += 1
 				movementCount += 1
-				attackCount += 1
+				if attackCount < 1:
+					enemyAttack()
 				
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
-			if movementdirection == MOVEMENTDIRECTION.LEFT:
-				movementdirection = MOVEMENTDIRECTION.RIGHT
-			elif movementdirection == MOVEMENTDIRECTION.RIGHT:
-				movementdirection = MOVEMENTDIRECTION.LEFT
-			elif movementdirection == MOVEMENTDIRECTION.UP:
-				movementdirection = MOVEMENTDIRECTION.DOWN
-			elif movementdirection == MOVEMENTDIRECTION.DOWN:
-				movementdirection = MOVEMENTDIRECTION.UP
+			if movementdirection == GlobalVariables.DIRECTION.LEFT:
+				movementdirection = GlobalVariables.DIRECTION.RIGHT
+			elif movementdirection == GlobalVariables.DIRECTION.RIGHT:
+				movementdirection = GlobalVariables.DIRECTION.LEFT
+			elif movementdirection == GlobalVariables.DIRECTION.UP:
+				movementdirection = GlobalVariables.DIRECTION.DOWN
+			elif movementdirection == GlobalVariables.DIRECTION.DOWN:
+				movementdirection = GlobalVariables.DIRECTION.UP
 			if moveCellCount == 1:
 				moveCellCount = 2
 			elif moveCellCount == 2: 
@@ -160,27 +171,46 @@ func enemyMovement():
 func enemyAttack(): 
 	match enemyType:
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
-			if enemyType == GlobalVariables.ENEMYTYPE.WARRIROENEMY:
-				var attackDirection = Grid.enableEnemyAttack(self,horizontalVerticalAttack, diagonalAttack)
-				if(attackDirection != Vector2.ZERO):
-					set_process(false)
-					#play defeat animation 
-					$AnimationPlayer.play("defeat", -1, 3.0)
-					$Tween.interpolate_property($Sprite, "position", attackDirection*32, Vector2(), $AnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
-					$Tween.start()
-					yield($AnimationPlayer, "animation_finished")
-					$AnimationPlayer.play("idle")
-					set_process(true)
-					emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackDirection, attackDamage)
-					attackCount += 1
+			var attackDirection = Grid.enableEnemyAttack(self, attackType, horizontalVerticalAttack, diagonalAttack)
+			if(attackDirection != Vector2.ZERO):
+				set_process(false)
+				#play defeat animation 
+				$AnimationPlayer.play("defeat", -1, 2.0)
+				$Tween.interpolate_property($Sprite, "position", attackDirection*32, Vector2(), $AnimationPlayer.current_animation_length/2.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+				$Tween.start()
+				yield($AnimationPlayer, "animation_finished")
+				$AnimationPlayer.play("idle")
+				set_process(true)
+				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackDirection, attackType,  attackDamage)
+				attackCount += 1
+				if movementCount < 1:
 					enemyMovement()
-				else:
-					if movementCount < 1:
-						enemyMovement()
-					if movementCount == 1:
-						attackCount += 1
+			else:
+				if movementCount == 1:
+					attackCount += 1
+				if movementCount < 1:
+					enemyMovement()
+
 		
-	
+		GlobalVariables.ENEMYTYPE.MAGEENEMY:
+			if mageOnOff == 1:
+				mageOnOff = 0
+				var attackDirection = Grid.enableEnemyAttack(self, attackType, horizontalVerticalAttack, diagonalAttack)
+
+				set_process(false)
+				#play defeat animation 
+				$AnimationPlayer.play("defeat", -1, 5.0)
+				$Tween.interpolate_property($Sprite, "position", attackDirection*32, Vector2(), $AnimationPlayer.current_animation_length/5.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+				$Tween.start()
+				yield($AnimationPlayer, "animation_finished")
+				$AnimationPlayer.play("idle")
+				set_process(true)
+				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackDirection, attackType, attackDamage)
+				attackCount += 1
+			else:
+				mageOnOff = 1
+				attackCount += 1
+			
 func _on_player_turn_done_signal():
 	if !isDisabled:
 		if(lifePoints > 0):
@@ -201,7 +231,7 @@ func _on_player_turn_done_signal():
 func generateEnemy(mageEnemyCount): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = GlobalVariables.ENEMYTYPE.BARRIERENEMY
+	var enemieToGenerate = GlobalVariables.ENEMYTYPE.MAGEENEMY
 	match enemieToGenerate:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
@@ -212,9 +242,11 @@ func generateEnemy(mageEnemyCount):
 			lifePoints = 1
 			attackDamage = 1 
 			diagonalAttack = true
+			attackType = GlobalVariables.ATTACKTYPE.SWORD
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.MAGEENEMY
 			mageMoveCount = mageEnemyCount
+			attackType = GlobalVariables.ATTACKTYPE.MAGIC
 	return enemyType
 
 func inflictDamage(attackDamage, attackType):

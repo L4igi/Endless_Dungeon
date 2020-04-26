@@ -5,8 +5,6 @@ onready var Grid = get_parent()
 enum CELL_TYPES{PLAYER=0, WALL=1, ENEMY=2, PUZZLEPIECE=3, ITEM=4, DOOR=5, UNLOCKEDDOOR = 6, MAGICPROJECTILE=7}
 export(CELL_TYPES) var type = CELL_TYPES.PLAYER
 
-enum attackTyped{SWORD = 1, MAGIC = 2} 
-
 var playerTurnDone = false 
 
 var playerCanAttack = false 
@@ -36,7 +34,7 @@ var usedItems = []
 
 var inClearedRoom = true
 
-var attackType = attackTyped.SWORD
+var attackType = GlobalVariables.ATTACKTYPE.SWORD
 
 var GUI = preload("res://GUI/GUIScene.tscn")
 
@@ -200,11 +198,11 @@ func get_attack_direction():
 func get_attack_mode():
 	if Input.is_action_just_pressed("Mode_Sword"):
 		guiElements.change_attack_mode(1)
-		return attackTyped.SWORD
+		return GlobalVariables.ATTACKTYPE.SWORD
 		
 	if Input.is_action_just_pressed("Mode_Magic"):
 		guiElements.change_attack_mode(2)
-		return attackTyped.MAGIC
+		return GlobalVariables.ATTACKTYPE.MAGIC
 		
 		
 func get_use_nonkey_items():
@@ -218,7 +216,7 @@ func get_use_nonkey_items():
 					lifePoints += 5 
 					guiElements.change_health(-5)
 			
-func inflict_damage_playerDefeated(attackDamage):
+func inflict_damage_playerDefeated(attackDamage, attackType):
 	lifePoints -= attackDamage
 	guiElements.change_health(attackDamage)
 	emit_signal("playerTakeDamage", self, lifePoints)
