@@ -4,7 +4,7 @@
 [ext_resource path="res://GUI/Magic_Flask_Filling.png" type="Texture" id=2]
 [ext_resource path="res://GUI/Magic_Flask_Empty.png" type="Texture" id=3]
 [ext_resource path="res://GUI/lifebar_bg.png" type="Texture" id=4]
-[ext_resource path="res://GUI/GuiScene.gd" type="Script" id=5]
+[ext_resource path="res://GUI/GUIScene.gd" type="Script" id=5]
 [ext_resource path="res://GUI/label_HP_bg.png" type="Texture" id=6]
 [ext_resource path="res://GUI/Sword.png" type="Texture" id=7]
 

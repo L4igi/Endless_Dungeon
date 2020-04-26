@@ -14,14 +14,14 @@ func _process(delta):
 		
 	
 func change_health(attackDamage):
-	print("current Healthbar value " + str($TextureRect/HealthBar.value))
+	#print("current Healthbar value " + str($TextureRect/HealthBar.value))
 	$TextureRect/HealthBar.value -= attackDamage
 		
 func set_health(lifepoints):
 	$TextureRect/HealthBar.value = lifepoints
 
 func fill_one_potion():
-	print("filling one potion")
+	#print("filling one potion")
 	$TextureRect/HealthPotionBar.value += 1
 
 func use_potion():

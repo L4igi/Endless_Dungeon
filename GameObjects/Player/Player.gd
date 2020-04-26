@@ -7,7 +7,7 @@ export(CELL_TYPES) var type = CELL_TYPES.PLAYER
 
 enum attackTyped{SWORD = 1, MAGIC = 2} 
 
-var madeMove = false 
+var playerTurnDone = false 
 
 var playerCanAttack = false 
 var playerPreviousPosition = Vector2.ZERO
@@ -20,9 +20,9 @@ signal playerTakeDamage (player, lifepoints)
 
 var playerPassedDoor = Vector2.ZERO
 
-var alreadyAttackedThisMove = false
+var movementCount = 0
 
-var alreadyMovedThisTurn = false
+var attackCount = 0
 
 var attackDamage = 1
 
@@ -38,172 +38,164 @@ var inClearedRoom = true
 
 var attackType = attackTyped.SWORD
 
-var GUI = preload("res://GUI/GuiScene.tscn")
+var GUI = preload("res://GUI/GUIScene.tscn")
 
 var guiElements = null
+
+var movedThroughDoorDirection = Vector2.ZERO 
+
+var disablePlayerInput = false 
 
 func _ready():
 	guiElements = GUI.instance()
 	guiElements.set_health(lifePoints)
 	add_child(guiElements)
+	
+	Grid.connect("enemyTurnDoneSignal", self, "_on_enemy_turn_done_signal")
 
-func _process(delta):
-	get_use_nonkey_items()
-	var  attackMode = get_attack_mode()
-	if attackMode:
-		attackType = attackMode
-	if(playerPassedDoor == Vector2.ZERO):
-		if(inClearedRoom):
-			var movement_direction = get_free_movement_direction()
-			var target_position = Grid.request_move(self, movement_direction)
-			if (target_position):
-				set_process(false)
-				#play attack animation 
-				var animationPlay = str("walk_right")
-				match movement_direction:
-					Vector2(1,0):
-						animationPlay = str("walk_right")
-					Vector2(-1,0):
-						animationPlay = str("walk_left")
-					Vector2(0,1):
-						animationPlay = str("walk_down")
-					Vector2(0,-1):
-						animationPlay = str("walk_up")
-				$AnimationPlayer.play(animationPlay, -1, 4.0)
-				$Tween.interpolate_property(self, "position", position, target_position , $AnimationPlayer.current_animation_length/4, Tween.TRANS_LINEAR, Tween.EASE_IN)
-				alreadyMovedThisTurn=true
-				playerPreviousPosition = position
-				$Tween.start()
-				yield($AnimationPlayer, "animation_finished")
-				$AnimationPlayer.play("Idle")
-				set_process(true)
-				
-		else:
-			Grid.enablePlayerAttack(self)
-			var movement_direction = get_movement_direction()
-			var attack_direction = get_attack_direction()
-			if(alreadyMovedThisTurn && movement_direction):
-				var target_position = Grid.request_move(self, movement_direction)
-				if(target_position):
-					set_process(false)
-					#play attack animation 
-					var animationPlay = str("walk_right")
-					match movement_direction:
-						Vector2(1,0):
-							animationPlay = str("walk_right")
-						Vector2(-1,0):
-							animationPlay = str("walk_left")
-						Vector2(0,1):
-							animationPlay = str("walk_down")
-						Vector2(0,-1):
-							animationPlay = str("walk_up")
-					$AnimationPlayer.play(animationPlay, -1, 3.0)
-					$Tween.interpolate_property(self, "position", position, target_position , $AnimationPlayer.current_animation_length/3, Tween.TRANS_LINEAR, Tween.EASE_IN)
-					alreadyMovedThisTurn=true
-					playerPreviousPosition = position
-					$Tween.start()
-					yield($AnimationPlayer, "animation_finished")
-					$AnimationPlayer.play("Idle")
-					set_process(true)
-					alreadyAttackedThisMove = true
-					emit_signal("playerMadeMove")
-			if playerCanAttack:
-				if(movement_direction || attack_direction):
-					if attack_direction && !alreadyAttackedThisMove:
-						#do attack stuff
-						set_process(false)
-						#play attack animation 
-						var animationPlay = str("attack_right")
-						match attack_direction:
-							Vector2(1,0):
-								animationPlay = str("attack_right")
-							Vector2(-1,0):
-								animationPlay = str("attack_left")
-							Vector2(0,1):
-								animationPlay = str("attack_down")
-							Vector2(0,-1):
-								animationPlay = str("attack_up")
-						$AnimationPlayer.play(animationPlay, -1, 2.5)
-						$Tween.interpolate_property(self, "position", position + attack_direction * 32, position, $AnimationPlayer.current_animation_length/2.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
-						$Tween.start()
-						yield($AnimationPlayer, "animation_finished")
-						$AnimationPlayer.play("Idle")
-						set_process(true)
-						
-						emit_signal("playerAttacked", self, attack_direction, attackDamage, attackType)
-						alreadyAttackedThisMove=true
-					if movement_direction && !alreadyMovedThisTurn:
-						var target_position = Grid.request_move(self, movement_direction)
-						if target_position:
-							set_process(false)
-							#play attack animation 
-							var animationPlay = str("walk_right")
-							match movement_direction:
-								Vector2(1,0):
-									animationPlay = str("walk_right")
-								Vector2(-1,0):
-									animationPlay = str("walk_left")
-								Vector2(0,1):
-									animationPlay = str("walk_down")
-								Vector2(0,-1):
-									animationPlay = str("walk_up")
-							$AnimationPlayer.play(animationPlay, -1, 3.0)
-							$Tween.interpolate_property(self, "position", position, target_position , $AnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
-							alreadyMovedThisTurn=true
-							playerPreviousPosition = position
-							#position = target_position
-							$Tween.start()
-							yield($AnimationPlayer, "animation_finished")
-							$AnimationPlayer.play("Idle")
-							set_process(true)
-	
+func _process(delta):	
+	if !disablePlayerInput:
+		if movedThroughDoorDirection!=Vector2.ZERO:
+			player_passed_door()
+			movedThroughDoorDirection=Vector2.ZERO
+			return 
 			
-			if(alreadyAttackedThisMove && alreadyMovedThisTurn):
-				emit_signal("playerMadeMove")
-	#if player passed a door move him one tile into the new room 
-	else:
-		var target_position = Grid.request_move(self,playerPassedDoor)
-		if (target_position):
+		get_use_nonkey_items()
+		var  attackMode = get_attack_mode()
+		if attackMode:
+			attackType = attackMode
+			
+		if(inClearedRoom):
+			var movementDirection = get_free_movement_direction()
+			var attackDirection = get_attack_direction()
+			
+			player_movement(movementDirection)
+			#player_attack(attackDirection)
+	
+		else:
+			if !playerTurnDone:
+				var movementDirection = get_movement_direction()
+				var attackDirection = get_attack_direction()
+				
+				player_movement(movementDirection)
+				player_attack(attackDirection)
+				
+				if movementCount == 1 && attackCount == 1:
+					emit_signal("playerMadeMove")
+					playerTurnDone=true
+				elif movementCount >= 2 && attackCount >= 0: 
+					emit_signal("playerMadeMove")
+					playerTurnDone=true
+				elif attackCount >= 2 && movementCount >= 0:
+					emit_signal("playerMadeMove")
+					playerTurnDone=true
+				
+func player_movement(movementDirection):
+	if movementDirection:
+		var target_position = Grid.request_move(self, movementDirection)
+		if target_position:
+			set_process(false)
+			#play attack animation 
+			var animationPlay = str("walk_right")
+			match movementDirection:
+				Vector2(1,0):
+					animationPlay = str("walk_right")
+				Vector2(-1,0):
+					animationPlay = str("walk_left")
+				Vector2(0,1):
+					animationPlay = str("walk_down")
+				Vector2(0,-1):
+					animationPlay = str("walk_up")
+			$AnimationPlayer.play(animationPlay, -1, 6.0)
+			$Tween.interpolate_property(self, "position", position, target_position , $AnimationPlayer.current_animation_length/6.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
 			playerPreviousPosition = position
-			position = target_position
-			alreadyMovedThisTurn = false
-		playerPassedDoor = Vector2.ZERO
-		
+			#position = target_position
+			$Tween.start()
+			yield($AnimationPlayer, "animation_finished")
+			$AnimationPlayer.play("Idle")
+			set_process(true)
+			movementCount += 1
+	
+func player_attack(attackDirection):
+	if attackDirection:
+		set_process(false)
+		#play attack animation 
+		var animationPlay = str("attack_right")
+		match attackDirection:
+			Vector2(1,0):
+				animationPlay = str("attack_right")
+			Vector2(-1,0):
+				animationPlay = str("attack_left")
+			Vector2(0,1):
+				animationPlay = str("attack_down")
+			Vector2(0,-1):
+				animationPlay = str("attack_up")
+		$AnimationPlayer.play(animationPlay, -1, 2.5)
+		$Tween.interpolate_property($Sprite, "position",attackDirection * 32, Vector2(), $AnimationPlayer.current_animation_length/2.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+		$Tween.start()
+		yield($AnimationPlayer, "animation_finished")
+		$AnimationPlayer.play("Idle")
+		set_process(true)
+		emit_signal("playerAttacked", self, attackDirection, attackDamage, attackType)
+		attackCount += 1
+	
+func player_passed_door():
+	var targetPosition = Grid.request_move(self,movedThroughDoorDirection)
+	if (targetPosition):
+		disablePlayerInput = true
+		playerPreviousPosition = position
+		var animationPlay = str("walk_right")
+		match movedThroughDoorDirection:
+			Vector2(1,0):
+				animationPlay = str("walk_right")
+			Vector2(-1,0):
+				animationPlay = str("walk_left")
+			Vector2(0,1):
+				animationPlay = str("walk_down")
+			Vector2(0,-1):
+				animationPlay = str("walk_up")
+		$AnimationPlayer.play(animationPlay, -1, 6.0)
+		$Tween.interpolate_property(self, "position", position, targetPosition , $AnimationPlayer.current_animation_length/6.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+		playerPreviousPosition = position
+		#position = target_position
+		$Tween.start()
+		yield($AnimationPlayer, "animation_finished")
+		$AnimationPlayer.play("Idle")
+		set_process(true)
+		movementCount = 0
+		attackCount = 0
+		playerTurnDone = false
+		disablePlayerInput = false
+	
 func get_free_movement_direction():
-	var UP = Input.is_action_pressed("player_up")
-	var DOWN = Input.is_action_pressed("player_down")
-	var LEFT = Input.is_action_pressed("player_left")
-	var RIGHT = Input.is_action_pressed("player_right")
-	
-	var movedir = Vector2.ZERO
-	movedir.x = -int(LEFT) + int(RIGHT) # if pressing both directions this will return 0
-	movedir.y = -int(UP) + int(DOWN)
-	
-	return movedir
+	if Input.is_action_pressed("player_up"):
+		return Vector2(0,-1)
+	if Input.is_action_pressed("player_down"):
+		return Vector2(0,1)
+	if Input.is_action_pressed("player_left"):
+		return Vector2(-1,0)
+	if Input.is_action_pressed("player_right"):
+		return Vector2(1,0)
 	
 func get_movement_direction():
-	var UP = Input.is_action_just_pressed("player_up")
-	var DOWN = Input.is_action_just_pressed("player_down")
-	var LEFT = Input.is_action_just_pressed("player_left")
-	var RIGHT = Input.is_action_just_pressed("player_right")
-	
-	var movedir = Vector2.ZERO
-	movedir.x = -int(LEFT) + int(RIGHT) # if pressing both directions this will return 0
-	movedir.y = -int(UP) + int(DOWN)
-	
-	return movedir
+	if Input.is_action_just_pressed("player_up"):
+		return Vector2(0,-1)
+	if Input.is_action_just_pressed("player_down"):
+		return Vector2(0,1)
+	if Input.is_action_just_pressed("player_left"):
+		return Vector2(-1,0)
+	if Input.is_action_just_pressed("player_right"):
+		return Vector2(1,0)
 
 func get_attack_direction():
-	var UP = Input.is_action_just_pressed("Attack_Up")
-	var DOWN = Input.is_action_just_pressed("Attack_Down")
-	var LEFT = Input.is_action_just_pressed("Attack_Left")
-	var RIGHT = Input.is_action_just_pressed("Attack_Right")
-	
-	var attackdir = Vector2.ZERO
-	attackdir.x = -int(LEFT) + int(RIGHT) # if pressing both directions this will return 0
-	attackdir.y = -int(UP) + int(DOWN)
-	
-	return attackdir
+	if Input.is_action_just_pressed("Attack_Up"):
+		return Vector2(0,-1)
+	if Input.is_action_just_pressed("Attack_Down"):
+		return Vector2(0,1)
+	if Input.is_action_just_pressed("Attack_Left"):
+		return Vector2(-1,0)
+	if Input.is_action_just_pressed("Attack_Right"):
+		return Vector2(1,0)
 
 func get_attack_mode():
 	if Input.is_action_just_pressed("Mode_Sword"):
@@ -248,3 +240,8 @@ func _unhandled_input(event):
 				MainCamera.zoomInOut("IN")
 		if event.button_index == BUTTON_WHEEL_DOWN:
 			MainCamera.zoomInOut("OUT")
+
+func _on_enemy_turn_done_signal():
+	movementCount = 0
+	attackCount = 0
+	playerTurnDone = false

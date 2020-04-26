@@ -39,7 +39,7 @@ func zoomInOut(inOut):
 	self.make_current()
 	
 func set_camera_starting_room():
-	print("standard zoom level " + str(standardZoomLevel) + " standardposition " + str(standardPosition))
+	#print("standard zoom level " + str(standardZoomLevel) + " standardposition " + str(standardPosition))
 	self.zoom = standardZoomLevel
 	self.position = standardPosition
 	self.make_current()
