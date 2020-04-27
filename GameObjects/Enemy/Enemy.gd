@@ -2,7 +2,7 @@ extends Node2D
 
 onready var Grid = get_parent()
 
-enum CELL_TYPES{PLAYER=0, WALL=1, ENEMY=2, PUZZLEPIECE=3, ITEM=4, DOOR=5, UNLOCKEDDOOR = 6, MAGICPROJECTILE=7}
+enum CELL_TYPES{PLAYER=0, WALL=1, ENEMY=2, PUZZLEPIECE=3, ITEM=4, DOOR=5, UNLOCKEDDOOR=6, MAGICPROJECTILE=7, BLOCK=8}
 export(CELL_TYPES) var type = CELL_TYPES.ENEMY
 
 
@@ -122,7 +122,6 @@ func enemyMovement():
 					movementdirection = GlobalVariables.DIRECTION.UP
 			var mage_target_pos = Grid.get_enemy_move_mage_pattern(self, movementdirection)
 			var target_position = Grid.request_move(self, mage_target_pos)
-			#print("Enemy target position " + str(target_position))
 			if(target_position):
 				position=target_position
 				mageMoveCount += 1
@@ -207,17 +206,19 @@ func enemyAttack():
 			if mageOnOff == 1:
 				mageOnOff = 0
 				var attackDirection = Grid.enableEnemyAttack(self, attackType, horizontalVerticalAttack, diagonalAttack)
-
-				set_process(false)
-				#play defeat animation 
-				$AnimationPlayer.play("defeat", -1, 5.0)
-				$Tween.interpolate_property($Sprite, "position", attackDirection*GlobalVariables.tileSize, Vector2(), $AnimationPlayer.current_animation_length/5.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
-				$Tween.start()
-				yield($AnimationPlayer, "animation_finished")
-				$AnimationPlayer.play("idle")
-				set_process(true)
-				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackDirection, attackType, attackDamage)
-				attackCount += 1
+				if attackDirection != Vector2.ZERO:
+					set_process(false)
+					#play defeat animation 
+					$AnimationPlayer.play("defeat", -1, 5.0)
+					$Tween.interpolate_property($Sprite, "position", attackDirection*GlobalVariables.tileSize, Vector2(), $AnimationPlayer.current_animation_length/5.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+					$Tween.start()
+					yield($AnimationPlayer, "animation_finished")
+					$AnimationPlayer.play("idle")
+					set_process(true)
+					emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackDirection, attackType, attackDamage)
+					attackCount += 1
+				else:
+					attackCount += 1
 			else:
 				mageOnOff = 1
 				attackCount += 1

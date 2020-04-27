@@ -1,6 +1,6 @@
 extends TileMap
 
-enum TILETYPES { EMPTY, PLAYER, WALL, ENEMY, PUZZLEPIECE, ITEM, DOOR, UNLOCKEDDOOR, MAGICPROJECTILE}
+enum TILETYPES { EMPTY, PLAYER, WALL, ENEMY, PUZZLEPIECE, ITEM, DOOR, UNLOCKEDDOOR, MAGICPROJECTILE, BLOCK}
 
 
 var Enemy = preload("res://GameObjects/Enemy/Enemy.tscn")
@@ -63,6 +63,8 @@ func match_Enum(var index):
 			return "UNLOCKEDDOOR"
 		7:
 			return "MAGICPROJECTILE"
+		8:
+			return "BLOCK"
 		-1:
 			return "EMPTY"
 		_:
@@ -87,6 +89,8 @@ func set_enum_index(var enumName, var setTo):
 			TILETYPES.UNLOCKEDDOOR=setTo
 		"MAGICPROJECTILE":
 			TILETYPES.MAGICPROJECTILE=setTo
+		"BLOCK":
+			TILETYPES.BLOCK = setTo
 		"EMPTY":
 			TILETYPES.EMPTY=-1
 		_:
@@ -99,6 +103,7 @@ func _ready():
 	add_child(newPlayer)
 	get_node("Player").connect("playerMadeMove", self, "_on_Player_Made_Move")
 	get_node("Player").connect("playerAttacked", self, "_on_Player_Attacked")
+	get_node("Player").connect("onPlayerDefeated", self, "_on_Player_Defeated")
 	mainPlayer = get_node("Player")
 	for child in get_children():
 		set_cellv(world_to_map(child.position), get_tileset().find_tile_by_name(match_Enum(child.type)))
@@ -163,9 +168,13 @@ func request_move(pawn, direction):
 				else:
 					projectilesInActiveRoom.erase(object_pawn)
 					object_pawn.queue_free()
-					pawn.inflict_damage_playerDefeated(object_pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC)
+					if pawn.inflict_damage_playerDefeated(object_pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC):
+						pawn.movementCount=2
+						pawn.attackCount = 0
+						return
 					return update_pawn_position(pawn, cell_start, cell_target)
-					
+			TILETYPES.BLOCK:
+				return pawn.position
 					
 				
 #	if(pawn.type == TILETYPES.ENEMY):
@@ -215,6 +224,10 @@ func request_move(pawn, direction):
 					set_cellv(world_to_map(tempMagicProjectile.position),get_tileset().find_tile_by_name("EMPTY"))
 					tempMagicProjectile.queue_free()
 					return update_pawn_position(pawn, cell_start, cell_target)
+			TILETYPES.BLOCK:
+				return pawn.position
+			_:
+				return pawn.position
 
 	elif match_Enum(pawn.type) == "MAGICPROJECTILE":
 		#print("MOVED enemy in room")
@@ -257,12 +270,23 @@ func request_move(pawn, direction):
 				var targetProjectile = get_cell_pawn(cell_target)
 				magicProjectileMagicProjectileInteraction(pawn, targetProjectile)
 				return pawn.position
+			TILETYPES.BLOCK:
+				projectilesInActiveRoom.erase(pawn)
+				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
+				pawn.queue_free()
+			_:
+				projectilesInActiveRoom.erase(pawn)
+				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
+				pawn.queue_free()
+				
 
 func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile2):
 	#enemy enemy projectile interaction
 	if magicProjectile1.playerProjectile == false && magicProjectile2.playerProjectile == false:
-		magicProjectile2.movementDirection *=-1
-		magicProjectile1.movementDirection *=-1
+		projectilesInActiveRoom.erase(magicProjectile1)
+		set_cellv(world_to_map(magicProjectile1.position),get_tileset().find_tile_by_name("EMPTY")) 
+		magicProjectile1.queue_free()
+		#magicProjectile1.movementDirection *=-1
 	#player enemy projectile interaction
 	elif magicProjectile1.playerProjectile == true && magicProjectile2.playerProjectile == false || magicProjectile1.playerProjectile == false && magicProjectile2.playerProjectile == true:
 			projectilesInActiveRoom.erase(magicProjectile1)
@@ -422,13 +446,13 @@ func enableEnemyAttack(enemy,attackType, horizontalVerticalAttack, diagonalAttac
 	if attackType == GlobalVariables.ATTACKTYPE.MAGIC:
 		var possibleDirectionArray = []
 
-		if get_cellv(world_to_map(enemy.position)+Vector2(-1,0)) != TILETYPES.WALL:
+		if get_cellv(world_to_map(enemy.position)+Vector2(-1,0)) != TILETYPES.WALL && get_cellv(world_to_map(enemy.position)+Vector2(-1,0)) != TILETYPES.BLOCK && get_cellv(world_to_map(enemy.position)+Vector2(-1,0)) != TILETYPES.ENEMY:
 			possibleDirectionArray.append(GlobalVariables.DIRECTION.LEFT)
-		if get_cellv(world_to_map(enemy.position)+Vector2(1,0)) != TILETYPES.WALL:
+		if get_cellv(world_to_map(enemy.position)+Vector2(1,0)) != TILETYPES.WALL && get_cellv(world_to_map(enemy.position)+Vector2(1,0)) != TILETYPES.BLOCK && get_cellv(world_to_map(enemy.position)+Vector2(1,0)) != TILETYPES.ENEMY:
 			possibleDirectionArray.append(GlobalVariables.DIRECTION.RIGHT)
-		if get_cellv(world_to_map(enemy.position)+Vector2(0,1)) != TILETYPES.WALL:
+		if get_cellv(world_to_map(enemy.position)+Vector2(0,1)) != TILETYPES.WALL && get_cellv(world_to_map(enemy.position)+Vector2(0,1)) != TILETYPES.BLOCK && get_cellv(world_to_map(enemy.position)+Vector2(0,1)) != TILETYPES.ENEMY:
 			possibleDirectionArray.append(GlobalVariables.DIRECTION.DOWN)
-		if get_cellv(world_to_map(enemy.position)+Vector2(0,-1)) != TILETYPES.WALL:
+		if get_cellv(world_to_map(enemy.position)+Vector2(0,-1)) != TILETYPES.WALL && get_cellv(world_to_map(enemy.position)+Vector2(0,-1)) != TILETYPES.BLOCK && get_cellv(world_to_map(enemy.position)+Vector2(0,-1)) != TILETYPES.ENEMY:
 			possibleDirectionArray.append(GlobalVariables.DIRECTION.UP)
 		
 		#print (possibleDirectionArray)
@@ -443,7 +467,8 @@ func enableEnemyAttack(enemy,attackType, horizontalVerticalAttack, diagonalAttac
 					return Vector2(0,-1)
 				GlobalVariables.DIRECTION.DOWN:
 					return Vector2(0,1)
-	
+		else:
+			return Vector2.ZERO
 	#enable ninja range attack 
 	if attackType == GlobalVariables.ATTACKTYPE.NINJA:
 		var attackdirectionArray = []
@@ -589,19 +614,18 @@ func _on_enemy_made_move_ready():
 			#if all enemies made their move move all player projectiles 
 		
 func _on_Player_Made_Move():
-	print("Player made move")
+
 	for projectile in projectilesInActiveRoom:
 		projectile.move_projectile()
-		
-	if(activeRoom!=null):
+	if activeRoom == null:
+		emit_signal("enemyTurnDoneSignal")
+	else:
 		if(activeRoom.enemiesInRoom.empty()):
-			get_node("Player").movementCount = 0
-			get_node("Player").attackCount = 0
+			emit_signal("enemyTurnDoneSignal")
 		else:
+			print("Player made move")
 			emit_signal("playerTurnDoneSignal")
-	if(activeRoom == null):
-		get_node("Player").movementCount = 0
-		get_node("Player").attackCount = 0
+
 
 
 func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
@@ -642,30 +666,21 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 		projectilesInActiveRoom.append(newMagicProjectile)
 
 		magicProjectileMagicProjectileInteraction(newMagicProjectile, get_cell_pawn(world_to_map(player.position) + attack_direction*2))
+	#block generating attack 
+	if(attackType == GlobalVariables.ATTACKTYPE.BLOCK):
+		if get_cellv(world_to_map(player.position) + attack_direction) ==TILETYPES.EMPTY:
+			print("Spawning Block")
+			set_cellv(world_to_map(player.position) + attack_direction, get_tileset().find_tile_by_name("BLOCK"))
+		elif get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.BLOCK:
+			set_cellv(world_to_map(player.position) + attack_direction, get_tileset().find_tile_by_name("EMPTY"))
 			
-
+			
 func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage):
 	if(get_cellv(attackCell) == TILETYPES.PLAYER):
 		print("Woosh ENEMY Attack hit")
 		var attackedPlayer = get_cell_pawn(attackCell)
 		#if player died reset player ro starting room 
 		if attackedPlayer.inflict_damage_playerDefeated(attackDamage, attackType):
-			set_cellv(attackCell,get_tileset().find_tile_by_name("EMPTY")) 
-			attackedPlayer.position = Vector2(48,48)
-			attackedPlayer.inClearedRoom = true
-			#todo: dont hardcode life
-			attackedPlayer.lifePoints = 10
-			MainCamera.set_camera_starting_room()
-
-			if(activeRoom != null && activeRoom.enemiesInRoom.size() != 0):
-				#disable elements in room just left
-				for element in activeRoom.enemiesInRoom:
-					element.isDisabled = true
-			activeRoom = null
-			if activeRoom != null:
-				for element in activeRoom.enemiesInRoom:
-					element.isDisabled = false
-
 			print("Batsuuum Player was defeated reset to start")
 	elif (attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		#spawn magic projectile
@@ -679,6 +694,26 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage):
 			set_cellv(world_to_map(newMagicProjectile.position), get_tileset().find_tile_by_name("MAGICPROJECTILE"))
 			newMagicProjectile.play_enemy_projectile_animation()
 
+func _on_Player_Defeated(player, lifePoints):
+	print("resetting player to start")
+	set_cellv(world_to_map(player.position),get_tileset().find_tile_by_name("EMPTY")) 
+	player.position = Vector2(80,80)
+	player.inClearedRoom = true
+	#todo: dont hardcode life
+	player.lifePoints = lifePoints
+	MainCamera.set_camera_starting_room()
+
+	if(activeRoom != null && activeRoom.enemiesInRoom.size() != 0):
+		#disable elements in room just left
+		for element in activeRoom.enemiesInRoom:
+			element.isDisabled = true
+		for projectile in projectilesInActiveRoom:
+			set_cellv(world_to_map(projectile.position),get_tileset().find_tile_by_name("EMPTY")) 
+			projectile.queue_free()
+		projectilesInActiveRoom.clear()
+	activeRoom = null
+					
+					
 func _on_enemy_defeated(enemy):
 	enemy.queue_free()
 	print("Batsuuum Enemy was defeated")

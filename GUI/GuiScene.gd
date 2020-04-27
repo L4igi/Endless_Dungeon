@@ -4,7 +4,9 @@ var wandTexture = preload ("res://GUI/Wand.png")
 
 var swordTexture = preload ("res://GUI/Sword.png")
 
-var currentAttackMode = 1
+var pickAxeTexture = preload ("res://GUI/PickAxe.png")
+
+var currentAttackMode = GlobalVariables.ATTACKTYPE.SWORD
 
 func _ready():
 	pass
@@ -34,10 +36,13 @@ func change_attack_mode(attackmode):
 	if(attackmode == currentAttackMode):
 		return 
 	match attackmode:
-		1:
+		GlobalVariables.ATTACKTYPE.SWORD:
 			$AttackMode/Attacks.texture = swordTexture
 			currentAttackMode = attackmode
-		2:
+		GlobalVariables.ATTACKTYPE.MAGIC:
 			$AttackMode/Attacks.texture = wandTexture
+			currentAttackMode = attackmode
+		GlobalVariables.ATTACKTYPE.BLOCK:
+			$AttackMode/Attacks.texture = pickAxeTexture
 			currentAttackMode = attackmode
 

@@ -2,7 +2,7 @@ extends Node2D
 
 onready var Grid = get_parent()
 
-enum CELL_TYPES{PLAYER=0, WALL=1, ENEMY=2, PUZZLEPIECE=3, ITEM=4, DOOR=5, UNLOCKEDDOOR = 6, MAGICPROJECTILE=7}
+enum CELL_TYPES{PLAYER=0, WALL=1, ENEMY=2, PUZZLEPIECE=3, ITEM=4, DOOR=5, UNLOCKEDDOOR=6, MAGICPROJECTILE=7, BLOCK=8}
 export(CELL_TYPES) var type = CELL_TYPES.PLAYER
 
 var playerTurnDone = false 
@@ -14,7 +14,7 @@ signal playerMadeMove
 
 signal playerAttacked (player, attackDirection, attackDamage)
 
-signal playerTakeDamage (player, lifepoints)
+signal onPlayerDefeated (player, lifepoints)
 
 var playerPassedDoor = Vector2.ZERO
 
@@ -63,30 +63,25 @@ func _process(delta):
 		if attackMode:
 			attackType = attackMode
 			
-		if(inClearedRoom):
-			var movementDirection = get_free_movement_direction()
+
+		if !playerTurnDone:
+			var movementDirection = get_movement_direction()
+			if inClearedRoom:
+				movementDirection = get_free_movement_direction()
 			var attackDirection = get_attack_direction()
 			
 			player_movement(movementDirection)
-			#player_attack(attackDirection)
-	
-		else:
-			if !playerTurnDone:
-				var movementDirection = get_movement_direction()
-				var attackDirection = get_attack_direction()
-				
-				player_movement(movementDirection)
-				player_attack(attackDirection)
-				
-				if movementCount == 1 && attackCount == 1:
-					emit_signal("playerMadeMove")
-					playerTurnDone=true
-				elif movementCount >= 2 && attackCount >= 0: 
-					emit_signal("playerMadeMove")
-					playerTurnDone=true
-				elif attackCount >= 2 && movementCount >= 0:
-					emit_signal("playerMadeMove")
-					playerTurnDone=true
+			player_attack(attackDirection)
+			
+			if movementCount == 1 && attackCount == 1:
+				playerTurnDone=true
+				emit_signal("playerMadeMove")
+			elif movementCount >= 2 && attackCount >= 0: 
+				playerTurnDone=true
+				emit_signal("playerMadeMove")
+			elif attackCount >= 2 && movementCount >= 0:
+				playerTurnDone=true
+				emit_signal("playerMadeMove")
 				
 func player_movement(movementDirection):
 	if movementDirection:
@@ -197,12 +192,19 @@ func get_attack_direction():
 
 func get_attack_mode():
 	if Input.is_action_just_pressed("Mode_Sword"):
-		guiElements.change_attack_mode(1)
+		guiElements.change_attack_mode(GlobalVariables.ATTACKTYPE.SWORD)
+		attackDamage = 1.5
 		return GlobalVariables.ATTACKTYPE.SWORD
 		
 	if Input.is_action_just_pressed("Mode_Magic"):
-		guiElements.change_attack_mode(2)
+		guiElements.change_attack_mode(GlobalVariables.ATTACKTYPE.MAGIC)
+		attackDamage = 1
 		return GlobalVariables.ATTACKTYPE.MAGIC
+		
+	if Input.is_action_just_pressed("Mode_Block"):
+		guiElements.change_attack_mode(GlobalVariables.ATTACKTYPE.BLOCK)
+		attackDamage = 0
+		return GlobalVariables.ATTACKTYPE.BLOCK
 		
 		
 func get_use_nonkey_items():
@@ -219,9 +221,9 @@ func get_use_nonkey_items():
 func inflict_damage_playerDefeated(attackDamage, attackType):
 	lifePoints -= attackDamage
 	guiElements.change_health(attackDamage)
-	emit_signal("playerTakeDamage", self, lifePoints)
 	if lifePoints == 0:
 		guiElements.set_health(10)
+		emit_signal("onPlayerDefeated", self, lifePoints)
 		return true
 	return false
 

@@ -62,12 +62,13 @@ __meta__ = {
 [node name="Attacks" type="TextureRect" parent="AttackMode"]
 anchor_top = 0.5
 anchor_bottom = 0.5
-margin_top = -21.1645
-margin_right = 40.0
-margin_bottom = 21.1645
-rect_scale = Vector2( 2.999, 1 )
+margin_left = 20.3067
+margin_top = -27.0199
+margin_right = 60.3067
+margin_bottom = 15.3091
+rect_scale = Vector2( 2.682, 1.472 )
 texture = ExtResource( 7 )
-stretch_mode = 1
+stretch_mode = 3
 __meta__ = {
 "_edit_use_anchors_": false
 }
