@@ -11,6 +11,8 @@ script = ExtResource( 12 )
 [node name="Grid" type="TileMap" parent="."]
 tile_set = ExtResource( 1 )
 cell_size = Vector2( 32, 32 )
+centered_textures = true
+cell_clip_uv = true
 format = 1
 script = ExtResource( 2 )
 

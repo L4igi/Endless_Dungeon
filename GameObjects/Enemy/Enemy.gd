@@ -187,7 +187,7 @@ func enemyAttack():
 				set_process(false)
 				#play defeat animation 
 				$AnimationPlayer.play("defeat", -1, 3.0)
-				$Tween.interpolate_property($Sprite, "position", attackDirection*32, Vector2(), $AnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+				$Tween.interpolate_property($Sprite, "position", attackDirection*GlobalVariables.tileSize, Vector2(), $AnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
 				$Tween.start()
 				yield($AnimationPlayer, "animation_finished")
 				$AnimationPlayer.play("idle")
@@ -211,7 +211,7 @@ func enemyAttack():
 				set_process(false)
 				#play defeat animation 
 				$AnimationPlayer.play("defeat", -1, 5.0)
-				$Tween.interpolate_property($Sprite, "position", attackDirection*32, Vector2(), $AnimationPlayer.current_animation_length/5.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+				$Tween.interpolate_property($Sprite, "position", attackDirection*GlobalVariables.tileSize, Vector2(), $AnimationPlayer.current_animation_length/5.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
 				$Tween.start()
 				yield($AnimationPlayer, "animation_finished")
 				$AnimationPlayer.play("idle")
@@ -232,7 +232,7 @@ func enemyAttack():
 				set_process(false)
 				#play defeat animation 
 				$AnimationPlayer.play("defeat", -1, 2.0)
-				$Tween.interpolate_property($Sprite, "position", attackDirection*32, Vector2(), $AnimationPlayer.current_animation_length/2.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+				$Tween.interpolate_property($Sprite, "position", attackDirection*GlobalVariables.tileSize, Vector2(), $AnimationPlayer.current_animation_length/2.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
 				$Tween.start()
 				yield($AnimationPlayer, "animation_finished")
 				$AnimationPlayer.play("idle")
@@ -317,6 +317,7 @@ func inflictDamage(inflictattackDamage, inflictattackType):
 	lifePoints -= inflictattackDamage
 	if lifePoints == 0 :
 		Grid.activeRoom.enemiesInRoom.erase(self)
+		Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("EMPTY")) 
 		set_process(false)
 		#play defeat animation 
 		$AnimationPlayer.play("defeat", -1, 2.0)
@@ -324,7 +325,6 @@ func inflictDamage(inflictattackDamage, inflictattackType):
 		$Tween.start()
 		yield($AnimationPlayer, "animation_finished")
 		set_process(true)
-		Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("EMPTY")) 
 		emit_signal("enemyDefeated", self)
 		return
 	#set enemy difficulty and type set enemy stats based on difficulty set amount of enemies to spawn based on room size and difficulty 

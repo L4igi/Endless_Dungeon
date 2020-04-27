@@ -139,7 +139,7 @@ func request_move(pawn, direction):
 				pass
 			TILETYPES.ITEM:
 				var object_pawn = get_cell_pawn(cell_target)
-				print("Item spawned key value " + str(object_pawn.keyValue))
+				#print("Item spawned key value " + str(object_pawn.keyValue))
 				#add additional items with || 
 				if(object_pawn.itemType == "POTION"):
 					pawn.add_nonkey_items(object_pawn.itemType)
@@ -354,7 +354,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 			var mainCamera = get_node("/root/MainCamera")
 			if(activeRoom != null):
 				#print(activeRoom.doorRoomLeftMostCorner) 
-				mainCamera.move_and_zoom_camera_to_room(activeRoom.doorRoomLeftMostCorner, Vector2(float(activeRoom.roomSize.x)/2, float(activeRoom.roomSize.y)/2) * 32 - Vector2(16,16), activeRoom.roomSizeMultiplier) 
+				mainCamera.move_and_zoom_camera_to_room(activeRoom.doorRoomLeftMostCorner, Vector2(float(activeRoom.roomSize.x)/2, float(activeRoom.roomSize.y)/2) * GlobalVariables.tileSize - GlobalVariables.tileOffset, activeRoom.roomSizeMultiplier) 
 			else:
 				mainCamera.set_camera_starting_room()
 			#mainCamera.zoom = mainCamera.zoom + Vector2(1,1)
@@ -367,7 +367,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 				pawn.inClearedRoom = false
 
 	#print("Map to world " + str(cell_target))
-	return map_to_world(cell_target) + cell_size / 2
+	return map_to_world(cell_target) + cell_size / GlobalVariables.isometricFactor
 	
 func enablePlayerAttack(player):
 	if(activeRoom == null || activeRoom.enemiesInRoom.empty()):
@@ -669,14 +669,15 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage):
 			print("Batsuuum Player was defeated reset to start")
 	elif (attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		#spawn magic projectile
-		var newMagicProjectile = MagicProjectile.instance()
-		newMagicProjectile.position = map_to_world(attackCell)+Vector2(16,16)
-		newMagicProjectile.playerProjectile = false
-		newMagicProjectile.movementDirection = attackCell-world_to_map(enemy.position)
-		add_child(newMagicProjectile)
-		projectilesInActiveRoom.append(newMagicProjectile)
-		set_cellv(world_to_map(newMagicProjectile.position), get_tileset().find_tile_by_name("MAGICPROJECTILE"))
-		newMagicProjectile.play_enemy_projectile_animation()
+		if(get_cellv(world_to_map(map_to_world(attackCell)+GlobalVariables.tileOffset))!=TILETYPES.ENEMY && get_cellv(world_to_map(map_to_world(attackCell)+GlobalVariables.tileOffset))!=TILETYPES.MAGICPROJECTILE):
+			var newMagicProjectile = MagicProjectile.instance()
+			newMagicProjectile.position = map_to_world(attackCell)+GlobalVariables.tileOffset
+			newMagicProjectile.playerProjectile = false
+			newMagicProjectile.movementDirection = attackCell-world_to_map(enemy.position)
+			add_child(newMagicProjectile)
+			projectilesInActiveRoom.append(newMagicProjectile)
+			set_cellv(world_to_map(newMagicProjectile.position), get_tileset().find_tile_by_name("MAGICPROJECTILE"))
+			newMagicProjectile.play_enemy_projectile_animation()
 
 func _on_enemy_defeated(enemy):
 	enemy.queue_free()
@@ -743,7 +744,7 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 	var disableLong = false
 	var disableBig = false
 	if(startingRoom):
-		leftmostCorner = Vector2(16,16)
+		leftmostCorner = GlobalVariables.tileOffset
 	else:
 		var minRoomSize = roomSizeHorizontal
 
@@ -1045,7 +1046,7 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 	while verticalAddcount < roomSizeVertical:
 		var horizontalAddcount = 0
 		while horizontalAddcount < roomSizeHorizontal:
-			var spawn_pos = leftmostCorner + Vector2(horizontalAddcount*32,verticalAddcount*32)
+			var spawn_pos = leftmostCorner + Vector2(horizontalAddcount*GlobalVariables.tileSize,verticalAddcount*GlobalVariables.tileSize)
 			var newWallPiece = Wall.instance()
 			add_child(newWallPiece)
 			newWallPiece.position = spawn_pos

@@ -129,7 +129,7 @@ func player_attack(attackDirection):
 			Vector2(0,-1):
 				animationPlay = str("attack_up")
 		$AnimationPlayer.play(animationPlay, -1, 2.5)
-		$Tween.interpolate_property($Sprite, "position",attackDirection * 32, Vector2(), $AnimationPlayer.current_animation_length/2.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+		$Tween.interpolate_property($Sprite, "position",attackDirection * GlobalVariables.tileSize, Vector2(), $AnimationPlayer.current_animation_length/2.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
 		$Tween.start()
 		yield($AnimationPlayer, "animation_finished")
 		$AnimationPlayer.play("Idle")
