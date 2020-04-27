@@ -19,11 +19,14 @@ func move_projectile():
 	if(target_position):
 		position=target_position
 
-func play_mini_projectile_animation(animation):
-	if animation == 1:
-		$AnimationPlayer.play("mini1shoot")
-	if animation == 2:
-		$AnimationPlayer.play("mini2shoot")
-	
 func play_enemy_projectile_animation():
-	$AnimationPlayer.play("shoot_enemy")
+	print("Animationplayer enemy shoot")
+	$AnimationPlayer.play("enemy_shoot")
+	
+func create_mini_projectile(projectile):
+	isMiniProjectile = true
+	attackDamage = 0.5
+	if projectile == 1:
+		$AnimationPlayer.play("mini1shoot")
+	if projectile == 2:
+		$AnimationPlayer.play("mini2shoot")

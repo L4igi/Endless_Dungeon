@@ -154,6 +154,19 @@ func request_move(pawn, direction):
 					return update_pawn_position(pawn, cell_start, cell_target)
 			TILETYPES.UNLOCKEDDOOR:
 				return update_pawn_position(pawn, cell_start, cell_target)
+			TILETYPES.MAGICPROJECTILE:
+				var object_pawn = get_cell_pawn(cell_target)
+				if object_pawn.playerProjectile:
+					projectilesInActiveRoom.erase(object_pawn)
+					object_pawn.queue_free()
+					return update_pawn_position(pawn, cell_start, cell_target)
+				else:
+					projectilesInActiveRoom.erase(object_pawn)
+					object_pawn.queue_free()
+					pawn.inflict_damage_playerDefeated(object_pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC)
+					return update_pawn_position(pawn, cell_start, cell_target)
+					
+					
 				
 #	if(pawn.type == TILETYPES.ENEMY):
 	elif match_Enum(pawn.type) == "ENEMY":
@@ -274,8 +287,8 @@ func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile
 					magicProjectile2.movementDirection = Vector2(0,-1)
 			magicProjectile1.isMiniProjectile = true
 			magicProjectile2.isMiniProjectile = true
-			magicProjectile1.play_mini_projectile_animation(1)
-			magicProjectile2.play_mini_projectile_animation(2)
+			magicProjectile1.create_mini_projectile(1)
+			magicProjectile2.create_mini_projectile(2)
 
 func update_pawn_position(pawn, cell_start, cell_target):
 	var oldCellTargetType = get_cellv(cell_target)
@@ -312,7 +325,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					#remove rojectiles in old room
 					for projectile in projectilesInActiveRoom:
 						set_cellv(world_to_map(projectile.position),get_tileset().find_tile_by_name("EMPTY")) 
-						projectile.queue_free
+						projectile.queue_free()
 					projectilesInActiveRoom.clear()
 				activeRoom = oldCellTargetNode
 				if activeRoom != null:
@@ -367,7 +380,7 @@ func enablePlayerAttack(player):
 #	player.playerCanAttack=false
 
 func enableEnemyAttack(enemy,attackType, horizontalVerticalAttack, diagonalAttack):
-	if attackType == GlobalVariables.ATTACKTYPE.SWORD:
+	if attackType == GlobalVariables.ATTACKTYPE.SWORD || attackType == GlobalVariables.ATTACKTYPE.NINJA:
 		if horizontalVerticalAttack && !diagonalAttack:
 			if(get_cellv(world_to_map(enemy.position)+Vector2(1,0)) == TILETYPES.PLAYER):
 				return Vector2(1,0)
@@ -417,7 +430,8 @@ func enableEnemyAttack(enemy,attackType, horizontalVerticalAttack, diagonalAttac
 		
 		#print (possibleDirectionArray)
 		if !possibleDirectionArray.empty():
-			match possibleDirectionArray[0]:
+			var shootDirection = randi()%possibleDirectionArray.size()
+			match possibleDirectionArray[shootDirection]:
 				GlobalVariables.DIRECTION.LEFT:
 					return Vector2(-1,0)
 				GlobalVariables.DIRECTION.RIGHT:
@@ -426,14 +440,54 @@ func enableEnemyAttack(enemy,attackType, horizontalVerticalAttack, diagonalAttac
 					return Vector2(0,-1)
 				GlobalVariables.DIRECTION.DOWN:
 					return Vector2(0,1)
-
+	
+	#enable ninja range attack 
+	if attackType == GlobalVariables.ATTACKTYPE.NINJA:
+		var attackdirectionArray = []
+		match enemy.movementdirection:
+			GlobalVariables.DIRECTION.LEFT:
+				attackdirectionArray.append(Vector2(0,1))
+				attackdirectionArray.append(Vector2(0,-1))
+			GlobalVariables.DIRECTION.RIGHT:
+				attackdirectionArray.append(Vector2(0,1))
+				attackdirectionArray.append(Vector2(0,-1))
+			GlobalVariables.DIRECTION.UP:
+				attackdirectionArray.append(Vector2(1,0))
+				attackdirectionArray.append(Vector2(-1,0))
+			GlobalVariables.DIRECTION.DOWN:
+				attackdirectionArray.append(Vector2(1,0))
+				attackdirectionArray.append(Vector2(-1,0))
+				
+		for direction in attackdirectionArray:
+			for count in range (enemy.ninjaAttackRange):
+				if direction == Vector2(1,0):
+					if get_cellv(world_to_map(enemy.position)+Vector2(count,0)) == TILETYPES.PLAYER:
+						#print("Player RIGHT " + str(Vector2(count,0)))
+						return Vector2(count,0)
+				elif direction == Vector2(-1,0):
+					if get_cellv(world_to_map(enemy.position)-Vector2(count,0)) == TILETYPES.PLAYER:
+						#print("Player LEFT " + str(Vector2(count,0)))
+						return Vector2(-count,0)
+				if direction == Vector2(0,1):
+					if get_cellv(world_to_map(enemy.position)+Vector2(0,count)) == TILETYPES.PLAYER:
+						#print("Player DOWN " + str(Vector2(count,0)))
+						return Vector2(0,count)
+				elif direction == Vector2(0,-1):
+					if get_cellv(world_to_map(enemy.position)-Vector2(0,count)) == TILETYPES.PLAYER:
+						#print("Player UP " + str(Vector2(count,0)))
+						return Vector2(0,-count)
+				
 	return Vector2.ZERO
 
 func create_enemy_room(unlockedDoor):
 	randomize()
 	#add adjustment for enemy amount 
 	#-2 because of walls on both sides
-	var enemiesToSpawn = 1
+	var enemiesToSpawn = randi()%4+1
+	if unlockedDoor.roomSizeMultiplier == Vector2(1,1):
+		enemiesToSpawn = randi()%3+1
+	elif unlockedDoor.roomSizeMultiplier == Vector2(2,2):
+		enemiesToSpawn = randi()%5+1
 	var sizecounter = 0
 	var mageEnemyCount = 0
 	var spawnCellArray = []
@@ -466,7 +520,6 @@ func create_enemy_room(unlockedDoor):
 				var generatedEnemyType = newEnemy.generateEnemy(mageEnemyCount)
 				if(generatedEnemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY):
 					mageEnemyCount += 1
-				newEnemy.get_node("Sprite").set_modulate(Color(randf(),randf(),randf(),1.0))
 				newEnemy.connect("enemyMadeMove", self, "_on_enemy_made_move_ready")
 				newEnemy.connect("enemyAttacked", self, "_on_enemy_attacked")
 				newEnemy.connect("enemyDefeated", self, "_on_enemy_defeated")
@@ -617,10 +670,10 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage):
 		newMagicProjectile.position = map_to_world(attackCell)+Vector2(16,16)
 		newMagicProjectile.playerProjectile = false
 		newMagicProjectile.movementDirection = attackCell-world_to_map(enemy.position)
-		newMagicProjectile.play_enemy_projectile_animation()
 		add_child(newMagicProjectile)
 		projectilesInActiveRoom.append(newMagicProjectile)
 		set_cellv(world_to_map(newMagicProjectile.position), get_tileset().find_tile_by_name("MAGICPROJECTILE"))
+		newMagicProjectile.play_enemy_projectile_animation()
 
 func _on_enemy_defeated(enemy):
 	enemy.queue_free()
