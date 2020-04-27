@@ -14,8 +14,8 @@ var itemType
 func _ready():
 	pass # Replace with function body.
 
-func setTexture(type):
-	match type:
+func setTexture(textureType):
+	match textureType:
 		"POTION":
 			get_node("Sprite").set_texture(potionTexture)
 			itemType = "POTION"

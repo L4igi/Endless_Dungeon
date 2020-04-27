@@ -211,7 +211,10 @@ func request_move(pawn, direction):
 					pawn.inflictDamage(tempMagicProjectile.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC)
 					return update_pawn_position(pawn, cell_start, cell_target)
 				else:
-					return pawn.position
+					projectilesInActiveRoom.erase(tempMagicProjectile)
+					set_cellv(world_to_map(tempMagicProjectile.position),get_tileset().find_tile_by_name("EMPTY"))
+					tempMagicProjectile.queue_free()
+					return update_pawn_position(pawn, cell_start, cell_target)
 
 	elif match_Enum(pawn.type) == "MAGICPROJECTILE":
 		#print("MOVED enemy in room")

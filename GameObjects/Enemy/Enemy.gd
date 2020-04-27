@@ -288,7 +288,7 @@ func _on_player_turn_done_signal():
 func generateEnemy(mageEnemyCount): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = randi()%4
+	var enemieToGenerate = GlobalVariables.ENEMYTYPE.MAGEENEMY
 	match enemieToGenerate:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
@@ -298,6 +298,7 @@ func generateEnemy(mageEnemyCount):
 			enemyType = GlobalVariables.ENEMYTYPE.NINJAENEMY
 			attackType = GlobalVariables.ATTACKTYPE.NINJA
 			get_node("Sprite").set_modulate(Color(0,255,0,1.0))
+			diagonalAttack = true
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.WARRIROENEMY
 			lifePoints = 1
@@ -312,8 +313,8 @@ func generateEnemy(mageEnemyCount):
 			get_node("Sprite").set_modulate(Color(0,0,255,1.0))
 	return enemyType
 
-func inflictDamage(attackDamage, attackType):
-	lifePoints -= attackDamage
+func inflictDamage(inflictattackDamage, inflictattackType):
+	lifePoints -= inflictattackDamage
 	if lifePoints == 0 :
 		Grid.activeRoom.enemiesInRoom.erase(self)
 		set_process(false)
