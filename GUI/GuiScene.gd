@@ -6,6 +6,10 @@ var swordTexture = preload ("res://GUI/Sword.png")
 
 var pickAxeTexture = preload ("res://GUI/PickAxe.png")
 
+var powerHandCombat = preload ("res://GUI/PowerHandCombat.png")
+
+var powerHandPuzzle = preload ("res://GUI/PowerHandPuzzle.png")
+
 var currentAttackMode = GlobalVariables.ATTACKTYPE.SWORD
 
 func _ready():
@@ -44,5 +48,8 @@ func change_attack_mode(attackmode):
 			currentAttackMode = attackmode
 		GlobalVariables.ATTACKTYPE.BLOCK:
 			$AttackMode/Attacks.texture = pickAxeTexture
+			currentAttackMode = attackmode
+		GlobalVariables.ATTACKTYPE.HAND:
+			$AttackMode/Attacks.texture = powerHandCombat
 			currentAttackMode = attackmode
 

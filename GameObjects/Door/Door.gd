@@ -70,7 +70,7 @@ func unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance):
 	#print("Door was unlocked")
 	#choose type of room to be created 
 	#var randRoomType = randi()%100
-	var randRoomType = 30
+	var randRoomType = 50
 	if(randRoomType < enemyRoomChance):
 		#print("create enemy room " + str(randRoomType))
 		roomType = ROOM_TYPE.ENEMYROOM
@@ -78,6 +78,7 @@ func unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance):
 	elif(randRoomType > enemyRoomChance && randRoomType < (enemyRoomChance+puzzleRoomChance)):
 		#print("creating puzzle room " + str(randRoomType))
 		roomType = ROOM_TYPE.PUZZLEROOM
+		Grid.create_puzzle_room(self)
 	elif(randRoomType > (enemyRoomChance+puzzleRoomChance)):
 		#print("creating empty/Treasure room " + str(randRoomType))
 		roomType = ROOM_TYPE.EMPTYTREASUREROOM

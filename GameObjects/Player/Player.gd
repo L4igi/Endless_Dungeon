@@ -22,7 +22,7 @@ var movementCount = 0
 
 var attackCount = 0
 
-var attackDamage = 1
+var attackDamage = 1.5
 
 var maxLifePoints = 10
 
@@ -44,6 +44,8 @@ var movedThroughDoorDirection = Vector2.ZERO
 
 var disablePlayerInput = false 
 
+var waitingForPowerBlock = false
+
 func _ready():
 	guiElements = GUI.instance()
 	guiElements.set_health(lifePoints)
@@ -64,7 +66,7 @@ func _process(delta):
 			attackType = attackMode
 			
 
-		if !playerTurnDone:
+		if !playerTurnDone && ! waitingForPowerBlock:
 			var movementDirection = get_movement_direction()
 			if inClearedRoom:
 				movementDirection = get_free_movement_direction()
@@ -129,6 +131,9 @@ func player_attack(attackDirection):
 		yield($AnimationPlayer, "animation_finished")
 		$AnimationPlayer.play("Idle")
 		set_process(true)
+		if attackType == GlobalVariables.ATTACKTYPE.BLOCK:
+			waitingForPowerBlock = true
+		
 		emit_signal("playerAttacked", self, attackDirection, attackDamage, attackType)
 		attackCount += 1
 	
@@ -203,9 +208,13 @@ func get_attack_mode():
 		
 	if Input.is_action_just_pressed("Mode_Block"):
 		guiElements.change_attack_mode(GlobalVariables.ATTACKTYPE.BLOCK)
-		attackDamage = 0
-		return GlobalVariables.ATTACKTYPE.BLOCK
+		attackDamage = 0  
+		return GlobalVariables.ATTACKTYPE.BLOCK                     	
 		
+	if Input.is_action_just_pressed("Mode_Hand"):
+		guiElements.change_attack_mode(GlobalVariables.ATTACKTYPE.HAND)
+		attackDamage = 0
+		return GlobalVariables.ATTACKTYPE.HAND
 		
 func get_use_nonkey_items():
 	if lifePoints < maxLifePoints:

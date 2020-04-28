@@ -13,6 +13,8 @@ var Item = preload("res://GameObjects/Item/Item.tscn")
 
 var MagicProjectile = preload("res://GameObjects/Projectile/MagicProjectile.tscn")
 
+var PowerBlock = preload("res://GameObjects/PowerBlock/PowerBlock.tscn")
+
 var Player = preload("res://GameObjects/Player/Player.tscn")
 
 var roomDimensions = GlobalVariables.roomDimensions
@@ -32,6 +34,8 @@ var puzzleRoomChance = 33
 var emptyTreasureRoomChance = 34
 
 var projectilesInActiveRoom = []
+
+var powerBlocksInActiveRoom = []
 
 var enemiesMadeMoveCounter = 0
 
@@ -99,7 +103,7 @@ func set_enum_index(var enumName, var setTo):
 
 func _ready():
 	var newPlayer = Player.instance()
-	newPlayer.position = Vector2(84,84)
+	newPlayer.position = Vector2(80,80)
 	add_child(newPlayer)
 	get_node("Player").connect("playerMadeMove", self, "_on_Player_Made_Move")
 	get_node("Player").connect("playerAttacked", self, "_on_Player_Attacked")
@@ -511,6 +515,8 @@ func enableEnemyAttack(enemy,attackType, horizontalVerticalAttack, diagonalAttac
 				
 	return Vector2.ZERO
 
+func create_puzzle_room(unlockedDoor):
+	pass
 func create_enemy_room(unlockedDoor):
 	randomize()
 	#add adjustment for enemy amount 
@@ -647,6 +653,10 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 			GlobalVariables.ATTACKTYPE.SWORD:
 				print("Sword was used to attack")
 				print("ZZZ Attack missed")
+	#sword attack on block in puzzle room 
+	if get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.BLOCK && attackType == GlobalVariables.ATTACKTYPE.SWORD:
+		var blockAttackedBySword = get_cell_pawn(world_to_map(player.position) + attack_direction)
+		blockAttackedBySword.rotateBlock()
 	#wand attacks
 	elif (get_cellv(world_to_map(player.position) + attack_direction*2) == TILETYPES.ENEMY && attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		print("Woosh Player Wand Attack hit")
@@ -672,13 +682,70 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 		magicProjectileMagicProjectileInteraction(newMagicProjectile, get_cell_pawn(world_to_map(player.position) + attack_direction*2))
 	#block generating attack 
 	if(attackType == GlobalVariables.ATTACKTYPE.BLOCK):
-		if get_cellv(world_to_map(player.position) + attack_direction) ==TILETYPES.EMPTY:
-			print("Spawning Block")
+		if get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.EMPTY:
+			player.waitingForPowerBlock = false
+			var newPowerBlock = PowerBlock.instance()
+			newPowerBlock.position = player.position + map_to_world(attack_direction)
+			add_child(newPowerBlock)
+			powerBlocksInActiveRoom.append(newPowerBlock)
 			set_cellv(world_to_map(player.position) + attack_direction, get_tileset().find_tile_by_name("BLOCK"))
 		elif get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.BLOCK:
-			set_cellv(world_to_map(player.position) + attack_direction, get_tileset().find_tile_by_name("EMPTY"))
-			
-			
+			var powerBlockToDelete = get_cell_pawn(world_to_map(player.position) + attack_direction)
+			if activeRoom != null:
+				if activeRoom.roomType == activeRoom.ROOM_TYPE.PUZZLEROOM:
+					player.waitingForPowerBlock = false
+					powerBlocksInActiveRoom.erase(powerBlockToDelete)
+					powerBlockToDelete.queue_free()
+					set_cellv(world_to_map(player.position) + attack_direction, get_tileset().find_tile_by_name("EMPTY"))
+			else:
+				if powerBlockToDelete.explodeBlock():
+					pass
+				else:
+					player.waitingForPowerBlock = false
+					powerBlocksInActiveRoom.erase(powerBlockToDelete)
+					powerBlockToDelete.queue_free()
+					set_cellv(world_to_map(player.position) + attack_direction, get_tileset().find_tile_by_name("EMPTY"))
+		else:
+			player.waitingForPowerBlock = false
+	#hand attack
+	if(attackType == GlobalVariables.ATTACKTYPE.HAND):
+		if get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.BLOCK:
+			var interactionBlock = get_cell_pawn(world_to_map(player.position) + attack_direction)
+			if activeRoom == null:
+				interactionBlock.addCounters(null)
+			else:
+				interactionBlock.addCounters(activeRoom.roomType)
+		elif get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.ENEMY:
+			var enemyToSwap = get_cell_pawn(world_to_map(player.position) + attack_direction)
+			enemyToSwap.position = player.position
+			player.position = player.position + map_to_world(attack_direction)
+			set_cellv(world_to_map(enemyToSwap.position), get_tileset().find_tile_by_name("ENEMY"))
+			set_cellv(world_to_map(player.position), get_tileset().find_tile_by_name("PLAYER"))
+			#player and enemy swap spaces
+
+func on_Power_Block_explode(powerBlock):
+	if get_cellv(world_to_map(powerBlock.position)+Vector2(1,0)) == get_tileset().find_tile_by_name("ENEMY"):
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,0)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK)
+	if get_cellv(world_to_map(powerBlock.position)+Vector2(-1,0)) == get_tileset().find_tile_by_name("ENEMY"):
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,0)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK)
+	if get_cellv(world_to_map(powerBlock.position)+Vector2(0,1)) == get_tileset().find_tile_by_name("ENEMY"):
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(0,1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK)
+	if get_cellv(world_to_map(powerBlock.position)+Vector2(0,-1)) == get_tileset().find_tile_by_name("ENEMY"):
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(0,-1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK)
+	if get_cellv(world_to_map(powerBlock.position)+Vector2(1,1)) == get_tileset().find_tile_by_name("ENEMY"):
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK)
+	if get_cellv(world_to_map(powerBlock.position)+Vector2(1,-1)) == get_tileset().find_tile_by_name("ENEMY"):
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,-1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK)
+	if get_cellv(world_to_map(powerBlock.position)+Vector2(-1,1)) == get_tileset().find_tile_by_name("ENEMY"):
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK)
+	if get_cellv(world_to_map(powerBlock.position)+Vector2(-1,-1)) == get_tileset().find_tile_by_name("ENEMY"):
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK)
+		
+	powerBlocksInActiveRoom.erase(powerBlock)
+	powerBlock.queue_free()
+	set_cellv(world_to_map(powerBlock.position), get_tileset().find_tile_by_name("EMPTY"))
+	mainPlayer.waitingForPowerBlock = false
+	
 func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage):
 	if(get_cellv(attackCell) == TILETYPES.PLAYER):
 		print("Woosh ENEMY Attack hit")
