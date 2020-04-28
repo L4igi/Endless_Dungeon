@@ -44,7 +44,7 @@ var movedThroughDoorDirection = Vector2.ZERO
 
 var disablePlayerInput = false 
 
-var waitingForPowerBlock = false
+var waitingForEventBeforeContinue = false
 
 func _ready():
 	guiElements = GUI.instance()
@@ -66,7 +66,7 @@ func _process(delta):
 			attackType = attackMode
 			
 
-		if !playerTurnDone && ! waitingForPowerBlock:
+		if !playerTurnDone && ! waitingForEventBeforeContinue:
 			var movementDirection = get_movement_direction()
 			if inClearedRoom:
 				movementDirection = get_free_movement_direction()
@@ -132,7 +132,7 @@ func player_attack(attackDirection):
 		$AnimationPlayer.play("Idle")
 		set_process(true)
 		if attackType == GlobalVariables.ATTACKTYPE.BLOCK:
-			waitingForPowerBlock = true
+			waitingForEventBeforeContinue = true
 		
 		emit_signal("playerAttacked", self, attackDirection, attackDamage, attackType)
 		attackCount += 1

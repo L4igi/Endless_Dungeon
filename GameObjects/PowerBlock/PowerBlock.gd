@@ -60,7 +60,8 @@ func addCounters(roomType):
 			5:
 				availableDirections.append(GlobalVariables.DIRECTION.LEFT)
 				$AnimationPlayer.play("Counter5")
-			
+	
+	activeDirections = availableDirections.duplicate()
 
 func explodeBlock():
 	if counters < 1:
@@ -101,3 +102,6 @@ func rotateBlock():
 		tempDirections.clear()
 
 	#print("Available directions" + str(activeDirections))
+	
+func spawnMagicFromBlock():
+	Grid.on_powerBlock_spawn_magic(self)
