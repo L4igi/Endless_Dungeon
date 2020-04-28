@@ -345,29 +345,33 @@ func update_pawn_position(pawn, cell_start, cell_target):
 				pawn.movedThroughDoorDirection = Vector2(0,1)
 			if(oldCellTargetType == get_tileset().find_tile_by_name("DOOR")):
 				oldCellTargetNode.set_other_adjacent_room(activeRoom, direction)
-				if(activeRoom != null && activeRoom.enemiesInRoom.size() != 0):
+				if(activeRoom != null):
 					#disable elements in room just left
-					for element in activeRoom.enemiesInRoom:
-						element.isDisabled = true
+					if !activeRoom.enemiesInRoom.empty():
+						for element in activeRoom.enemiesInRoom:
+							element.isDisabled = true
 					#remove rojectiles in old room
-					for projectile in projectilesInActiveRoom:
-						set_cellv(world_to_map(projectile.position),get_tileset().find_tile_by_name("EMPTY")) 
-						projectile.queue_free()
-					projectilesInActiveRoom.clear()
+					if !projectilesInActiveRoom.empty():
+						for projectile in projectilesInActiveRoom:
+							set_cellv(world_to_map(projectile.position),get_tileset().find_tile_by_name("EMPTY")) 
+							projectile.queue_free()
+						projectilesInActiveRoom.clear()
 				activeRoom = oldCellTargetNode
 				if activeRoom != null:
 					for element in activeRoom.enemiesInRoom:
 						element.isDisabled = false
 			if(oldCellTargetType == get_tileset().find_tile_by_name("UNLOCKEDDOOR")):
-				if(activeRoom != null && activeRoom.enemiesInRoom.size() != 0):
+				if(activeRoom != null):
 					#disable elements in room just left
-					for element in activeRoom.enemiesInRoom:
-						element.isDisabled = true
+					if !activeRoom.enemiesInRoom.empty():
+						for element in activeRoom.enemiesInRoom:
+							element.isDisabled = true
 					#remove rojectiles in old room
-					for projectile in projectilesInActiveRoom:
-						set_cellv(world_to_map(projectile.position),get_tileset().find_tile_by_name("EMPTY")) 
-						projectile.queue_free()
-					projectilesInActiveRoom.clear()
+					if !projectilesInActiveRoom.empty():
+						for projectile in projectilesInActiveRoom:
+							set_cellv(world_to_map(projectile.position),get_tileset().find_tile_by_name("EMPTY")) 
+							projectile.queue_free()
+						projectilesInActiveRoom.clear()
 				activeRoom=oldCellTargetNode.get_room_by_movement_direction(direction)
 				if activeRoom != null:
 					for element in activeRoom.enemiesInRoom:
@@ -635,7 +639,7 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 		return
 	#sword attacks
 	if(get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.ENEMY && attackType == GlobalVariables.ATTACKTYPE.SWORD):
-		print("Woosh Player Sword Attack hit")
+		print("Woosh Player Sword Attack hit " + str(attackDamage))
 		var attackedEnemy = get_cell_pawn(world_to_map(player.position) + attack_direction)
 		attackedEnemy.inflictDamage(attackDamage, attackType)
 	elif(get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.EMPTY && attackType == GlobalVariables.ATTACKTYPE.SWORD):
@@ -719,6 +723,7 @@ func _on_enemy_defeated(enemy):
 	print("Batsuuum Enemy was defeated")
 	#set room to cleared if all enemies were defeated
 	if(activeRoom.enemiesInRoom.size() == 0):
+		emit_signal("enemyTurnDoneSignal")
 		activeRoom.roomCleared=true
 		mainPlayer.inClearedRoom = true
 		#delete all projectiles 

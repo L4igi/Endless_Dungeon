@@ -55,7 +55,7 @@ func _ready():
 func _process(delta): 
 	randomize()
 	if(isDisabled == false): 
-		if lifePoints != 0:
+		if lifePoints > 0:
 			if !enemyTurnDone:
 				if movementCount >= 1 && attackCount >= 1 :
 					enemyTurnDone = true 
@@ -316,7 +316,7 @@ func generateEnemy(mageEnemyCount):
 
 func inflictDamage(inflictattackDamage, inflictattackType):
 	lifePoints -= inflictattackDamage
-	if lifePoints == 0 :
+	if lifePoints <= 0 :
 		Grid.activeRoom.enemiesInRoom.erase(self)
 		Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("EMPTY")) 
 		set_process(false)
