@@ -56,7 +56,7 @@ func _process(delta):
 	randomize()
 	if(isDisabled == false): 
 		if lifePoints > 0:
-			if !enemyTurnDone:
+			if !enemyTurnDone && !enemyDefeated:
 				if movementCount >= 1 && attackCount >= 1 :
 					enemyTurnDone = true 
 					#print("SIGNAL ENEMY MADE MOVE TO PLAYER")
@@ -317,13 +317,14 @@ func generateEnemy(mageEnemyCount):
 func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition):
 	lifePoints -= inflictattackDamage
 	if lifePoints <= 0 :
+		enemyDefeated = true
 		Grid.activeRoom.enemiesInRoom.erase(self)
 		Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("EMPTY")) 
 		set_process(false)
 		#play defeat animation 
 		$AnimationPlayer.play("defeat", -1, 3.0)
 		#move sprite to position of death 
-		$Tween.interpolate_property($Sprite, "position", 0,0, $AnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+		$Tween.interpolate_property(self, "position",  Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset,Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset, $AnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
 		$Tween.start()
 		yield($AnimationPlayer, "animation_finished")
 		set_process(true)

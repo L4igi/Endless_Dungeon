@@ -326,24 +326,24 @@ func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile
 	#player player projectile interaction
 	elif magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
 		print("Player projectiles hit each other " + str(magicProjectile1.movementDirection))
-		if magicProjectile1.movementDirection == magicProjectile2.movementDirection:
-			match magicProjectile1.movementDirection:
-				Vector2(0,1):
-					magicProjectile1.movementDirection = Vector2(1,0)
-					magicProjectile2.movementDirection = Vector2(-1,0)
-				Vector2(0,-1):
-					magicProjectile1.movementDirection = Vector2(1,0)
-					magicProjectile2.movementDirection = Vector2(-1,0)
-				Vector2(-1,0):
-					magicProjectile1.movementDirection = Vector2(0,1)
-					magicProjectile2.movementDirection = Vector2(0,-1)
-				Vector2(1,0):
-					magicProjectile1.movementDirection = Vector2(0,1)
-					magicProjectile2.movementDirection = Vector2(0,-1)
-			magicProjectile1.isMiniProjectile = true
-			magicProjectile2.isMiniProjectile = true
-			magicProjectile1.create_mini_projectile(1)
-			magicProjectile2.create_mini_projectile(2)
+		#if magicProjectile1.movementDirection == magicProjectile2.movementDirection:
+		match magicProjectile1.movementDirection:
+			Vector2(0,1):
+				magicProjectile1.movementDirection = Vector2(1,0)
+				magicProjectile2.movementDirection = Vector2(-1,0)
+			Vector2(0,-1):
+				magicProjectile1.movementDirection = Vector2(1,0)
+				magicProjectile2.movementDirection = Vector2(-1,0)
+			Vector2(-1,0):
+				magicProjectile1.movementDirection = Vector2(0,1)
+				magicProjectile2.movementDirection = Vector2(0,-1)
+			Vector2(1,0):
+				magicProjectile1.movementDirection = Vector2(0,1)
+				magicProjectile2.movementDirection = Vector2(0,-1)
+		magicProjectile1.isMiniProjectile = true
+		magicProjectile2.isMiniProjectile = true
+		magicProjectile1.create_mini_projectile(1)
+		magicProjectile2.create_mini_projectile(2)
 
 func update_pawn_position(pawn, cell_start, cell_target):
 	var oldCellTargetType = get_cellv(cell_target)
@@ -552,7 +552,7 @@ func create_enemy_room(unlockedDoor):
 	randomize()
 	#add adjustment for enemy amount 
 	#-2 because of walls on both sides
-	var enemiesToSpawn = randi()%4+1
+	var enemiesToSpawn = 5
 	if unlockedDoor.roomSizeMultiplier == Vector2(1,1):
 		enemiesToSpawn = randi()%3+1
 	elif unlockedDoor.roomSizeMultiplier == Vector2(2,2):
@@ -833,21 +833,21 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 
 func on_Power_Block_explode(powerBlock):
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(1,0)) == get_tileset().find_tile_by_name("ENEMY"):
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,0)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK)
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,0)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(1,0))
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(-1,0)) == get_tileset().find_tile_by_name("ENEMY"):
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,0)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK)
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,0)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(-1,0))
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(0,1)) == get_tileset().find_tile_by_name("ENEMY"):
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(0,1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK)
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(0,1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(0,1))
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(0,-1)) == get_tileset().find_tile_by_name("ENEMY"):
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(0,-1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK)
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(0,-1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(0,-1))
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(1,1)) == get_tileset().find_tile_by_name("ENEMY"):
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK)
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(1,1))
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(1,-1)) == get_tileset().find_tile_by_name("ENEMY"):
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,-1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK)
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,-1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(1,-1))
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(-1,1)) == get_tileset().find_tile_by_name("ENEMY"):
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK)
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(-1,1))
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(-1,-1)) == get_tileset().find_tile_by_name("ENEMY"):
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK)
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(-1,-1))
 		
 	powerBlocksInActiveRoom.erase(powerBlock)
 	powerBlock.queue_free()
@@ -983,6 +983,8 @@ func _on_enemy_defeated(enemy):
 						itemPosMover += Vector2(1,0)
 				newItem.position = newItemPosition
 				if get_cellv(world_to_map(newItem.position))==TILETYPES.BLOCK:
+					get_cell_pawn(world_to_map(newItem.position)).queue_free()
+				if  get_cellv(world_to_map(newItemPosition)) == TILETYPES.ENEMY:
 					get_cell_pawn(world_to_map(newItem.position)).queue_free()
 				newItem.keyValue = itemToGenerate
 				add_child(newItem)
