@@ -267,8 +267,10 @@ func request_move(pawn, direction):
 					projectilesInActiveRoom.erase(pawn)
 					set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
 					pawn.queue_free()
-				elif activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && pawn.projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK:
-					pass
+				elif activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
+					set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
+					set_cellv(cell_target, get_tileset().find_tile_by_name("MAGICPROJECTILE"))
+					return map_to_world(cell_target)
 				else:
 					return pawn.position
 			TILETYPES.WALL:
@@ -884,8 +886,11 @@ func on_powerBlock_spawn_magic(powerBlock, previousDirections = []):
 			GlobalVariables.DIRECTION.RIGHT:
 				newMagicProjectile.position = powerBlock.position+map_to_world(Vector2(1,0))
 				newMagicProjectile.movementDirection = Vector2(1,0)
-		newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.POWERBLOCK		
-		if get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("EMPTY") || get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("PLAYER") || get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("MAGICPROJECTILE"):
+		newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.POWERBLOCK
+		if get_cellv(world_to_map(newMagicProjectile.position)+newMagicProjectile.movementDirection) == get_tileset().find_tile_by_name("BLOCK"):
+			adjacentBlockHit.append(get_cell_pawn(world_to_map(newMagicProjectile.position)+newMagicProjectile.movementDirection))
+			newMagicProjectile.queue_free()
+		elif get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("EMPTY") || get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("PLAYER") || get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("MAGICPROJECTILE"):
 			add_child(newMagicProjectile)
 			projectilesInActiveRoom.append(newMagicProjectile)
 			set_cellv(world_to_map(newMagicProjectile.position), get_tileset().find_tile_by_name("MAGICPROJECTILE"))
