@@ -34,6 +34,8 @@ var usedItems = []
 
 var inClearedRoom = true
 
+var inRoomType = null
+
 var attackType = GlobalVariables.ATTACKTYPE.SWORD
 
 var GUI = preload("res://GUI/GUIScene.tscn")
@@ -68,7 +70,7 @@ func _process(delta):
 
 		if !playerTurnDone && ! waitingForEventBeforeContinue:
 			var movementDirection = get_movement_direction()
-			if inClearedRoom:
+			if inClearedRoom || inRoomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 				movementDirection = get_free_movement_direction()
 			var attackDirection = get_attack_direction()
 			
@@ -152,8 +154,8 @@ func player_passed_door():
 				animationPlay = str("walk_down")
 			Vector2(0,-1):
 				animationPlay = str("walk_up")
-		$AnimationPlayer.play(animationPlay, -1, 6.0)
-		$Tween.interpolate_property(self, "position", position, targetPosition , $AnimationPlayer.current_animation_length/6.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+		$AnimationPlayer.play(animationPlay, -1, 8.0)
+		$Tween.interpolate_property(self, "position", position, targetPosition , $AnimationPlayer.current_animation_length/8.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
 		playerPreviousPosition = position
 		#position = target_position
 		$Tween.start()

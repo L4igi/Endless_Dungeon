@@ -194,9 +194,11 @@ func request_move(pawn, direction):
 #	if(pawn.type == TILETYPES.ENEMY):
 	elif match_Enum(pawn.type) == "ENEMY":
 		# add other enemies moving freely in the room 
-		if pawn.enemyType == GlobalVariables.ENEMYTYPE.WARRIROENEMY:
-			if get_cellv(cell_target+direction) == TILETYPES.DOOR || get_cellv(cell_target+direction) == TILETYPES.UNLOCKEDDOOR:
-				return pawn.position 
+		if get_cellv(cell_target+direction) == TILETYPES.DOOR || get_cellv(cell_target+direction) == TILETYPES.UNLOCKEDDOOR:
+			return pawn.position 
+		if get_cellv(cell_target+direction*2) == TILETYPES.DOOR || get_cellv(cell_target+direction*2) == TILETYPES.UNLOCKEDDOOR:
+			return pawn.position 
+
 		if pawn.enemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			#set mageenmy goal directly 
 			cell_target = direction
@@ -385,6 +387,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					#remove rojectiles in old room
 				activeRoom = oldCellTargetNode
 				if activeRoom != null:
+					pawn.inRoomType = activeRoom.roomType
 					for element in activeRoom.enemiesInRoom:
 						element.isDisabled = false
 			if(oldCellTargetType == get_tileset().find_tile_by_name("UNLOCKEDDOOR")):
@@ -766,7 +769,7 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 	#block generating attack 
 	if(attackType == GlobalVariables.ATTACKTYPE.BLOCK):
 		if get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.EMPTY:
-			print("Hitting EMPTY")
+			#print("Hitting EMPTY")
 			player.waitingForEventBeforeContinue = false
 			var newPowerBlock = PowerBlock.instance()
 			newPowerBlock.position = player.position + map_to_world(attack_direction)
@@ -775,9 +778,9 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 			set_cellv(world_to_map(player.position) + attack_direction, get_tileset().find_tile_by_name("BLOCK"))
 		elif get_cellv(world_to_map(player.position) + attack_direction) == get_tileset().find_tile_by_name("BLOCK"):
 			var powerBlockToDelete = get_cell_pawn(world_to_map(player.position) + attack_direction)
-			print("Hitting Block")
+			#print("Hitting Block")
 			if activeRoom != null:
-				print("In Puzzle room")
+				#print("In Puzzle room")
 				if activeRoom.roomType == activeRoom.ROOM_TYPE.PUZZLEROOM:
 					player.waitingForEventBeforeContinue = false
 					powerBlocksInActiveRoom.erase(powerBlockToDelete)
@@ -785,21 +788,21 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 					set_cellv(world_to_map(player.position) + attack_direction, get_tileset().find_tile_by_name("EMPTY"))
 					
 				if activeRoom.roomType == activeRoom.ROOM_TYPE.ENEMYROOM:
-					print("Calling block explode")
+					#print("Calling block explode")
 					if powerBlockToDelete.explodeBlock():
 						pass
 					else:
-						print("block not exploding")
+						#print("block not exploding")
 						player.waitingForEventBeforeContinue = false
 						powerBlocksInActiveRoom.erase(powerBlockToDelete)
 						powerBlockToDelete.queue_free()
 						set_cellv(world_to_map(player.position) + attack_direction, get_tileset().find_tile_by_name("EMPTY"))
 			else:
-				print("Calling block explode")
+				#print("Calling block explode")
 				if powerBlockToDelete.explodeBlock():
 					pass
 				else:
-					print("block not exploding")
+					#print("block not exploding")
 					player.waitingForEventBeforeContinue = false
 					powerBlocksInActiveRoom.erase(powerBlockToDelete)
 					powerBlockToDelete.queue_free()

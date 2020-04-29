@@ -17,10 +17,7 @@ func _ready():
 
 func addCounters(roomType):
 	if counters == 5:
-		if roomType != null && roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
-			counters = 0
-		else:
-			return
+		return
 	counters += 1
 	
 	if roomType != null && roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
@@ -71,8 +68,8 @@ func explodeBlock():
 		return false 
 		
 	set_process(false)
-	$AnimationPlayer.play("ExplodeBlock", -1, 0.5)
-	$Tween.interpolate_property(self, "position", position, position , $AnimationPlayer.current_animation_length*2, Tween.TRANS_LINEAR, Tween.EASE_IN)
+	$AnimationPlayer.play("ExplodeBlock", -1, 1.0)
+	$Tween.interpolate_property(self, "position", position, position , $AnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
 	#position = target_position
 	$Tween.start()
 	yield($AnimationPlayer, "animation_finished")
