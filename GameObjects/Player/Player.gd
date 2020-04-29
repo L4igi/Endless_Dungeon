@@ -235,6 +235,7 @@ func inflict_damage_playerDefeated(attackDamage, attackType):
 	guiElements.change_health(attackDamage)
 	if lifePoints == 0:
 		guiElements.set_health(10)
+		print("Player defeated emmiting signal")
 		emit_signal("onPlayerDefeated", self, lifePoints)
 		return true
 	return false

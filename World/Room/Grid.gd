@@ -671,6 +671,8 @@ func _on_Player_Made_Move():
 		
 	if activeRoom == null:
 		emit_signal("enemyTurnDoneSignal")
+	elif activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && !projectilesInActiveRoom.empty():
+		return
 	elif activeRoom.enemiesInRoom.empty():
 			emit_signal("enemyTurnDoneSignal")
 	elif projectilesInActiveRoom.empty():
@@ -893,6 +895,7 @@ func _on_Player_Defeated(player, lifePoints):
 	#todo: dont hardcode life
 	player.lifePoints = lifePoints
 	MainCamera.set_camera_starting_room()
+	emit_signal("enemyTurnDoneSignal")
 
 	if(activeRoom != null && activeRoom.enemiesInRoom.size() != 0):
 		#disable elements in room just left
