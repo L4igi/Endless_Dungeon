@@ -53,7 +53,7 @@ func _ready():
 	
 	Grid.connect("enemyTurnDoneSignal", self, "_on_enemy_turn_done_signal")
 
-func _process(delta):	
+func _process(delta):
 	if !disablePlayerInput:
 		if movedThroughDoorDirection!=Vector2.ZERO:
 			player_passed_door()

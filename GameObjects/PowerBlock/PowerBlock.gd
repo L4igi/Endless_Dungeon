@@ -17,7 +17,10 @@ func _ready():
 
 func addCounters(roomType):
 	if counters == 5:
-		return
+		if roomType != null && roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
+			counters = 0
+		else:
+			return
 	counters += 1
 	
 	if roomType != null && roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:

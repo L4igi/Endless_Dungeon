@@ -712,7 +712,7 @@ func _on_projectiles_made_move(projectile):
 func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 	randomize()
 	#if player hits wall return 
-	if get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.WALL || get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.DOOR || get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.UNLOCKEDDOOR:
+	if attackType != GlobalVariables.ATTACKTYPE.BLOCK && get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.WALL || get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.DOOR || get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.UNLOCKEDDOOR:
 		return
 	#sword attacks
 	if(get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.ENEMY && attackType == GlobalVariables.ATTACKTYPE.SWORD):
@@ -766,29 +766,46 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 	#block generating attack 
 	if(attackType == GlobalVariables.ATTACKTYPE.BLOCK):
 		if get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.EMPTY:
+			print("Hitting EMPTY")
 			player.waitingForEventBeforeContinue = false
 			var newPowerBlock = PowerBlock.instance()
 			newPowerBlock.position = player.position + map_to_world(attack_direction)
 			add_child(newPowerBlock)
 			powerBlocksInActiveRoom.append(newPowerBlock)
 			set_cellv(world_to_map(player.position) + attack_direction, get_tileset().find_tile_by_name("BLOCK"))
-		elif get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.BLOCK:
+		elif get_cellv(world_to_map(player.position) + attack_direction) == get_tileset().find_tile_by_name("BLOCK"):
 			var powerBlockToDelete = get_cell_pawn(world_to_map(player.position) + attack_direction)
+			print("Hitting Block")
 			if activeRoom != null:
+				print("In Puzzle room")
 				if activeRoom.roomType == activeRoom.ROOM_TYPE.PUZZLEROOM:
 					player.waitingForEventBeforeContinue = false
 					powerBlocksInActiveRoom.erase(powerBlockToDelete)
 					powerBlockToDelete.queue_free()
 					set_cellv(world_to_map(player.position) + attack_direction, get_tileset().find_tile_by_name("EMPTY"))
+					
+				if activeRoom.roomType == activeRoom.ROOM_TYPE.ENEMYROOM:
+					print("Calling block explode")
+					if powerBlockToDelete.explodeBlock():
+						pass
+					else:
+						print("block not exploding")
+						player.waitingForEventBeforeContinue = false
+						powerBlocksInActiveRoom.erase(powerBlockToDelete)
+						powerBlockToDelete.queue_free()
+						set_cellv(world_to_map(player.position) + attack_direction, get_tileset().find_tile_by_name("EMPTY"))
 			else:
+				print("Calling block explode")
 				if powerBlockToDelete.explodeBlock():
 					pass
 				else:
+					print("block not exploding")
 					player.waitingForEventBeforeContinue = false
 					powerBlocksInActiveRoom.erase(powerBlockToDelete)
 					powerBlockToDelete.queue_free()
 					set_cellv(world_to_map(player.position) + attack_direction, get_tileset().find_tile_by_name("EMPTY"))
 		else:
+			print("Waiting in else")
 			player.waitingForEventBeforeContinue = false
 	#hand attack
 	if(attackType == GlobalVariables.ATTACKTYPE.HAND):
