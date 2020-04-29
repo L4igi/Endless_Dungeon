@@ -112,6 +112,10 @@ func player_movement(movementDirection):
 			$AnimationPlayer.play("Idle")
 			set_process(true)
 			movementCount += 1
+			
+		if attackCount == 2 && movementCount == 0 || attackCount == 1 && movementCount == 1 || attackCount == 0 && movementCount == 2:
+			playerTurnDone=true
+			emit_signal("playerMadeMove")
 	
 func player_attack(attackDirection):
 	if attackDirection:
@@ -138,6 +142,10 @@ func player_attack(attackDirection):
 		
 		emit_signal("playerAttacked", self, attackDirection, attackDamage, attackType)
 		attackCount += 1
+		
+		if attackCount == 2 && movementCount == 0 || attackCount == 1 && movementCount == 1 || attackCount == 0 && movementCount == 2:
+			playerTurnDone=true
+			emit_signal("playerMadeMove")
 	
 func player_passed_door():
 	var targetPosition = Grid.request_move(self,movedThroughDoorDirection)
@@ -260,6 +268,7 @@ func _on_enemy_turn_done_signal():
 	movementCount = 0
 	attackCount = 0
 	playerTurnDone = false
+	disablePlayerInput = false
 
 func end_player_turn():
 	movementCount = 1

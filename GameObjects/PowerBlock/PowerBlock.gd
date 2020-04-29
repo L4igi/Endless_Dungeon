@@ -21,6 +21,7 @@ func addCounters(roomType):
 	counters += 1
 	
 	if roomType != null && roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
+		rotation_degrees = 0.0
 		match counters:
 			0:
 				$AnimationPlayer.play("PuzzleCounter0")
@@ -41,6 +42,7 @@ func addCounters(roomType):
 				availableDirections.append(GlobalVariables.DIRECTION.LEFT)
 				$AnimationPlayer.play("PuzzleCounter5")
 	else:
+		rotation_degrees = 0.0
 		match counters:
 			0:
 				$AnimationPlayer.play("Counter0")

@@ -875,10 +875,10 @@ func on_powerBlock_spawn_magic(powerBlock, previousPowerBlock = null):
 		for direction in previousPowerBlock.activeDirections:
 			match direction:
 				GlobalVariables.DIRECTION.UP:
-					if powerBlock.position.y-previousPowerBlock.position.y > 0:
+					if powerBlock.position.y-previousPowerBlock.position.y < 0:
 						activePowerBlockDirections.erase(GlobalVariables.DIRECTION.DOWN)
 				GlobalVariables.DIRECTION.DOWN:
-					if powerBlock.position.y-previousPowerBlock.position.y < 0:
+					if powerBlock.position.y-previousPowerBlock.position.y > 0:
 						activePowerBlockDirections.erase(GlobalVariables.DIRECTION.UP)
 				GlobalVariables.DIRECTION.LEFT:
 					if powerBlock.position.x-previousPowerBlock.position.x < 0:
