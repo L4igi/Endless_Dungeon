@@ -235,10 +235,10 @@ func get_use_nonkey_items():
 func inflict_damage_playerDefeated(attackDamage, attackType):
 	lifePoints -= attackDamage
 	guiElements.change_health(attackDamage)
-	if lifePoints == 0:
+	if lifePoints <= 0:
 		guiElements.set_health(10)
 		print("Player defeated emmiting signal")
-		emit_signal("onPlayerDefeated", self, lifePoints)
+		emit_signal("onPlayerDefeated", self)
 		return true
 	return false
 

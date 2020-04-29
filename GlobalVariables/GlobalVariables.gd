@@ -1,6 +1,6 @@
 extends Node
 
-var roomDimensions = 11
+var roomDimensions = 7
 
 enum ENEMYTYPE{BARRIERENEMY=0, MAGEENEMY=1, WARRIROENEMY=2, NINJAENEMY=3}
 

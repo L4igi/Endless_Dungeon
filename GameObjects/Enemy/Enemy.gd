@@ -289,7 +289,7 @@ func _on_player_turn_done_signal():
 func generateEnemy(mageEnemyCount): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = randi()%4
+	var enemieToGenerate = GlobalVariables.ENEMYTYPE.WARRIROENEMY
 	match enemieToGenerate:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
@@ -314,7 +314,7 @@ func generateEnemy(mageEnemyCount):
 			get_node("Sprite").set_modulate(Color(0,0,255,1.0))
 	return enemyType
 
-func inflictDamage(inflictattackDamage, inflictattackType):
+func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition):
 	lifePoints -= inflictattackDamage
 	if lifePoints <= 0 :
 		Grid.activeRoom.enemiesInRoom.erase(self)
@@ -322,10 +322,12 @@ func inflictDamage(inflictattackDamage, inflictattackType):
 		set_process(false)
 		#play defeat animation 
 		$AnimationPlayer.play("defeat", -1, 3.0)
-		$Tween.interpolate_property($Sprite, "position", 0, 0, $AnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+		#move sprite to position of death 
+		$Tween.interpolate_property($Sprite, "position", 0,0, $AnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
 		$Tween.start()
 		yield($AnimationPlayer, "animation_finished")
 		set_process(true)
 		emit_signal("enemyDefeated", self)
-		return
+	else:
+		return true
 	#set enemy difficulty and type set enemy stats based on difficulty set amount of enemies to spawn based on room size and difficulty 
