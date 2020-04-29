@@ -39,6 +39,8 @@ var powerBlocksInActiveRoom = []
 
 var enemiesMadeMoveCounter = 0
 
+var projectilesMadeMoveCounter = 0
+
 var barrierKeysNoSolution = []
 
 var barrierKeysSolutionSpawned = []
@@ -48,6 +50,10 @@ var mainPlayer
 signal enemyTurnDoneSignal
 
 signal playerTurnDoneSignal
+
+var cancelMagicPuzzelRoom = false
+
+var projectilesToDeleteTurnEnd = []
 
 func match_Enum(var index):
 	match index:
@@ -117,8 +123,14 @@ func _ready():
 	if(roomDimensions%2 == 0):
 		evenOddModifier = 1
 	create_starting_room(true)
+	
 
-
+func _process(delta):
+	pass
+			
+			
+			
+			
 func get_cell_pawn(coordinates):
 	for node in get_children():
 		if world_to_map(node.position) == coordinates:
@@ -253,12 +265,15 @@ func request_move(pawn, direction):
 					projectilesInActiveRoom.erase(pawn)
 					set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
 					pawn.queue_free()
+				elif activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && pawn.projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK:
+					pass
 				else:
 					return pawn.position
 			TILETYPES.WALL:
 				projectilesInActiveRoom.erase(pawn)
 				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
 				pawn.queue_free()
+				#print("Deleting magic projectile " + str(projectilesInActiveRoom.size()))
 			TILETYPES.DOOR:
 				projectilesInActiveRoom.erase(pawn)
 				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
@@ -270,14 +285,15 @@ func request_move(pawn, direction):
 			TILETYPES.MAGICPROJECTILE:
 				#if two enemy projectiles hit each other they bounce back 
 				var targetProjectile = get_cell_pawn(cell_target)
-				magicProjectileMagicProjectileInteraction(pawn, targetProjectile)
+				if targetProjectile:
+					magicProjectileMagicProjectileInteraction(pawn, targetProjectile)
 				return pawn.position
 			TILETYPES.BLOCK:
-				if activeRoom!= null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
-					get_cell_pawn(cell_target).spawnMagicFromBlock()
 				projectilesInActiveRoom.erase(pawn)
 				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
 				pawn.queue_free()
+				if activeRoom!= null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
+					get_cell_pawn(cell_target).spawnMagicFromBlock()
 			_:
 				projectilesInActiveRoom.erase(pawn)
 				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
@@ -286,19 +302,23 @@ func request_move(pawn, direction):
 
 func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile2):
 	#enemy enemy projectile interaction
-	if !magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && !magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
+	if magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
 		projectilesInActiveRoom.erase(magicProjectile1)
 		set_cellv(world_to_map(magicProjectile1.position),get_tileset().find_tile_by_name("EMPTY")) 
 		magicProjectile1.queue_free()
 		#magicProjectile1.movementDirection *=-1
 	#player enemy projectile interaction
-	elif magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && !magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER || !magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
-			projectilesInActiveRoom.erase(magicProjectile1)
-			set_cellv(world_to_map(magicProjectile1.position),get_tileset().find_tile_by_name("EMPTY")) 
-			magicProjectile1.queue_free()
-			projectilesInActiveRoom.erase(magicProjectile2)
-			set_cellv(world_to_map(magicProjectile2.position),get_tileset().find_tile_by_name("EMPTY")) 
-			magicProjectile2.queue_free()
+	elif magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
+			projectilesToDeleteTurnEnd.append(magicProjectile1)
+			projectilesToDeleteTurnEnd.append(magicProjectile2)
+#
+#			print("Enemy Projectile Player Projectile interaction ")
+#			projectilesInActiveRoom.erase(magicProjectile1)
+#			set_cellv(world_to_map(magicProjectile1.position),get_tileset().find_tile_by_name("EMPTY")) 
+#			projectilesInActiveRoom.erase(magicProjectile2)
+#			set_cellv(world_to_map(magicProjectile1.position) + magicProjectile1.movementDirection,get_tileset().find_tile_by_name("EMPTY")) 
+#			magicProjectile1.queue_free()
+#			magicProjectile2.queue_free()
 	#player player projectile interaction
 	elif magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
 		print("Player projectiles hit each other " + str(magicProjectile1.movementDirection))
@@ -349,33 +369,37 @@ func update_pawn_position(pawn, cell_start, cell_target):
 				pawn.movedThroughDoorDirection = Vector2(0,1)
 			if(oldCellTargetType == get_tileset().find_tile_by_name("DOOR")):
 				oldCellTargetNode.set_other_adjacent_room(activeRoom, direction)
+				if !projectilesInActiveRoom.empty():
+					#print("projectiles in active room not empty")
+					var tempProjectiles = projectilesInActiveRoom.duplicate()
+					for projectile in tempProjectiles:
+						set_cellv(world_to_map(projectile.position),get_tileset().find_tile_by_name("EMPTY")) 
+						projectile.queue_free()
+					projectilesInActiveRoom.clear()
+					tempProjectiles.clear()
 				if(activeRoom != null):
 					#disable elements in room just left
 					if !activeRoom.enemiesInRoom.empty():
 						for element in activeRoom.enemiesInRoom:
 							element.isDisabled = true
 					#remove rojectiles in old room
-					if !projectilesInActiveRoom.empty():
-						for projectile in projectilesInActiveRoom:
-							set_cellv(world_to_map(projectile.position),get_tileset().find_tile_by_name("EMPTY")) 
-							projectile.queue_free()
-						projectilesInActiveRoom.clear()
 				activeRoom = oldCellTargetNode
 				if activeRoom != null:
 					for element in activeRoom.enemiesInRoom:
 						element.isDisabled = false
 			if(oldCellTargetType == get_tileset().find_tile_by_name("UNLOCKEDDOOR")):
+				var tempProjectiles = projectilesInActiveRoom.duplicate()
+				for projectile in tempProjectiles:
+					set_cellv(world_to_map(projectile.position),get_tileset().find_tile_by_name("EMPTY")) 
+					projectile.queue_free()
+				projectilesInActiveRoom.clear()
+				tempProjectiles.clear()
 				if(activeRoom != null):
 					#disable elements in room just left
 					if !activeRoom.enemiesInRoom.empty():
 						for element in activeRoom.enemiesInRoom:
 							element.isDisabled = true
 					#remove rojectiles in old room
-					if !projectilesInActiveRoom.empty():
-						for projectile in projectilesInActiveRoom:
-							set_cellv(world_to_map(projectile.position),get_tileset().find_tile_by_name("EMPTY")) 
-							projectile.queue_free()
-						projectilesInActiveRoom.clear()
 				activeRoom=oldCellTargetNode.get_room_by_movement_direction(direction)
 				if activeRoom != null:
 					for element in activeRoom.enemiesInRoom:
@@ -624,19 +648,64 @@ func _on_enemy_made_move_ready():
 			#if all enemies made their move move all player projectiles 
 		
 func _on_Player_Made_Move():
-
-	for projectile in projectilesInActiveRoom:
-		projectile.move_projectile()
+	if !projectilesInActiveRoom.empty() && activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
+		var tempProjectiles = projectilesInActiveRoom.duplicate()
+		for projectile in tempProjectiles:
+			if projectile.projectileType != GlobalVariables.PROJECTILETYPE.POWERBLOCK:
+				projectile.move_projectile()
+		tempProjectiles.clear()
+	
+	else: 
+		var tempProjectiles = projectilesInActiveRoom.duplicate()
+		for projectile in tempProjectiles:
+			projectile.move_projectile()
+		tempProjectiles.clear()
+		if !projectilesToDeleteTurnEnd.empty():
+			var tempDeleteProjectiles = projectilesToDeleteTurnEnd.duplicate()
+			for delProjectile in tempDeleteProjectiles:
+				projectilesInActiveRoom.erase(delProjectile)
+				set_cellv(world_to_map(delProjectile.position),get_tileset().find_tile_by_name("EMPTY")) 
+				delProjectile.queue_free()
+			tempDeleteProjectiles.clear()
+			projectilesToDeleteTurnEnd.clear()
+		
 	if activeRoom == null:
 		emit_signal("enemyTurnDoneSignal")
-	else:
+	elif activeRoom.enemiesInRoom.empty():
+			emit_signal("enemyTurnDoneSignal")
+	elif projectilesInActiveRoom.empty():
+		#print("Player made move")
+		emit_signal("playerTurnDoneSignal")
+
+
+
+func _on_projectiles_made_move(projectile):
+	projectilesMadeMoveCounter +=1
+	#print("Projectiles " + str(projectile.name) + " made move " + str(projectilesMadeMoveCounter) + " projectiles in active room " + str(projectilesInActiveRoom.size())) 
+	if projectilesMadeMoveCounter >= projectilesInActiveRoom.size() && !projectilesInActiveRoom.empty():
+		projectilesMadeMoveCounter = 0
+		if cancelMagicPuzzelRoom:
+			var tempProjectiles = projectilesInActiveRoom.duplicate()
+			for projectile in tempProjectiles:
+				#interfere on next move projectile 
+				set_cellv(world_to_map(projectile.position),get_tileset().find_tile_by_name("EMPTY")) 
+				projectile.queue_free()
+			projectilesInActiveRoom.clear()
+			tempProjectiles.clear()
+			cancelMagicPuzzelRoom = false
+			emit_signal("enemyTurnDoneSignal")
+		elif activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
+			var tempProjectiles = projectilesInActiveRoom.duplicate()
+			for projectile in tempProjectiles:
+				projectile.move_projectile()
+			tempProjectiles.clear()
+		emit_signal("playerTurnDoneSignal")
+	if activeRoom !=null && projectilesInActiveRoom.empty():
 		if(activeRoom.enemiesInRoom.empty()):
 			emit_signal("enemyTurnDoneSignal")
-		else:
-			print("Player made move")
-			emit_signal("playerTurnDoneSignal")
-
-
+#			else:
+#				#print("Player made move")
+				
 
 func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 	randomize()
@@ -660,8 +729,9 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 	#wand attacks
 	#use wand on block in puzzle room 
 	if  activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.BLOCK && attackType == GlobalVariables.ATTACKTYPE.MAGIC:
-		var blockAttackedBySword = get_cell_pawn(world_to_map(player.position) + attack_direction)
-		blockAttackedBySword.spawnMagicFromBlock()
+		var blockAttackedByMagic = get_cell_pawn(world_to_map(player.position) + attack_direction)
+		blockAttackedByMagic.spawnMagicFromBlock()
+		player.end_player_turn()
 	elif (get_cellv(world_to_map(player.position) + attack_direction*2) == TILETYPES.ENEMY && attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		print("Woosh Player Wand Attack hit")
 		var attackedEnemy = get_cell_pawn(world_to_map(player.position) + attack_direction*2)
@@ -669,6 +739,7 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 	elif (get_cellv(world_to_map(player.position) + attack_direction*2) == TILETYPES.EMPTY && attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		print("Magic was used to attack")
 		var newMagicProjectile = MagicProjectile.instance()
+		newMagicProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
 		newMagicProjectile.position = player.position + map_to_world(attack_direction*2)
 		newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.PLAYER
 		newMagicProjectile.movementDirection = attack_direction
@@ -676,13 +747,20 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 		projectilesInActiveRoom.append(newMagicProjectile)
 		set_cellv(world_to_map(newMagicProjectile.position), get_tileset().find_tile_by_name("MAGICPROJECTILE"))
 	elif (get_cellv(world_to_map(player.position) + attack_direction*2) == TILETYPES.MAGICPROJECTILE && attackType == GlobalVariables.ATTACKTYPE.MAGIC):
-		var newMagicProjectile = MagicProjectile.instance()
-		newMagicProjectile.position = player.position + map_to_world(attack_direction*2)
-		newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.PLAYER
-		newMagicProjectile.movementDirection = attack_direction
-		add_child(newMagicProjectile)
-		projectilesInActiveRoom.append(newMagicProjectile)
-		magicProjectileMagicProjectileInteraction(newMagicProjectile, get_cell_pawn(world_to_map(player.position) + attack_direction*2))
+		if get_cell_pawn(world_to_map(player.position) + attack_direction*2).projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
+			var projectileToErase = get_cell_pawn(world_to_map(player.position) + attack_direction*2)
+			projectilesInActiveRoom.erase(projectileToErase)
+			set_cellv(world_to_map(projectileToErase.position),get_tileset().find_tile_by_name("EMPTY")) 
+			projectileToErase.queue_free()
+		else:
+			var newMagicProjectile = MagicProjectile.instance()
+			newMagicProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
+			newMagicProjectile.position = player.position + map_to_world(attack_direction*2)
+			newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.PLAYER
+			newMagicProjectile.movementDirection = attack_direction
+			add_child(newMagicProjectile)
+			projectilesInActiveRoom.append(newMagicProjectile)
+			magicProjectileMagicProjectileInteraction(newMagicProjectile, get_cell_pawn(world_to_map(player.position) + attack_direction*2))
 	#block generating attack 
 	if(attackType == GlobalVariables.ATTACKTYPE.BLOCK):
 		if get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.EMPTY:
@@ -751,8 +829,9 @@ func on_Power_Block_explode(powerBlock):
 	
 func on_powerBlock_spawn_magic(powerBlock):
 	for direction in powerBlock.activeDirections:
-		print("Spawining magic")
+		#print("Spawning magic")
 		var newMagicProjectile = MagicProjectile.instance()
+		newMagicProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
 		match direction:
 			GlobalVariables.DIRECTION.UP:
 				newMagicProjectile.position = powerBlock.position+map_to_world(Vector2(0,-1))
@@ -767,12 +846,25 @@ func on_powerBlock_spawn_magic(powerBlock):
 				newMagicProjectile.position = powerBlock.position+map_to_world(Vector2(1,0))
 				newMagicProjectile.movementDirection = Vector2(1,0)
 		newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.POWERBLOCK
-		add_child(newMagicProjectile)
-		projectilesInActiveRoom.append(newMagicProjectile)
-		set_cellv(world_to_map(newMagicProjectile.position), get_tileset().find_tile_by_name("MAGICPROJECTILE"))
-		print("PowerBlock position " + str(world_to_map(powerBlock.position)))
-		print("Power Block Magic position " + str(world_to_map(newMagicProjectile.position)))
-		
+		if get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("EMPTY") || get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("PLAYER") || get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("MAGICPROJECTILE"):
+			add_child(newMagicProjectile)
+			projectilesInActiveRoom.append(newMagicProjectile)
+			set_cellv(world_to_map(newMagicProjectile.position), get_tileset().find_tile_by_name("MAGICPROJECTILE"))
+			newMagicProjectile.move_projectile()
+#		if get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("BLOCK"):
+#			var tempPos = world_to_map(newMagicProjectile.position)
+#			newMagicProjectile.queue_free()
+#			get_cell_pawn(tempPos).spawnMagicFromBlock()
+		else:
+			newMagicProjectile.queue_free()
+		#print("PowerBlock position " + str(world_to_map(powerBlock.position)))
+		#print("Power Block Magic position " + str(world_to_map(newMagicProjectile.position)))
+	
+
+func cancel_magic_in_puzzle_room():
+	if activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && !projectilesInActiveRoom.empty():
+		cancelMagicPuzzelRoom = true
+	
 func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage):
 	if(get_cellv(attackCell) == TILETYPES.PLAYER):
 		print("Woosh ENEMY Attack hit")
@@ -782,10 +874,10 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage):
 			print("Batsuuum Player was defeated reset to start")
 	elif (attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		#spawn magic projectile
-		if(get_cellv(world_to_map(map_to_world(attackCell)+GlobalVariables.tileOffset))!=TILETYPES.ENEMY && get_cellv(world_to_map(map_to_world(attackCell)+GlobalVariables.tileOffset))!=TILETYPES.MAGICPROJECTILE):
+		if(get_cellv(world_to_map(map_to_world(attackCell)+GlobalVariables.tileOffset))==TILETYPES.EMPTY):
 			var newMagicProjectile = MagicProjectile.instance()
+			newMagicProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
 			newMagicProjectile.position = map_to_world(attackCell)+GlobalVariables.tileOffset
-			newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.PLAYER
 			newMagicProjectile.movementDirection = attackCell-world_to_map(enemy.position)
 			newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.ENEMY
 			add_child(newMagicProjectile)

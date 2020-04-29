@@ -84,3 +84,5 @@ anims/enemy_shoot = SubResource( 1 )
 anims/mini1shoot = SubResource( 2 )
 anims/mini2shoot = SubResource( 3 )
 anims/shoot = SubResource( 4 )
+
+[node name="Tween" type="Tween" parent="."]

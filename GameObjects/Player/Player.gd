@@ -204,6 +204,9 @@ func get_attack_mode():
 	if Input.is_action_just_pressed("Mode_Magic"):
 		guiElements.change_attack_mode(GlobalVariables.ATTACKTYPE.MAGIC)
 		attackDamage = 1
+		#if used in puzzle room while magic is flying cancels out all magic
+		if attackType == GlobalVariables.ATTACKTYPE.MAGIC:
+			Grid.cancel_magic_in_puzzle_room()
 		return GlobalVariables.ATTACKTYPE.MAGIC
 		
 	if Input.is_action_just_pressed("Mode_Block"):
@@ -254,3 +257,7 @@ func _on_enemy_turn_done_signal():
 	movementCount = 0
 	attackCount = 0
 	playerTurnDone = false
+
+func end_player_turn():
+	movementCount = 1
+	attackCount = 1

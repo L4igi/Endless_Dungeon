@@ -8,18 +8,24 @@ export(CELL_TYPES) var type = CELL_TYPES.MAGICPROJECTILE
 var movementDirection 
 var attackDamage = 1
 var projectileType
+var toBeDeleted = false
 var isMiniProjectile = false
 
+signal projectileMadeMove (projectile)
+
 func _ready():
-	pass # Replace with function body.
+	pass
 
 func move_projectile():
 	var target_position = Grid.request_move(self, movementDirection)
 	if(target_position):
-		position=target_position
+		$Tween.interpolate_property(self, "position", position, target_position , 0.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+		$Tween.start()
+		yield($Tween, "tween_completed")
+		emit_signal("projectileMadeMove", self)
 
 func play_enemy_projectile_animation():
-	print("Animationplayer enemy shoot")
+	#print("Animationplayer enemy shoot")
 	$AnimationPlayer.play("enemy_shoot")
 	
 func create_mini_projectile(projectile):
