@@ -179,8 +179,9 @@ func request_move(pawn, direction):
 					projectilesInActiveRoom.erase(object_pawn)
 					object_pawn.queue_free()
 					return update_pawn_position(pawn, cell_start, cell_target)
-				else:
+				elif object_pawn.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
 					projectilesInActiveRoom.erase(object_pawn)
+					set_cellv(world_to_map(object_pawn.position), get_tileset().find_tile_by_name("EMPTY"))
 					object_pawn.queue_free()
 					if pawn.inflict_damage_playerDefeated(object_pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC):
 						pawn.movementCount=2
@@ -325,7 +326,7 @@ func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile
 #			magicProjectile2.queue_free()
 	#player player projectile interaction
 	elif magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
-		print("Player projectiles hit each other " + str(magicProjectile1.movementDirection))
+		#print("Player projectiles hit each other " + str(magicProjectile1.movementDirection))
 		#if magicProjectile1.movementDirection == magicProjectile2.movementDirection:
 		match magicProjectile1.movementDirection:
 			Vector2(0,1):
@@ -344,6 +345,13 @@ func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile
 		magicProjectile2.isMiniProjectile = true
 		magicProjectile1.create_mini_projectile(1)
 		magicProjectile2.create_mini_projectile(2)
+		
+	# PuzzleProjectile puzzleprojectile interaction:
+	elif magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK:
+		print("Magic Projectile Puzzle interaction")
+		projectilesInActiveRoom.erase(magicProjectile1)
+		set_cellv(world_to_map(magicProjectile1.position),get_tileset().find_tile_by_name("EMPTY")) 
+		magicProjectile1.queue_free()
 
 func update_pawn_position(pawn, cell_start, cell_target):
 	var oldCellTargetType = get_cellv(cell_target)
@@ -390,10 +398,12 @@ func update_pawn_position(pawn, cell_start, cell_target):
 				activeRoom = oldCellTargetNode
 				if activeRoom != null:
 					pawn.inRoomType = activeRoom.roomType
+					#print ("Player in Room " + str(pawn.inRoomType))
 					for element in activeRoom.enemiesInRoom:
 						element.isDisabled = false
 				else:
 					pawn.inRoomType = null
+					#print ("Player in Room " + str(pawn.inRoomType))
 			if(oldCellTargetType == get_tileset().find_tile_by_name("UNLOCKEDDOOR")):
 				var tempProjectiles = projectilesInActiveRoom.duplicate()
 				for projectile in tempProjectiles:
@@ -409,9 +419,13 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					#remove rojectiles in old room
 				activeRoom=oldCellTargetNode.get_room_by_movement_direction(direction)
 				if activeRoom != null:
+					pawn.inRoomType = activeRoom.roomType
+					#print ("Player in Room " + str(pawn.inRoomType))
 					for element in activeRoom.enemiesInRoom:
 						element.isDisabled = false
-
+				else:
+					pawn.inRoomType = null
+					#print ("Player in Room " + str(pawn.inRoomType))
 						
 			#update camera position 
 			var mainCamera = get_node("/root/MainCamera")
@@ -854,20 +868,24 @@ func on_Power_Block_explode(powerBlock):
 	set_cellv(world_to_map(powerBlock.position), get_tileset().find_tile_by_name("EMPTY"))
 	mainPlayer.waitingForEventBeforeContinue = false
 	
-func on_powerBlock_spawn_magic(powerBlock, previousDirections = []):
+func on_powerBlock_spawn_magic(powerBlock, previousPowerBlock = null):
 	var adjacentBlockHit = []
 	var activePowerBlockDirections = powerBlock.activeDirections.duplicate()
-	if !previousDirections.empty():
-		for direction in previousDirections:
+	if previousPowerBlock != null && !previousPowerBlock.activeDirections.empty():
+		for direction in previousPowerBlock.activeDirections:
 			match direction:
 				GlobalVariables.DIRECTION.UP:
-					activePowerBlockDirections.erase(GlobalVariables.DIRECTION.DOWN)
+					if powerBlock.position.y-previousPowerBlock.position.y > 0:
+						activePowerBlockDirections.erase(GlobalVariables.DIRECTION.DOWN)
 				GlobalVariables.DIRECTION.DOWN:
-					activePowerBlockDirections.erase(GlobalVariables.DIRECTION.UP)
+					if powerBlock.position.y-previousPowerBlock.position.y < 0:
+						activePowerBlockDirections.erase(GlobalVariables.DIRECTION.UP)
 				GlobalVariables.DIRECTION.LEFT:
-					activePowerBlockDirections.erase(GlobalVariables.DIRECTION.RIGHT)
+					if powerBlock.position.x-previousPowerBlock.position.x < 0:
+						activePowerBlockDirections.erase(GlobalVariables.DIRECTION.RIGHT)
 				GlobalVariables.DIRECTION.RIGHT:
-					activePowerBlockDirections.erase(GlobalVariables.DIRECTION.LEFT)
+					if powerBlock.position.x-previousPowerBlock.position.x > 0:
+						activePowerBlockDirections.erase(GlobalVariables.DIRECTION.LEFT)
 					
 	for direction in activePowerBlockDirections:
 		#print("Spawning magic")
@@ -903,7 +921,7 @@ func on_powerBlock_spawn_magic(powerBlock, previousDirections = []):
 		#print("PowerBlock position " + str(world_to_map(powerBlock.position)))
 		#print("Power Block Magic position " + str(world_to_map(newMagicProjectile.position)))
 	for adjacentBlock in adjacentBlockHit:
-		on_powerBlock_spawn_magic(adjacentBlock, powerBlock.activeDirections)
+		on_powerBlock_spawn_magic(adjacentBlock, powerBlock)
 
 func cancel_magic_in_puzzle_room():
 	if activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && !projectilesInActiveRoom.empty():

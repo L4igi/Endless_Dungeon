@@ -69,7 +69,7 @@ func _process(delta):
 			
 
 		if !playerTurnDone && ! waitingForEventBeforeContinue:
-			var movementDirection = get_movement_direction()
+			var movementDirection = get_free_movement_direction()
 			if inClearedRoom || inRoomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 				movementDirection = get_free_movement_direction()
 			var attackDirection = get_attack_direction()
