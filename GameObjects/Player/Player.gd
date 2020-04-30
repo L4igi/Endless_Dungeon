@@ -93,7 +93,7 @@ func _process(delta):
 			elif attackCount >= 2 && movementCount >= 0:
 				playerTurnDone=true
 				emit_signal("playerMadeMove")
-				
+#
 func player_movement(movementDirection):
 	if movementDirection:
 		var target_position = Grid.request_move(self, movementDirection)
@@ -120,7 +120,7 @@ func player_movement(movementDirection):
 			set_process(true)
 			movementCount += 1
 			
-		if attackCount == 2 && movementCount == 0 || attackCount == 1 && movementCount == 1 || attackCount == 0 && movementCount == 2:
+		if !playerTurnDone && attackCount == 2 && movementCount == 0 || attackCount == 1 && movementCount == 1 || attackCount == 0 && movementCount == 2:
 			playerTurnDone=true
 			emit_signal("playerMadeMove")
 	
@@ -150,7 +150,7 @@ func player_attack(attackDirection):
 		emit_signal("playerAttacked", self, attackDirection, attackDamage, attackType)
 		attackCount += 1
 		
-		if attackCount == 2 && movementCount == 0 || attackCount == 1 && movementCount == 1 || attackCount == 0 && movementCount == 2:
+		if !playerTurnDone && attackCount == 2 && movementCount == 0 || attackCount == 1 && movementCount == 1 || attackCount == 0 && movementCount == 2:
 			playerTurnDone=true
 			emit_signal("playerMadeMove")
 	
@@ -177,10 +177,13 @@ func player_passed_door():
 		yield($AnimationPlayer, "animation_finished")
 		$AnimationPlayer.play("Idle")
 		set_process(true)
-		movementCount = 0
-		attackCount = 0
-		playerTurnDone = false
-		disablePlayerInput = false
+		if Grid.activeRoom != null && Grid.activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
+			emit_signal("playerMadeMove")
+		else:
+			movementCount = 0
+			attackCount = 0
+			playerTurnDone = false
+			disablePlayerInput = false
 	
 func player_interact_puzzle_block(puzzleBlockDirection):
 	if puzzleBlockDirection:

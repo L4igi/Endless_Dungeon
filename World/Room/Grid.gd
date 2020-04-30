@@ -17,6 +17,8 @@ var PowerBlock = preload("res://GameObjects/PowerBlock/PowerBlock.tscn")
 
 var Player = preload("res://GameObjects/Player/Player.tscn")
 
+var PuzzlePiece = preload("res://GameObjects/Puzzle/PuzzlePiece.tscn")
+
 var roomDimensions = GlobalVariables.roomDimensions
 
 var evenOddModifier = 0 
@@ -58,6 +60,12 @@ var projectilesToDeleteTurnEnd = []
 var activatedPuzzleBlock 
 
 var magicProjectileLoopLevel = 0
+
+var puzzlePiecesAnimationDoneCounter = 0
+
+var roomJustEntered = false
+
+var puzzleAnimationPlaying = false
 
 func match_Enum(var index):
 	match index:
@@ -175,8 +183,10 @@ func request_move(pawn, direction):
 				var object_pawn = get_cell_pawn(cell_target)
 				if(object_pawn.request_door_unlock(pawn.itemsInPosession)):
 					object_pawn.unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance)
+					roomJustEntered = true
 					return update_pawn_position(pawn, cell_start, cell_target)
 			TILETYPES.UNLOCKEDDOOR:
+				roomJustEntered = true
 				return update_pawn_position(pawn, cell_start, cell_target)
 			TILETYPES.MAGICPROJECTILE:
 				var object_pawn = get_cell_pawn(cell_target)
@@ -562,7 +572,56 @@ func enableEnemyAttack(enemy,attackType, horizontalVerticalAttack, diagonalAttac
 	return Vector2.ZERO
 
 func create_puzzle_room(unlockedDoor):
-	pass
+	randomize()
+	var puzzlePiecesToSpwan = 4
+	var calculateSpawnAgain = true
+	var alreadyUsedColors = []
+	var spawnCellArray = []
+	var spawnCellX
+	var spawnCellY
+	var spawnCell 
+	for puzzlePieces in puzzlePiecesToSpwan:
+		calculateSpawnAgain = true
+		while(calculateSpawnAgain == true):
+			spawnCellX = randi()%(int(unlockedDoor.roomSize.x-2))+1
+			spawnCellY = randi()%(int(unlockedDoor.roomSize.y-2))+1
+			spawnCell = spawnCellX*spawnCellY
+			var spawnCords = world_to_map(unlockedDoor.doorRoomLeftMostCorner) + Vector2(spawnCellX, spawnCellY)
+			#print("Spawn Coords" + str(spawnCords))
+			if get_cellv(spawnCords - Vector2(1,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(-1,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,1)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,-1)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(-1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,1)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,-1)) == TILETYPES.UNLOCKEDDOOR:
+				return
+			elif get_cellv(spawnCords + Vector2(1,0)) == TILETYPES.WALL && get_cellv(spawnCords + Vector2(-1,0)) == TILETYPES.WALL || get_cellv(spawnCords + Vector2(0,1)) == TILETYPES.WALL && get_cellv(spawnCords + Vector2(0,-1)) == TILETYPES.WALL:
+				return
+			if get_cellv(spawnCords - Vector2(2,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(-2,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,2)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,-2)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(-1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,1)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,-1)) == TILETYPES.UNLOCKEDDOOR:
+				return
+			if spawnCellArray.has(spawnCell):
+				return
+			else:
+				calculateSpawnAgain = false
+				spawnCellArray.append(spawnCell)
+		
+		var colorToUse = GlobalVariables.COLOR.RED
+		while alreadyUsedColors.has(colorToUse):
+			var randColor = randi()%5+1
+			match randColor:
+				1:
+					colorToUse = GlobalVariables.COLOR.RED
+				2:
+					colorToUse = GlobalVariables.COLOR.BLUE
+				3:
+					colorToUse = GlobalVariables.COLOR.GREEN
+				4:
+					colorToUse = GlobalVariables.COLOR.YELLOW
+		alreadyUsedColors.append(colorToUse)
+		var newPuzzlePiece = PuzzlePiece.instance()
+		newPuzzlePiece.color = colorToUse
+		newPuzzlePiece.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(spawnCellX, spawnCellY))
+		add_child(newPuzzlePiece)
+		newPuzzlePiece.connect("puzzlePlayedAnimation", self, "_on_puzzlepiece_played_animation")
+		set_cellv(world_to_map(newPuzzlePiece.position), get_tileset().find_tile_by_name("PUZZLEPIECE"))
+		unlockedDoor.puzzlePiecesInRoom.append(newPuzzlePiece)
+	
+
 func create_enemy_room(unlockedDoor):
 	randomize()
 	#add adjustment for enemy amount 
@@ -585,15 +644,14 @@ func create_enemy_room(unlockedDoor):
 				var spawnCords = world_to_map(unlockedDoor.doorRoomLeftMostCorner) + Vector2(spawnCellX, spawnCellY)
 				#print("Spawn Coords" + str(spawnCords))
 				if get_cellv(spawnCords - Vector2(1,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(-1,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,1)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,-1)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(-1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,1)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,-1)) == TILETYPES.UNLOCKEDDOOR:
-					#print("spawned too close to door ")
-					pass
-				if get_cellv(spawnCords + Vector2(1,0)) == TILETYPES.WALL && get_cellv(spawnCords + Vector2(-1,0)) == TILETYPES.WALL || get_cellv(spawnCords + Vector2(0,1)) == TILETYPES.WALL && get_cellv(spawnCords + Vector2(0,-1)) == TILETYPES.WALL:
-					#print("spawned too close to door")
-					pass
+					spawnCellX = randi()%(int(unlockedDoor.roomSize.x-2))+1
+					spawnCellY = randi()%(int(unlockedDoor.roomSize.y-2))+1
+				elif get_cellv(spawnCords + Vector2(1,0)) == TILETYPES.WALL && get_cellv(spawnCords + Vector2(-1,0)) == TILETYPES.WALL || get_cellv(spawnCords + Vector2(0,1)) == TILETYPES.WALL && get_cellv(spawnCords + Vector2(0,-1)) == TILETYPES.WALL:
+					spawnCellX = randi()%(int(unlockedDoor.roomSize.x-2))+1
+					spawnCellY = randi()%(int(unlockedDoor.roomSize.y-2))+1
 				else:
 					tooCloseToDoor = false
-				spawnCellX = randi()%(int(unlockedDoor.roomSize.x-2))+1
-				spawnCellY = randi()%(int(unlockedDoor.roomSize.y-2))+1
+
 			var spawnCell = spawnCellX*spawnCellY
 			if(!spawnCellArray.has(spawnCell)):
 				alreadyinArray = false
@@ -609,7 +667,7 @@ func create_enemy_room(unlockedDoor):
 				newEnemy.connect("enemyDefeated", self, "_on_enemy_defeated")
 				add_child(newEnemy)
 				set_cellv(world_to_map(newEnemy.position), get_tileset().find_tile_by_name(match_Enum(newEnemy.type)))
-				unlockedDoor.enemiesInRoom.append(get_cell_pawn(world_to_map(newEnemy.position)))
+				unlockedDoor.enemiesInRoom.append(newEnemy)
 	#print(spawnCellArray)
 
 func get_enemy_move_towards_player(enemy):
@@ -670,38 +728,54 @@ func _on_enemy_made_move_ready():
 			#if all enemies made their move move all player projectiles 
 		
 func _on_Player_Made_Move():
-	if !projectilesInActiveRoom.empty() && activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
-		var tempProjectiles = projectilesInActiveRoom.duplicate()
-		for projectile in tempProjectiles:
-			if projectile.projectileType != GlobalVariables.PROJECTILETYPE.POWERBLOCK:
-				projectile.move_projectile()
-		tempProjectiles.clear()
-	
-	else: 
-		var tempProjectiles = projectilesInActiveRoom.duplicate()
-		for projectile in tempProjectiles:
-			projectile.move_projectile()
-		tempProjectiles.clear()
-#		if !projectilesToDeleteTurnEnd.empty():
-#			var tempDeleteProjectiles = projectilesToDeleteTurnEnd.duplicate()
-#			for delProjectile in tempDeleteProjectiles:
-#				projectilesInActiveRoom.erase(delProjectile)
-#				set_cellv(world_to_map(delProjectile.position),get_tileset().find_tile_by_name("EMPTY")) 
-#				delProjectile.queue_free()
-#			tempDeleteProjectiles.clear()
-#			projectilesToDeleteTurnEnd.clear()
+	if roomJustEntered &&  activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && !activeRoom.puzzlePiecesInRoom.empty(): 
+		#print("Playing _on_Player_Made_Move PuzzlePieceCounter " + str(puzzlePiecesAnimationDoneCounter))
+		if !puzzleAnimationPlaying:
+			puzzleAnimationPlaying=true
+			activeRoom.puzzlePiecesInRoom[0].playColor()
+	else:
+		roomJustEntered = false
+		if !projectilesInActiveRoom.empty() && activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
+			var tempProjectiles = projectilesInActiveRoom.duplicate()
+			for projectile in tempProjectiles:
+				if projectile.projectileType != GlobalVariables.PROJECTILETYPE.POWERBLOCK:
+					projectile.move_projectile()
+			tempProjectiles.clear()
 		
-	if activeRoom == null:
-		emit_signal("enemyTurnDoneSignal")
-	elif activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && !projectilesInActiveRoom.empty():
-		return
-	elif activeRoom.enemiesInRoom.empty():
+		else: 
+			var tempProjectiles = projectilesInActiveRoom.duplicate()
+			for projectile in tempProjectiles:
+				projectile.move_projectile()
+			tempProjectiles.clear()
+	#		if !projectilesToDeleteTurnEnd.empty():
+	#			var tempDeleteProjectiles = projectilesToDeleteTurnEnd.duplicate()
+	#			for delProjectile in tempDeleteProjectiles:
+	#				projectilesInActiveRoom.erase(delProjectile)
+	#				set_cellv(world_to_map(delProjectile.position),get_tileset().find_tile_by_name("EMPTY")) 
+	#				delProjectile.queue_free()
+	#			tempDeleteProjectiles.clear()
+	#			projectilesToDeleteTurnEnd.clear()
+			
+		if activeRoom == null:
 			emit_signal("enemyTurnDoneSignal")
-	elif projectilesInActiveRoom.empty():
-		#print("Player made move")
-		emit_signal("playerTurnDoneSignal")
+		elif activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && !projectilesInActiveRoom.empty():
+			return
+		elif activeRoom.enemiesInRoom.empty():
+				emit_signal("enemyTurnDoneSignal")
+		elif projectilesInActiveRoom.empty():
+			#print("Player made move")
+			emit_signal("playerTurnDoneSignal")
 
-
+func _on_puzzlepiece_played_animation():
+	puzzlePiecesAnimationDoneCounter += 1
+	if puzzlePiecesAnimationDoneCounter < activeRoom.puzzlePiecesInRoom.size():
+		print("Playing Animation PuzzlePieceCounter " + str(puzzlePiecesAnimationDoneCounter))
+		activeRoom.puzzlePiecesInRoom[puzzlePiecesAnimationDoneCounter].playColor()
+	elif puzzlePiecesAnimationDoneCounter >= activeRoom.puzzlePiecesInRoom.size():
+		puzzlePiecesAnimationDoneCounter = 0
+		roomJustEntered = false
+		puzzleAnimationPlaying = false
+		_on_Player_Made_Move()
 
 func _on_projectiles_made_move(projectile):
 	projectilesMadeMoveCounter +=1
