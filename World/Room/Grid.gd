@@ -57,6 +57,8 @@ var projectilesToDeleteTurnEnd = []
 
 var activatedPuzzleBlock 
 
+var magicProjectileLoopLevel = 0
+
 func match_Enum(var index):
 	match index:
 		0:
@@ -869,59 +871,65 @@ func on_Power_Block_explode(powerBlock):
 	mainPlayer.waitingForEventBeforeContinue = false
 	
 func on_powerBlock_spawn_magic(powerBlock, previousPowerBlock = null):
-	var adjacentBlockHit = []
-	var activePowerBlockDirections = powerBlock.activeDirections.duplicate()
-	if previousPowerBlock != null && !previousPowerBlock.activeDirections.empty():
-		for direction in previousPowerBlock.activeDirections:
+	if previousPowerBlock != null:
+		magicProjectileLoopLevel +=1
+	if magicProjectileLoopLevel == 10:
+		magicProjectileLoopLevel = 0
+		return 
+	else:
+		var adjacentBlockHit = []
+		var activePowerBlockDirections = powerBlock.activeDirections.duplicate()
+		if previousPowerBlock != null && !previousPowerBlock.activeDirections.empty():
+			for direction in previousPowerBlock.activeDirections:
+				match direction:
+					GlobalVariables.DIRECTION.UP:
+						if powerBlock.position.y-previousPowerBlock.position.y < 0:
+							activePowerBlockDirections.erase(GlobalVariables.DIRECTION.DOWN)
+					GlobalVariables.DIRECTION.DOWN:
+						if powerBlock.position.y-previousPowerBlock.position.y > 0:
+							activePowerBlockDirections.erase(GlobalVariables.DIRECTION.UP)
+					GlobalVariables.DIRECTION.LEFT:
+						if powerBlock.position.x-previousPowerBlock.position.x < 0:
+							activePowerBlockDirections.erase(GlobalVariables.DIRECTION.RIGHT)
+					GlobalVariables.DIRECTION.RIGHT:
+						if powerBlock.position.x-previousPowerBlock.position.x > 0:
+							activePowerBlockDirections.erase(GlobalVariables.DIRECTION.LEFT)
+#
+		for direction in activePowerBlockDirections:
+			#print("Spawning magic")
+			var newMagicProjectile = MagicProjectile.instance()
+			newMagicProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
 			match direction:
 				GlobalVariables.DIRECTION.UP:
-					if powerBlock.position.y-previousPowerBlock.position.y < 0:
-						activePowerBlockDirections.erase(GlobalVariables.DIRECTION.DOWN)
+					newMagicProjectile.position = powerBlock.position+map_to_world(Vector2(0,-1))
+					newMagicProjectile.movementDirection = Vector2(0,-1)
 				GlobalVariables.DIRECTION.DOWN:
-					if powerBlock.position.y-previousPowerBlock.position.y > 0:
-						activePowerBlockDirections.erase(GlobalVariables.DIRECTION.UP)
+					newMagicProjectile.position = powerBlock.position+map_to_world(Vector2(0,1))
+					newMagicProjectile.movementDirection = Vector2(0,1)
 				GlobalVariables.DIRECTION.LEFT:
-					if powerBlock.position.x-previousPowerBlock.position.x < 0:
-						activePowerBlockDirections.erase(GlobalVariables.DIRECTION.RIGHT)
+					newMagicProjectile.position = powerBlock.position+map_to_world(Vector2(-1,0))
+					newMagicProjectile.movementDirection = Vector2(-1,0)
 				GlobalVariables.DIRECTION.RIGHT:
-					if powerBlock.position.x-previousPowerBlock.position.x > 0:
-						activePowerBlockDirections.erase(GlobalVariables.DIRECTION.LEFT)
-					
-	for direction in activePowerBlockDirections:
-		#print("Spawning magic")
-		var newMagicProjectile = MagicProjectile.instance()
-		newMagicProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
-		match direction:
-			GlobalVariables.DIRECTION.UP:
-				newMagicProjectile.position = powerBlock.position+map_to_world(Vector2(0,-1))
-				newMagicProjectile.movementDirection = Vector2(0,-1)
-			GlobalVariables.DIRECTION.DOWN:
-				newMagicProjectile.position = powerBlock.position+map_to_world(Vector2(0,1))
-				newMagicProjectile.movementDirection = Vector2(0,1)
-			GlobalVariables.DIRECTION.LEFT:
-				newMagicProjectile.position = powerBlock.position+map_to_world(Vector2(-1,0))
-				newMagicProjectile.movementDirection = Vector2(-1,0)
-			GlobalVariables.DIRECTION.RIGHT:
-				newMagicProjectile.position = powerBlock.position+map_to_world(Vector2(1,0))
-				newMagicProjectile.movementDirection = Vector2(1,0)
-		newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.POWERBLOCK
-		if get_cellv(world_to_map(newMagicProjectile.position)+newMagicProjectile.movementDirection) == get_tileset().find_tile_by_name("BLOCK"):
-			adjacentBlockHit.append(get_cell_pawn(world_to_map(newMagicProjectile.position)+newMagicProjectile.movementDirection))
-			newMagicProjectile.queue_free()
-		elif get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("EMPTY") || get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("PLAYER") || get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("MAGICPROJECTILE"):
-			add_child(newMagicProjectile)
-			projectilesInActiveRoom.append(newMagicProjectile)
-			set_cellv(world_to_map(newMagicProjectile.position), get_tileset().find_tile_by_name("MAGICPROJECTILE"))
-			newMagicProjectile.move_projectile()
-		elif get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("BLOCK"):
-			adjacentBlockHit.append(get_cell_pawn(world_to_map(newMagicProjectile.position)))
-			newMagicProjectile.queue_free()
-		else:
-			newMagicProjectile.queue_free()
-		#print("PowerBlock position " + str(world_to_map(powerBlock.position)))
-		#print("Power Block Magic position " + str(world_to_map(newMagicProjectile.position)))
-	for adjacentBlock in adjacentBlockHit:
-		on_powerBlock_spawn_magic(adjacentBlock, powerBlock)
+					newMagicProjectile.position = powerBlock.position+map_to_world(Vector2(1,0))
+					newMagicProjectile.movementDirection = Vector2(1,0)
+			newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.POWERBLOCK
+			if get_cellv(world_to_map(newMagicProjectile.position)+newMagicProjectile.movementDirection) == get_tileset().find_tile_by_name("BLOCK"):
+				adjacentBlockHit.append(get_cell_pawn(world_to_map(newMagicProjectile.position)+newMagicProjectile.movementDirection))
+				newMagicProjectile.queue_free()
+			elif get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("EMPTY") || get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("PLAYER") || get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("MAGICPROJECTILE"):
+				add_child(newMagicProjectile)
+				projectilesInActiveRoom.append(newMagicProjectile)
+				set_cellv(world_to_map(newMagicProjectile.position), get_tileset().find_tile_by_name("MAGICPROJECTILE"))
+				newMagicProjectile.move_projectile()
+			elif get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("BLOCK"):
+				adjacentBlockHit.append(get_cell_pawn(world_to_map(newMagicProjectile.position)))
+				newMagicProjectile.queue_free()
+			else:
+				newMagicProjectile.queue_free()
+			#print("PowerBlock position " + str(world_to_map(powerBlock.position)))
+			#print("Power Block Magic position " + str(world_to_map(newMagicProjectile.position)))
+		for adjacentBlock in adjacentBlockHit:
+			on_powerBlock_spawn_magic(adjacentBlock, powerBlock)
 
 func cancel_magic_in_puzzle_room():
 	if activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && !projectilesInActiveRoom.empty():

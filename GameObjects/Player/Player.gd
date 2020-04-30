@@ -220,6 +220,7 @@ func get_attack_mode():
 	if Input.is_action_just_pressed("Mode_Sword"):
 		guiElements.change_attack_mode(GlobalVariables.ATTACKTYPE.SWORD)
 		attackDamage = 1.5
+		puzzleBlockInteraction = false
 		return GlobalVariables.ATTACKTYPE.SWORD
 		
 	if Input.is_action_just_pressed("Mode_Magic"):
@@ -228,11 +229,13 @@ func get_attack_mode():
 		#if used in puzzle room while magic is flying cancels out all magic
 		if attackType == GlobalVariables.ATTACKTYPE.MAGIC:
 			Grid.cancel_magic_in_puzzle_room()
+		puzzleBlockInteraction = false
 		return GlobalVariables.ATTACKTYPE.MAGIC
 		
 	if Input.is_action_just_pressed("Mode_Block"):
 		guiElements.change_attack_mode(GlobalVariables.ATTACKTYPE.BLOCK)
 		attackDamage = 0  
+		puzzleBlockInteraction = false
 		return GlobalVariables.ATTACKTYPE.BLOCK                     	
 		
 	if Input.is_action_just_pressed("Mode_Hand"):
