@@ -48,6 +48,10 @@ var disablePlayerInput = false
 
 var waitingForEventBeforeContinue = false
 
+var puzzleBlockInteraction = false
+
+signal puzzleBlockInteractionSignal (player, puzzleBlockDirection)
+
 func _ready():
 	guiElements = GUI.instance()
 	guiElements.set_health(lifePoints)
@@ -66,9 +70,12 @@ func _process(delta):
 		var  attackMode = get_attack_mode()
 		if attackMode:
 			attackType = attackMode
-			
+		
+		if puzzleBlockInteraction:
+			var attackDirection = get_attack_direction()
+			player_interact_puzzle_block(attackDirection)
 
-		if !playerTurnDone && ! waitingForEventBeforeContinue:
+		if !playerTurnDone && ! waitingForEventBeforeContinue && !puzzleBlockInteraction:
 			var movementDirection = get_free_movement_direction()
 			if inClearedRoom || inRoomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 				movementDirection = get_free_movement_direction()
@@ -175,6 +182,10 @@ func player_passed_door():
 		playerTurnDone = false
 		disablePlayerInput = false
 	
+func player_interact_puzzle_block(puzzleBlockDirection):
+	if puzzleBlockDirection:
+		emit_signal("puzzleBlockInteractionSignal", self, puzzleBlockDirection)
+	
 func get_free_movement_direction():
 	if Input.is_action_pressed("player_up"):
 		return Vector2(0,-1)
@@ -227,6 +238,7 @@ func get_attack_mode():
 	if Input.is_action_just_pressed("Mode_Hand"):
 		guiElements.change_attack_mode(GlobalVariables.ATTACKTYPE.HAND)
 		attackDamage = 0
+		puzzleBlockInteraction = false
 		return GlobalVariables.ATTACKTYPE.HAND
 		
 func get_use_nonkey_items():
