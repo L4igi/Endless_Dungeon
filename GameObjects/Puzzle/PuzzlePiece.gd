@@ -17,14 +17,14 @@ func playColor():
 	get_node("Sprite").set_self_modulate(baseModulation)
 	match color:
 		GlobalVariables.COLOR.RED:
-			$AnimationPlayer.play("Red")
+			$AnimationPlayer.play("Red", -1, 1.25)
 		GlobalVariables.COLOR.BLUE:
-			$AnimationPlayer.play("Blue")
+			$AnimationPlayer.play("Blue", -1, 1.25)
 		GlobalVariables.COLOR.GREEN:
-			$AnimationPlayer.play("Green")
+			$AnimationPlayer.play("Green", -1, 1.25)
 		GlobalVariables.COLOR.YELLOW:
-			$AnimationPlayer.play("Yellow")
-	$Tween.interpolate_property(self, "position", position, position , $AnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			$AnimationPlayer.play("Yellow", -1, 1.25)
+	$Tween.interpolate_property(self, "position", position, position , $AnimationPlayer.current_animation_length*0.75, Tween.TRANS_LINEAR, Tween.EASE_IN)
 	$Tween.start()
 	yield($AnimationPlayer, "animation_finished")
 	set_process(true)
