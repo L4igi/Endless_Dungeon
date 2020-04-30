@@ -72,6 +72,7 @@ func _process(delta):
 			attackType = attackMode
 		
 		if puzzleBlockInteraction:
+			get_movement_direction()
 			var attackDirection = get_attack_direction()
 			player_interact_puzzle_block(attackDirection)
 
@@ -191,22 +192,30 @@ func player_interact_puzzle_block(puzzleBlockDirection):
 	
 func get_free_movement_direction():
 	if Input.is_action_pressed("player_up"):
+		puzzleBlockInteraction = false
 		return Vector2(0,-1)
 	if Input.is_action_pressed("player_down"):
+		puzzleBlockInteraction = false
 		return Vector2(0,1)
 	if Input.is_action_pressed("player_left"):
+		puzzleBlockInteraction = false
 		return Vector2(-1,0)
 	if Input.is_action_pressed("player_right"):
+		puzzleBlockInteraction = false
 		return Vector2(1,0)
 	
 func get_movement_direction():
 	if Input.is_action_just_pressed("player_up"):
+		puzzleBlockInteraction = false
 		return Vector2(0,-1)
 	if Input.is_action_just_pressed("player_down"):
+		puzzleBlockInteraction = false
 		return Vector2(0,1)
 	if Input.is_action_just_pressed("player_left"):
+		puzzleBlockInteraction = false
 		return Vector2(-1,0)
 	if Input.is_action_just_pressed("player_right"):
+		puzzleBlockInteraction = false
 		return Vector2(1,0)
 
 func get_attack_direction():

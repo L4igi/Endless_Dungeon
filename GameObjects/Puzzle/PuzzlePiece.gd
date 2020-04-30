@@ -3,14 +3,18 @@ extends Node2D
 
 var color 
 
+var baseModulation 
+
 signal puzzlePlayedAnimation 
 
+signal puzzlePieceActivated
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
-
+	baseModulation = get_node("Sprite").get_self_modulate()
+	
 func playColor():
 	set_process(false)
+	get_node("Sprite").set_self_modulate(baseModulation)
 	match color:
 		GlobalVariables.COLOR.RED:
 			$AnimationPlayer.play("Red")
@@ -25,6 +29,7 @@ func playColor():
 	yield($AnimationPlayer, "animation_finished")
 	set_process(true)
 	emit_signal("puzzlePlayedAnimation")
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
+
+func activatePuzzlePiece():
+	get_node("Sprite").set_self_modulate(Color(0,255,0,1.0))
+	emit_signal("puzzlePieceActivated")

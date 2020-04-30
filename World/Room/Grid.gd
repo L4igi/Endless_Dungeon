@@ -67,6 +67,8 @@ var roomJustEntered = false
 
 var puzzleAnimationPlaying = false
 
+var activatedPuzzlePieces = []
+
 func match_Enum(var index):
 	match index:
 		0:
@@ -313,6 +315,14 @@ func request_move(pawn, direction):
 				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
 				if activeRoom!= null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && pawn.projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK:
 					get_cell_pawn(cell_target).spawnMagicFromBlock()
+				pawn.queue_free()
+			TILETYPES.PUZZLEPIECE:
+				if pawn.projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK:
+					var activatedPuzzlePiece = get_cell_pawn(cell_target)
+					activatedPuzzlePieces.append(activatedPuzzlePiece)
+					activatedPuzzlePiece.activatePuzzlePiece()
+				projectilesInActiveRoom.erase(pawn)
+				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
 				pawn.queue_free()
 			_:
 				projectilesInActiveRoom.erase(pawn)
@@ -581,6 +591,7 @@ func create_puzzle_room(unlockedDoor):
 	var spawnCellY
 	var spawnCell 
 	for puzzlePieces in puzzlePiecesToSpwan:
+		#print("generatig puzzle pieces")
 		calculateSpawnAgain = true
 		while(calculateSpawnAgain == true):
 			spawnCellX = randi()%(int(unlockedDoor.roomSize.x-2))+1
@@ -589,34 +600,35 @@ func create_puzzle_room(unlockedDoor):
 			var spawnCords = world_to_map(unlockedDoor.doorRoomLeftMostCorner) + Vector2(spawnCellX, spawnCellY)
 			#print("Spawn Coords" + str(spawnCords))
 			if get_cellv(spawnCords - Vector2(1,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(-1,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,1)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,-1)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(-1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,1)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,-1)) == TILETYPES.UNLOCKEDDOOR:
-				return
+				pass
 			elif get_cellv(spawnCords + Vector2(1,0)) == TILETYPES.WALL && get_cellv(spawnCords + Vector2(-1,0)) == TILETYPES.WALL || get_cellv(spawnCords + Vector2(0,1)) == TILETYPES.WALL && get_cellv(spawnCords + Vector2(0,-1)) == TILETYPES.WALL:
-				return
-			if get_cellv(spawnCords - Vector2(2,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(-2,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,2)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,-2)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(-1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,1)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,-1)) == TILETYPES.UNLOCKEDDOOR:
-				return
-			if spawnCellArray.has(spawnCell):
-				return
+				pass
+			elif get_cellv(spawnCords - Vector2(2,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(-2,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,2)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,-2)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(-1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,1)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,-1)) == TILETYPES.UNLOCKEDDOOR:
+				pass
+			elif spawnCellArray.has(spawnCell):
+				pass
 			else:
 				calculateSpawnAgain = false
 				spawnCellArray.append(spawnCell)
 		
 		var colorToUse = GlobalVariables.COLOR.RED
 		while alreadyUsedColors.has(colorToUse):
-			var randColor = randi()%5+1
+			var randColor = randi()%4
 			match randColor:
-				1:
+				0:
 					colorToUse = GlobalVariables.COLOR.RED
-				2:
+				1:
 					colorToUse = GlobalVariables.COLOR.BLUE
-				3:
+				2:
 					colorToUse = GlobalVariables.COLOR.GREEN
-				4:
+				3:
 					colorToUse = GlobalVariables.COLOR.YELLOW
 		alreadyUsedColors.append(colorToUse)
 		var newPuzzlePiece = PuzzlePiece.instance()
 		newPuzzlePiece.color = colorToUse
 		newPuzzlePiece.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(spawnCellX, spawnCellY))
 		add_child(newPuzzlePiece)
+		newPuzzlePiece.connect("puzzlePieceActivated", self, "_on_puzzle_piece_activated")
 		newPuzzlePiece.connect("puzzlePlayedAnimation", self, "_on_puzzlepiece_played_animation")
 		set_cellv(world_to_map(newPuzzlePiece.position), get_tileset().find_tile_by_name("PUZZLEPIECE"))
 		unlockedDoor.puzzlePiecesInRoom.append(newPuzzlePiece)
@@ -769,7 +781,7 @@ func _on_Player_Made_Move():
 func _on_puzzlepiece_played_animation():
 	puzzlePiecesAnimationDoneCounter += 1
 	if puzzlePiecesAnimationDoneCounter < activeRoom.puzzlePiecesInRoom.size():
-		print("Playing Animation PuzzlePieceCounter " + str(puzzlePiecesAnimationDoneCounter))
+		#print("Playing Animation PuzzlePieceCounter " + str(puzzlePiecesAnimationDoneCounter))
 		activeRoom.puzzlePiecesInRoom[puzzlePiecesAnimationDoneCounter].playColor()
 	elif puzzlePiecesAnimationDoneCounter >= activeRoom.puzzlePiecesInRoom.size():
 		puzzlePiecesAnimationDoneCounter = 0
@@ -777,6 +789,13 @@ func _on_puzzlepiece_played_animation():
 		puzzleAnimationPlaying = false
 		_on_Player_Made_Move()
 
+func _on_puzzle_piece_activated():
+	print ("activated puzzle pieces size " + str(activatedPuzzlePieces.size()) + " active puzzle pieces in room " + str(activeRoom.puzzlePiecesInRoom.size()))
+	if activatedPuzzlePieces.size() == activeRoom.puzzlePiecesInRoom.size():
+		if activatedPuzzlePieces == activeRoom.puzzlePiecesInRoom:
+			print("Activated in right order")
+		else:
+			print("try again activated in wrong order")
 func _on_projectiles_made_move(projectile):
 	projectilesMadeMoveCounter +=1
 	#print("Projectiles " + str(projectile.name) + " made move " + str(projectilesMadeMoveCounter) + " projectiles in active room " + str(projectilesInActiveRoom.size())) 
@@ -824,6 +843,9 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 	#wand attacks
 	#use wand on block in puzzle room 
 	if  activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.BLOCK && attackType == GlobalVariables.ATTACKTYPE.MAGIC:
+		for puzzlePiece in activatedPuzzlePieces:
+			puzzlePiece.get_node("Sprite").set_modulate(Color(255,255,255,1.0))
+		activatedPuzzlePieces.clear()
 		var blockAttackedByMagic = get_cell_pawn(world_to_map(player.position) + attack_direction)
 		blockAttackedByMagic.spawnMagicFromBlock()
 		player.end_player_turn()
@@ -945,6 +967,7 @@ func on_Power_Block_explode(powerBlock):
 	mainPlayer.waitingForEventBeforeContinue = false
 	
 func on_powerBlock_spawn_magic(powerBlock, previousPowerBlock = null):
+	mainPlayer.disablePlayerInput = true
 	if previousPowerBlock != null:
 		magicProjectileLoopLevel +=1
 	if magicProjectileLoopLevel == 10:
@@ -990,6 +1013,11 @@ func on_powerBlock_spawn_magic(powerBlock, previousPowerBlock = null):
 			if get_cellv(world_to_map(newMagicProjectile.position)+newMagicProjectile.movementDirection) == get_tileset().find_tile_by_name("BLOCK"):
 				adjacentBlockHit.append(get_cell_pawn(world_to_map(newMagicProjectile.position)+newMagicProjectile.movementDirection))
 				newMagicProjectile.queue_free()
+			elif get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("PUZZLEPIECE"):
+				var activatedPuzzlePiece = get_cell_pawn(world_to_map(newMagicProjectile.position))
+				activatedPuzzlePieces.append(activatedPuzzlePiece)
+				activatedPuzzlePiece.activatePuzzlePiece()
+				newMagicProjectile.queue_free()
 			elif get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("EMPTY") || get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("PLAYER") || get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("MAGICPROJECTILE"):
 				add_child(newMagicProjectile)
 				projectilesInActiveRoom.append(newMagicProjectile)
@@ -1004,6 +1032,7 @@ func on_powerBlock_spawn_magic(powerBlock, previousPowerBlock = null):
 			#print("Power Block Magic position " + str(world_to_map(newMagicProjectile.position)))
 		for adjacentBlock in adjacentBlockHit:
 			on_powerBlock_spawn_magic(adjacentBlock, powerBlock)
+	mainPlayer.disablePlayerInput = false
 
 func cancel_magic_in_puzzle_room():
 	if activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && !projectilesInActiveRoom.empty():
