@@ -5,6 +5,8 @@ onready var Grid = get_parent()
 var counters = 0
 var inPuzzleRoom = false
 var activeDirections = []
+var loopLevel = 0
+var shootDelay = 0
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -111,31 +113,21 @@ func explodeBlock():
 	Grid.on_Power_Block_explode(self)
 	return true
 	
-#func rotateBlock():
-#	activeDirections.clear()
-#	rotation_degrees += 90
-#	if rotation_degrees == 360:
-#		rotation_degrees = 0
-#
-#	activeDirections = availableDirections.duplicate()
-#
-#	var tempDirections = []
-#	var loopTimes = int(rotation_degrees/90)
-#	for count in range(loopTimes):
-#		for direction in activeDirections:
-#			match direction:
-#				GlobalVariables.DIRECTION.UP:
-#					tempDirections.append(GlobalVariables.DIRECTION.RIGHT)
-#				GlobalVariables.DIRECTION.DOWN:
-#					tempDirections.append(GlobalVariables.DIRECTION.LEFT)
-#				GlobalVariables.DIRECTION.LEFT:
-#					tempDirections.append(GlobalVariables.DIRECTION.UP)
-#				GlobalVariables.DIRECTION.RIGHT:
-#					tempDirections.append(GlobalVariables.DIRECTION.DOWN)
-#		activeDirections = tempDirections.duplicate()
-#		tempDirections.clear()
-#
-#	#print("Available directions" + str(activeDirections))
+func removeDirection (direction):
+	
+	if activeDirections.has(reverseDirection(direction)):
+		activeDirections.erase(reverseDirection(direction))
 	
 func spawnMagicFromBlock():
 	Grid.on_powerBlock_spawn_magic(self)
+
+func reverseDirection(direction):
+	match direction:
+		GlobalVariables.DIRECTION.LEFT:
+			return GlobalVariables.DIRECTION.RIGHT
+		GlobalVariables.DIRECTION.RIGHT:
+			return GlobalVariables.DIRECTION.LEFT
+		GlobalVariables.DIRECTION.UP:
+			return GlobalVariables.DIRECTION.DOWN
+		GlobalVariables.DIRECTION.DOWN:
+			return GlobalVariables.DIRECTION.UP
