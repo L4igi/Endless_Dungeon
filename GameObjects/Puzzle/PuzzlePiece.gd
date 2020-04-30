@@ -33,3 +33,11 @@ func playColor():
 func activatePuzzlePiece():
 	get_node("Sprite").set_self_modulate(Color(0,255,0,1.0))
 	emit_signal("puzzlePieceActivated")
+	
+func playWrongWriteAnimation(right):
+	if right:
+		get_node("Sprite").set_self_modulate(baseModulation)
+		$AnimationPlayer.play("inactive")
+	else:
+		get_node("Sprite").set_self_modulate(baseModulation)
+		$AnimationPlayer.play("Idle")

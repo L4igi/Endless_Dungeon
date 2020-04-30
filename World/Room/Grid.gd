@@ -804,10 +804,18 @@ func _on_puzzle_piece_activated():
 	if activatedPuzzlePieces.size() == activeRoom.puzzlePiecesInRoom.size():
 		if activatedPuzzlePieces == activeRoom.puzzlePiecesInRoom:
 			print("Activated in right order")
-#			for puzzlePiece in activeRoom.puzzlePiecesInRoom:
-#				puzzlePiece.getNode("AnimationPlayer").play("Inactive")
+			emit_signal("enemyTurnDoneSignal")
+			activeRoom.roomCleared=true
+			mainPlayer.inClearedRoom = true
+			#delete all projectiles 
+			if activeRoom.dropLoot():
+				for puzzlePiece in activatedPuzzlePieces:
+					puzzlePiece.playWrongWriteAnimation(true)
+				dropLootInActiveRoom()
 		else:
 			print("try again activated in wrong order")
+			for puzzlePiece in activatedPuzzlePieces:
+					puzzlePiece.playWrongWriteAnimation(false)
 func _on_projectiles_made_move(projectile):
 	projectilesMadeMoveCounter +=1
 	#print("Projectiles " + str(projectile.name) + " made move " + str(projectilesMadeMoveCounter) + " projectiles in active room " + str(projectilesInActiveRoom.size())) 
@@ -1015,7 +1023,12 @@ func on_powerBlock_spawn_magic(powerBlock):
 				newMagicProjectile.position = powerBlock.position+map_to_world(Vector2(1,0))
 				newMagicProjectile.movementDirection = Vector2(1,0)
 		newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.POWERBLOCK
-		if get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("BLOCK"):
+		if get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("PUZZLEPIECE"):
+			var activatedPuzzlePiece = get_cell_pawn(world_to_map(newMagicProjectile.position))
+			activatedPuzzlePieces.append(activatedPuzzlePiece)
+			activatedPuzzlePiece.activatePuzzlePiece()
+			newMagicProjectile.queue_free()
+		elif get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("BLOCK"):
 			var blockHit = get_cell_pawn(world_to_map(newMagicProjectile.position))
 			spawnBlockProjectileNextTurn.append(blockHit)
 			blockHit.removeDirection(direction)
@@ -1028,11 +1041,6 @@ func on_powerBlock_spawn_magic(powerBlock):
 			blockHit.shootDelay = 2
 			newMagicProjectile.queue_free()
 			#spawn on next makemove 
-		elif get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("PUZZLEPIECE"):
-			var activatedPuzzlePiece = get_cell_pawn(world_to_map(newMagicProjectile.position))
-			activatedPuzzlePieces.append(activatedPuzzlePiece)
-			activatedPuzzlePiece.activatePuzzlePiece()
-			newMagicProjectile.queue_free()
 		elif get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("EMPTY") || get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("PLAYER") || get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("MAGICPROJECTILE"):
 			add_child(newMagicProjectile)
 			projectilesInActiveRoom.append(newMagicProjectile)
@@ -1105,42 +1113,44 @@ func _on_enemy_defeated(enemy):
 		projectilesInActiveRoom.clear()
 			
 		if activeRoom.dropLoot():
-			#create loot currently matching with closed doord 
-			print(barrierKeysNoSolution)
-			if !barrierKeysNoSolution.empty():
-				#create key and spawn it on floor spawn one left of player if player is in the middle of the room
-				var itemToGenerate = barrierKeysNoSolution[randi()%barrierKeysNoSolution.size()]
-				barrierKeysSolutionSpawned.append(itemToGenerate)
-				barrierKeysNoSolution.erase(itemToGenerate)
-				var newItem = Item.instance()
-				var newItemPosition = activeRoom.doorRoomLeftMostCorner + map_to_world(activeRoom.roomSize/2)
-				var itemPosMover = Vector2(0,1)
-				while(get_cellv(world_to_map(newItemPosition)) == TILETYPES.PLAYER):
-					newItemPosition += map_to_world(itemPosMover)
-					if itemPosMover.x >= itemPosMover.y:
-						itemPosMover += Vector2(0,1)
-					else:
-						itemPosMover += Vector2(1,0)
-				newItem.position = newItemPosition
-				if get_cellv(world_to_map(newItem.position))==TILETYPES.BLOCK:
-					get_cell_pawn(world_to_map(newItem.position)).queue_free()
-				if  get_cellv(world_to_map(newItemPosition)) == TILETYPES.ENEMY:
-					get_cell_pawn(world_to_map(newItem.position)).queue_free()
-				newItem.keyValue = itemToGenerate
-				add_child(newItem)
-				set_cellv(world_to_map(newItem.position), get_tileset().find_tile_by_name(match_Enum(newItem.type)))
-					#set type of item 
-			else:
-				var newItem = Item.instance()
-				var newItemPosition = activeRoom.doorRoomLeftMostCorner + map_to_world(activeRoom.roomSize/2)
-				if(get_cellv(world_to_map(newItemPosition)) == TILETYPES.PLAYER):
-					newItemPosition += map_to_world(Vector2(0,1))
-				newItem.position = newItemPosition
-				newItem.keyValue = str(0)
-				newItem.setTexture("POTION")
-				add_child(newItem)
-				set_cellv(world_to_map(newItem.position), get_tileset().find_tile_by_name(match_Enum(newItem.type)))
+			dropLootInActiveRoom()
 	
+func dropLootInActiveRoom():
+	#create loot currently matching with closed doord 
+	print(barrierKeysNoSolution)
+	if !barrierKeysNoSolution.empty():
+		#create key and spawn it on floor spawn one left of player if player is in the middle of the room
+		var itemToGenerate = barrierKeysNoSolution[randi()%barrierKeysNoSolution.size()]
+		barrierKeysSolutionSpawned.append(itemToGenerate)
+		barrierKeysNoSolution.erase(itemToGenerate)
+		var newItem = Item.instance()
+		var newItemPosition = activeRoom.doorRoomLeftMostCorner + map_to_world(activeRoom.roomSize/2)
+		var itemPosMover = Vector2(0,1)
+		while(get_cellv(world_to_map(newItemPosition)) == TILETYPES.PLAYER || get_cellv(world_to_map(newItemPosition)) == TILETYPES.PUZZLEPIECE):
+			newItemPosition += map_to_world(itemPosMover)
+			if itemPosMover.x >= itemPosMover.y:
+				itemPosMover += Vector2(0,1)
+			else:
+				itemPosMover += Vector2(1,0)
+		newItem.position = newItemPosition
+		if get_cellv(world_to_map(newItem.position))==TILETYPES.BLOCK:
+			get_cell_pawn(world_to_map(newItem.position)).queue_free()
+		if  get_cellv(world_to_map(newItemPosition)) == TILETYPES.ENEMY:
+			get_cell_pawn(world_to_map(newItem.position)).queue_free()
+		newItem.keyValue = itemToGenerate
+		add_child(newItem)
+		set_cellv(world_to_map(newItem.position), get_tileset().find_tile_by_name(match_Enum(newItem.type)))
+			#set type of item 
+	else:
+		var newItem = Item.instance()
+		var newItemPosition = activeRoom.doorRoomLeftMostCorner + map_to_world(activeRoom.roomSize/2)
+		if(get_cellv(world_to_map(newItemPosition)) == TILETYPES.PLAYER):
+			newItemPosition += map_to_world(Vector2(0,1))
+		newItem.position = newItemPosition
+		newItem.keyValue = str(0)
+		newItem.setTexture("POTION")
+		add_child(newItem)
+		set_cellv(world_to_map(newItem.position), get_tileset().find_tile_by_name(match_Enum(newItem.type)))
 	
 func create_starting_room(startingRoom=false):
 	create_walls(null, startingRoom, true)
