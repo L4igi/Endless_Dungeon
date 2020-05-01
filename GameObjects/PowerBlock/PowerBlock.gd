@@ -7,6 +7,7 @@ var inPuzzleRoom = false
 var activeDirections = []
 var loopLevel = 0
 var shootDelay = 0
+var powerBlockSpawnDone = true
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -131,3 +132,4 @@ func reverseDirection(direction):
 			return GlobalVariables.DIRECTION.DOWN
 		GlobalVariables.DIRECTION.DOWN:
 			return GlobalVariables.DIRECTION.UP
+	

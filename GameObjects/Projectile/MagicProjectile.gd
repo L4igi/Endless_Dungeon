@@ -19,10 +19,10 @@ func _ready():
 func move_projectile():
 	var target_position = Grid.request_move(self, movementDirection)
 	if(target_position):
-		$Tween.interpolate_property(self, "position", position, target_position , 0.2, Tween.TRANS_LINEAR, Tween.EASE_IN)
+		$Tween.interpolate_property(self, "position", position, target_position , 1.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
 		$Tween.start()
 		yield($Tween, "tween_completed")
-		emit_signal("projectileMadeMove", self)
+		emit_signal("projectileMadeMove")
 
 func play_enemy_projectile_animation():
 	#print("Animationplayer enemy shoot")
