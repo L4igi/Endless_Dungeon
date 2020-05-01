@@ -183,8 +183,8 @@ func request_move(pawn, direction):
 					pawn.add_nonkey_items(object_pawn.itemType)
 				pawn.itemsInPosession.append(object_pawn)
 				set_cellv(object_pawn.position, get_tileset().find_tile_by_name("EMPTY"))
-				object_pawn.queue_free()
-
+				object_pawn.get_node("Sprite").queue_free()
+				#pawn.queue_free()
 				#print("Player has Items in posession " + str(pawn.itemsInPosession))
 				return update_pawn_position(pawn, cell_start, cell_target)
 			TILETYPES.DOOR:
@@ -747,7 +747,7 @@ func _on_enemy_made_move_ready():
 			
 		
 func _on_Player_Made_Move():
-	if roomJustEntered &&  activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && !activeRoom.puzzlePiecesInRoom.empty(): 
+	if activeRoom != null && !activeRoom.roomCleared && roomJustEntered && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && !activeRoom.puzzlePiecesInRoom.empty(): 
 		#print("Playing _on_Player_Made_Move PuzzlePieceCounter " + str(puzzlePiecesAnimationDoneCounter))
 		if !puzzleAnimationPlaying:
 			puzzleAnimationPlaying=true
@@ -842,6 +842,8 @@ func _on_projectiles_made_move(projectile):
 				projectile.move_projectile()
 			tempProjectiles.clear()
 			
+			if spawnBlockProjectileNextTurn.size() > 10:
+				spawnBlockProjectileNextTurn.clear()
 			if !spawnBlockProjectileNextTurn.empty():
 				print("Projectile waiting in extra condition " + str(spawnBlockProjectileNextTurn) )
 				for boxProjectile in spawnBlockProjectileNextTurn:
@@ -1161,9 +1163,18 @@ func dropLootInActiveRoom():
 	else:
 		var newItem = Item.instance()
 		var newItemPosition = activeRoom.doorRoomLeftMostCorner + map_to_world(activeRoom.roomSize/2)
-		if(get_cellv(world_to_map(newItemPosition)) == TILETYPES.PLAYER):
-			newItemPosition += map_to_world(Vector2(0,1))
+		var itemPosMover = Vector2(0,1)
+		while(get_cellv(world_to_map(newItemPosition)) == TILETYPES.PLAYER || get_cellv(world_to_map(newItemPosition)) == TILETYPES.PUZZLEPIECE):
+			newItemPosition += map_to_world(itemPosMover)
+			if itemPosMover.x >= itemPosMover.y:
+				itemPosMover += Vector2(0,1)
+			else:
+				itemPosMover += Vector2(1,0)
 		newItem.position = newItemPosition
+		if get_cellv(world_to_map(newItem.position))==TILETYPES.BLOCK:
+			get_cell_pawn(world_to_map(newItem.position)).queue_free()
+		if  get_cellv(world_to_map(newItemPosition)) == TILETYPES.ENEMY:
+			get_cell_pawn(world_to_map(newItem.position)).queue_free()
 		newItem.keyValue = str(0)
 		newItem.setTexture("POTION")
 		add_child(newItem)
