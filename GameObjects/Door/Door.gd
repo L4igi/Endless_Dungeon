@@ -74,7 +74,7 @@ func unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance):
 	#print("Door was unlocked")
 	#choose type of room to be created 
 	#var randRoomType = randi()%100
-	var randRoomType =  randi()%80
+	var randRoomType =  50
 	if(randRoomType < enemyRoomChance):
 		#print("create enemy room " + str(randRoomType))
 		roomType = ROOM_TYPE.ENEMYROOM
@@ -87,7 +87,6 @@ func unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance):
 		#print("creating empty/Treasure room " + str(randRoomType))
 		roomType = ROOM_TYPE.EMPTYTREASUREROOM
 		#set room to cleared because its empty room
-		roomCleared = true
 
 
 func set_other_adjacent_room(otherRoom, direction):

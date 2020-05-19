@@ -5,6 +5,7 @@ onready var Grid = get_parent()
 var counters = 0
 var inPuzzleRoom = false
 var activeDirections = []
+var backupActiveDirections = []
 var loopLevel = 0
 var shootDelay = 0
 var powerBlockSpawnDone = true
@@ -80,6 +81,8 @@ func interactPowerBlock(direction, roomType):
 	if activeDirections.size() == 4:
 		if activeDirections.has(GlobalVariables.DIRECTION.UP) && activeDirections.has(GlobalVariables.DIRECTION.RIGHT) && activeDirections.has(GlobalVariables.DIRECTION.DOWN) && activeDirections.has(GlobalVariables.DIRECTION.LEFT):
 			$AnimationPlayer.play("ArrowUpRightDownLeft")
+			
+	backupActiveDirections = activeDirections.duplicate()
 
 func addCount():
 	if counters == 5:
@@ -119,8 +122,8 @@ func removeDirection (direction):
 	if activeDirections.has(reverseDirection(direction)):
 		activeDirections.erase(reverseDirection(direction))
 	
-func spawnMagicFromBlock():
-	Grid.on_powerBlock_spawn_magic(self)
+func spawnMagicFromBlock(signalSpawnMagic):
+	Grid.on_powerBlock_spawn_magic(self, signalSpawnMagic)
 
 func reverseDirection(direction):
 	match direction:

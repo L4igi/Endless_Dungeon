@@ -121,9 +121,10 @@ func player_movement(movementDirection):
 			set_process(true)
 			movementCount += 1
 			
-		if !playerTurnDone && attackCount == 2 && movementCount == 0 || attackCount == 1 && movementCount == 1 || attackCount == 0 && movementCount == 2:
-			playerTurnDone=true
-			emit_signal("playerMadeMove")
+			#print("Moved in Player " + str(attackCount) + " movementCount " +str(movementCount))
+			if !playerTurnDone && attackCount == 2 && movementCount == 0 || attackCount == 1 && movementCount == 1 || attackCount == 0 && movementCount == 2:
+				playerTurnDone=true
+				emit_signal("playerMadeMove")
 	
 func player_attack(attackDirection):
 	if attackDirection:
@@ -151,6 +152,7 @@ func player_attack(attackDirection):
 		emit_signal("playerAttacked", self, attackDirection, attackDamage, attackType)
 		attackCount += 1
 		
+		#print("Attacked in Player " + str(attackCount) + " movementCount " +str(movementCount))
 		if !playerTurnDone && attackCount == 2 && movementCount == 0 || attackCount == 1 && movementCount == 1 || attackCount == 0 && movementCount == 2:
 			playerTurnDone=true
 			emit_signal("playerMadeMove")
@@ -298,5 +300,7 @@ func _on_enemy_turn_done_signal():
 	disablePlayerInput = false
 
 func end_player_turn():
+	disablePlayerInput=true
+	playerTurnDone=true
 	movementCount = 1
 	attackCount = 1

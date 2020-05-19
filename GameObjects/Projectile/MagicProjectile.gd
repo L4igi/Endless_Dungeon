@@ -11,18 +11,29 @@ var projectileType
 var toBeDeleted = false
 var isMiniProjectile = false
 
-signal projectileMadeMove (projectile)
+signal projectileMadeMove (type)
 
 func _ready():
 	pass
 
-func move_projectile():
-	var target_position = Grid.request_move(self, movementDirection)
-	if(target_position):
-		$Tween.interpolate_property(self, "position", position, target_position , 1.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
-		$Tween.start()
-		yield($Tween, "tween_completed")
-		emit_signal("projectileMadeMove")
+func move_projectile(type):
+
+	if(type == "moveEnemyProjectiles" && projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || type =="movePlayerProjectiles" && projectileType == GlobalVariables.PROJECTILETYPE.PLAYER|| type == "movePowerProjectile" && projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK):
+		var target_position = Grid.request_move(self, movementDirection)
+		if(target_position):
+			$Tween.interpolate_property(self, "position", position, target_position , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			$Tween.start()
+			yield($Tween, "tween_completed")
+			emit_signal("projectileMadeMove",type)
+	elif type == "allProjectiles":
+		var target_position = Grid.request_move(self, movementDirection)
+		if(target_position):
+			$Tween.interpolate_property(self, "position", position, target_position , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			$Tween.start()
+			yield($Tween, "tween_completed")
+			emit_signal("projectileMadeMove",type)
+	else:
+		emit_signal("projectileMadeMove",type)
 
 func play_enemy_projectile_animation():
 	#print("Animationplayer enemy shoot")
@@ -33,5 +44,11 @@ func create_mini_projectile(projectile):
 	attackDamage = 0.5
 	if projectile == 1:
 		$AnimationPlayer.play("mini1shoot")
+		var target_position = Grid.request_move(self, movementDirection)
+		if(target_position):
+			position = target_position
 	if projectile == 2:
 		$AnimationPlayer.play("mini2shoot")
+		var target_position = Grid.request_move(self, movementDirection)
+		if(target_position):
+			position = target_position
