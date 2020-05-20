@@ -26,6 +26,7 @@ func move_projectile(type):
 			$Tween.start()
 			yield($Tween, "tween_completed")
 		emit_signal("projectileMadeMove",type)
+		
 	elif(type == "tickingProjectile" &&  projectileType == GlobalVariables.PROJECTILETYPE.TICKERPROJECTILE):
 		var target_position = position + movementDirection
 		movementDirection = movementDirection*-1
@@ -33,6 +34,7 @@ func move_projectile(type):
 		$Tween.start()
 		yield($Tween, "tween_completed")
 		emit_signal("projectileMadeMove",type)
+		
 	elif type == "allProjectiles":
 		var target_position = Grid.request_move(self, movementDirection)
 		if(target_position):
@@ -40,6 +42,17 @@ func move_projectile(type):
 			$Tween.start()
 			yield($Tween, "tween_completed")
 			position = target_position
+			emit_signal("projectileMadeMove",type)
+			
+	elif type == "clearedRoomProjectile":
+		var target_position = Grid.request_move(self, movementDirection)
+		if(target_position):
+			$Tween.interpolate_property(self, "position", position, target_position , 0.1, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			$Tween.start()
+			yield($Tween, "tween_completed")
+			position = target_position
+			move_projectile("clearedRoomProjectile")
+		else:
 			emit_signal("projectileMadeMove",type)
 	else:
 		emit_signal("projectileMadeMove",type)

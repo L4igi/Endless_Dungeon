@@ -5,9 +5,14 @@ var color
 
 var baseModulation 
 
+var isActivated = false
+
+var activationDelay = 0
+
 signal puzzlePlayedAnimation 
 
 signal puzzlePieceActivated
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	baseModulation = get_node("Sprite").get_self_modulate()
@@ -31,6 +36,7 @@ func playColor():
 	emit_signal("puzzlePlayedAnimation")
 
 func activatePuzzlePiece():
+	isActivated = true
 	get_node("Sprite").set_self_modulate(Color(0,255,0,1.0))
 	emit_signal("puzzlePieceActivated")
 	

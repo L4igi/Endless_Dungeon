@@ -50,6 +50,8 @@ var waitingForEventBeforeContinue = false
 
 var puzzleBlockInteraction = false
 
+var playerBackupPosition
+
 signal puzzleBlockInteractionSignal (player, puzzleBlockDirection)
 
 func _ready():
