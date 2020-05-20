@@ -25,7 +25,7 @@ func move_projectile(type):
 			$Tween.interpolate_property(self, "position", position, target_position , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
 			$Tween.start()
 			yield($Tween, "tween_completed")
-			emit_signal("projectileMadeMove",type)
+		emit_signal("projectileMadeMove",type)
 	elif(type == "tickingProjectile" &&  projectileType == GlobalVariables.PROJECTILETYPE.TICKERPROJECTILE):
 		var target_position = position + movementDirection
 		movementDirection = movementDirection*-1

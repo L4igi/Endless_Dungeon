@@ -56,7 +56,8 @@ func _process(delta):
 	randomize()
 	if(isDisabled == false): 
 		if lifePoints > 0:
-			if !enemyTurnDone && !enemyDefeated:
+			if !enemyTurnDone :
+				#&& !enemyDefeated
 				if movementCount >= 1 && attackCount >= 1 :
 					enemyTurnDone = true 
 					#print("SIGNAL ENEMY MADE MOVE TO PLAYER")
@@ -84,7 +85,7 @@ func enemyMovement():
 			var movementdirection = Grid.get_enemy_move_towards_player(self)
 #			print(movement_direction)
 			var target_position = Grid.request_move(self, movementdirection)
-			if(target_position):
+			if(target_position && !enemyDefeated):
 				set_process(false)
 				#play defeat animation 
 				$AnimationPlayer.play("walk", -1, 3.0)
@@ -289,7 +290,7 @@ func _on_player_turn_done_signal():
 func generateEnemy(mageEnemyCount): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = randi()%4
+	var enemieToGenerate = 2
 	match enemieToGenerate:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
@@ -329,6 +330,7 @@ func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition):
 		yield($AnimationPlayer, "animation_finished")
 		set_process(true)
 		emit_signal("enemyDefeated", self)
+		return false
 	else:
 		return true
 	#set enemy difficulty and type set enemy stats based on difficulty set amount of enemies to spawn based on room size and difficulty 

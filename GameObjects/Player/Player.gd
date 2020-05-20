@@ -153,7 +153,7 @@ func player_attack(attackDirection):
 		attackCount += 1
 		
 		#print("Attacked in Player " + str(attackCount) + " movementCount " +str(movementCount))
-		if !playerTurnDone && attackCount == 2 && movementCount == 0 || attackCount == 1 && movementCount == 1 || attackCount == 0 && movementCount == 2:
+		if !waitingForEventBeforeContinue && !playerTurnDone && attackCount == 2 && movementCount == 0 || attackCount == 1 && movementCount == 1 || attackCount == 0 && movementCount == 2:
 			playerTurnDone=true
 			emit_signal("playerMadeMove")
 	
@@ -239,7 +239,7 @@ func get_attack_mode():
 		
 	if Input.is_action_just_pressed("Mode_Magic"):
 		guiElements.change_attack_mode(GlobalVariables.ATTACKTYPE.MAGIC)
-		attackDamage = 1
+		attackDamage = 0.5
 		#if used in puzzle room while magic is flying cancels out all magic
 		if attackType == GlobalVariables.ATTACKTYPE.MAGIC:
 			Grid.cancel_magic_in_puzzle_room()
