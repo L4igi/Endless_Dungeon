@@ -10,6 +10,7 @@ var attackDamage = 1
 var projectileType
 var toBeDeleted = false
 var isMiniProjectile = false
+var tickAlreadyMoved = false
 
 signal projectileMadeMove (type)
 
@@ -25,12 +26,20 @@ func move_projectile(type):
 			$Tween.start()
 			yield($Tween, "tween_completed")
 			emit_signal("projectileMadeMove",type)
+	elif(type == "tickingProjectile" &&  projectileType == GlobalVariables.PROJECTILETYPE.TICKERPROJECTILE):
+		var target_position = position + movementDirection
+		movementDirection = movementDirection*-1
+		$Tween.interpolate_property(self, "position", position, target_position , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+		$Tween.start()
+		yield($Tween, "tween_completed")
+		emit_signal("projectileMadeMove",type)
 	elif type == "allProjectiles":
 		var target_position = Grid.request_move(self, movementDirection)
 		if(target_position):
 			$Tween.interpolate_property(self, "position", position, target_position , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
 			$Tween.start()
 			yield($Tween, "tween_completed")
+			position = target_position
 			emit_signal("projectileMadeMove",type)
 	else:
 		emit_signal("projectileMadeMove",type)
@@ -52,3 +61,10 @@ func create_mini_projectile(projectile):
 		var target_position = Grid.request_move(self, movementDirection)
 		if(target_position):
 			position = target_position
+
+func create_ticking_projectile(currentRoomLeftMostCorner):
+	projectileType = GlobalVariables.PROJECTILETYPE.TICKERPROJECTILE
+	position = currentRoomLeftMostCorner
+	movementDirection = Vector2(0,1)
+	$Sprite.set_visible(false)
+	
