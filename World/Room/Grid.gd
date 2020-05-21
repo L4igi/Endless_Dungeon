@@ -405,7 +405,6 @@ func update_pawn_position(pawn, cell_start, cell_target):
 	if(match_Enum(pawn.type) == "PLAYER"):
 		if(movedThroughDoor == true):
 			set_cellv(cell_start, TILETYPES.UNLOCKEDDOOR)
-			enemiesMadeMoveCounter = 0
 			movedThroughDoor = false
 		if(oldCellTargetType == get_tileset().find_tile_by_name("DOOR") || oldCellTargetType == get_tileset().find_tile_by_name("UNLOCKEDDOOR")):
 			movedThroughDoor = true
@@ -441,9 +440,11 @@ func update_pawn_position(pawn, cell_start, cell_target):
 				activeRoom = oldCellTargetNode
 				if activeRoom != null:
 					pawn.inRoomType = activeRoom.roomType
-					#print ("Player in Room " + str(pawn.inRoomType))
+					print (activeRoom.enemiesInRoom)
 					for element in activeRoom.enemiesInRoom:
 						element.isDisabled = false
+						element.enemyTurnDone=true
+						
 				else:
 					pawn.inRoomType = null
 					#print ("Player in Room " + str(pawn.inRoomType))
@@ -663,7 +664,7 @@ func create_enemy_room(unlockedDoor):
 	randomize()
 	#add adjustment for enemy amount 
 	#-2 because of walls on both sides
-	var enemiesToSpawn = 5
+	var enemiesToSpawn = 1
 	if unlockedDoor.roomSizeMultiplier == Vector2(1,1):
 		enemiesToSpawn = randi()%3+1
 	elif unlockedDoor.roomSizeMultiplier == Vector2(2,2):
@@ -758,6 +759,10 @@ func _on_enemy_made_move_ready():
 		#print("Enemies made move " + str(enemiesMadeMoveCounter) + " enemies in active room " + str(activeRoom.enemiesInRoom.size()))
 		#print("Currently Enemies made move " + str(enemiesMadeMoveCounter) + " of all enemies active " + str(activeRoom.enemiesInRoom.size()))
 		if(enemiesMadeMoveCounter >= activeRoom.enemiesInRoom.size()):
+			if mainPlayer.playerDefeated:
+				mainPlayer.playerDefeated = false
+				_on_Player_Defeated(mainPlayer)
+				return
 			#print("All Enemies made move " + str(enemiesMadeMoveCounter))
 			enemiesMadeMoveCounter = 0
 			var tempProjectiles = projectilesInActiveRoom.duplicate()
@@ -770,6 +775,8 @@ func _on_enemy_made_move_ready():
 			
 		
 func _on_Player_Made_Move():
+	if movedThroughDoor:
+		return
 	mainPlayer.playerBackupPosition = mainPlayer.position
 	if activeRoom != null && !activeRoom.roomCleared && roomJustEntered && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && !activeRoom.puzzlePiecesInRoom.empty(): 
 		#print("Playing _on_Player_Made_Move PuzzlePieceCounter " + str(puzzlePiecesAnimationDoneCounter))
@@ -1216,6 +1223,7 @@ func _on_Player_Defeated(player):
 	player.inClearedRoom = true
 	#todo: dont hardcode life
 	player.lifePoints = 10
+	mainPlayer.guiElements.set_health(10)
 	MainCamera.set_camera_starting_room()
 	emit_signal("enemyTurnDoneSignal")
 

@@ -52,6 +52,10 @@ var puzzleBlockInteraction = false
 
 var playerBackupPosition
 
+var playerDefeated = false
+
+var playerPassingDoor = false
+
 signal puzzleBlockInteractionSignal (player, puzzleBlockDirection)
 
 func _ready():
@@ -78,7 +82,7 @@ func _process(delta):
 			var attackDirection = get_attack_direction()
 			player_interact_puzzle_block(attackDirection)
 
-		if !playerTurnDone && ! waitingForEventBeforeContinue && !puzzleBlockInteraction:
+		if !playerTurnDone && ! waitingForEventBeforeContinue && !puzzleBlockInteraction && !playerPassingDoor:
 			var movementDirection = get_free_movement_direction()
 			if inClearedRoom || inRoomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 				movementDirection = get_free_movement_direction()
@@ -124,7 +128,7 @@ func player_movement(movementDirection):
 			movementCount += 1
 			
 			#print("Moved in Player " + str(attackCount) + " movementCount " +str(movementCount))
-			if !playerTurnDone && attackCount == 2 && movementCount == 0 || attackCount == 1 && movementCount == 1 || attackCount == 0 && movementCount == 2:
+			if !playerPassingDoor && !playerTurnDone && attackCount == 2 && movementCount == 0 || attackCount == 1 && movementCount == 1 || attackCount == 0 && movementCount == 2:
 				playerTurnDone=true
 				emit_signal("playerMadeMove")
 	
@@ -275,9 +279,8 @@ func inflict_damage_playerDefeated(attackDamage, attackType):
 	lifePoints -= attackDamage
 	guiElements.change_health(attackDamage)
 	if lifePoints <= 0:
-		guiElements.set_health(10)
-		print("Player defeated emmiting signal")
-		emit_signal("onPlayerDefeated", self)
+		playerDefeated = true
+		#emit_signal("onPlayerDefeated", self)
 		return true
 	return false
 

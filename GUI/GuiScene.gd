@@ -12,27 +12,43 @@ var powerHandPuzzle = preload ("res://GUI/PowerHandPuzzle.png")
 
 var currentAttackMode = GlobalVariables.ATTACKTYPE.SWORD
 
+onready var HealthBarFill = $PlayerStats/HealthBarFill
+onready var HealthBarEmpty = $PlayerStats/HealthBarEmpty
+onready var PotionBarEmpty = $PlayerStats/PotionBarEmpty
+onready var PotionBarFill = $PlayerStats/PotionBarFill
+
+var hearts = 10
+var maxHearts = 10
+var healthRectSize = 16
+
+var potions = 0
+var maxPotions = 3
+var potionRectSize = 32
+
 func _ready():
-	pass
+	HealthBarEmpty.rect_size.x = (maxHearts)*healthRectSize
+	HealthBarFill.rect_size.x = (hearts)*healthRectSize
+	PotionBarEmpty.rect_size.x = maxPotions*potionRectSize
+	PotionBarFill.rect_size.x = potions*potionRectSize
 
 func _process(delta):
 	pass
 		
-	
 func change_health(attackDamage):
 	#print("current Healthbar value " + str($TextureRect/HealthBar.value))
-	$TextureRect/HealthBar.value -= attackDamage
+	HealthBarFill.rect_size.x -= attackDamage * healthRectSize
 		
 func set_health(lifepoints):
-	$TextureRect/HealthBar.value = lifepoints
+	if HealthBarFill != null:
+		HealthBarFill.rect_size.x = lifepoints*healthRectSize
 
 func fill_one_potion():
 	#print("filling one potion")
-	$TextureRect/HealthPotionBar.value += 1
+	HealthBarFill.rect_size.x += 1*potionRectSize
 
 func use_potion():
-	if $TextureRect/HealthPotionBar.value > 0:
-		$TextureRect/HealthPotionBar.value -= 1
+	if HealthBarFill.rect_size.x > 0:
+		HealthBarFill.rect_size.x -= 1*potionRectSize
 		return true
 	return false
 	
