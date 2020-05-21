@@ -898,10 +898,10 @@ func _on_projectiles_made_move(type=null):
 				for boxProjectile in spawnBlockProjectileNextTurnTempCopy:
 					if boxProjectile.shootDelay == 0:
 						#print("In boxprojectile shootdelay == 0 " + str(boxProjectile))
-						if boxProjectile.get_node("PowerBlockModulate").get_modulate() == Color(0.4,0.7,1.0,1.0):
+						if boxProjectile.get_node("PowerBlockModulate").get_modulate() == Color(0.65,0.65,1.0,1.0):
 							boxProjectile.get_node("PowerBlockModulate").set_modulate(Color(randf(),randf(),randf(),1.0))
 						else:
-							boxProjectile.get_node("PowerBlockModulate").set_modulate(Color(0.4,0.7,1.0,1.0))
+							boxProjectile.get_node("PowerBlockModulate").set_modulate(Color(0.65,0.65,1.0,1.0))
 						#boxProjectile.get_node("PowerBlockModulate").set_deferred("modulate", "798aff")
 						if boxProjectile == spawnBlockProjectileNextTurnTempCopy[spawnBlockProjectileNextTurnTempCopy.size()-1]:
 							boxProjectile.spawnMagicFromBlock(true)
@@ -1006,6 +1006,7 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 		newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.PLAYER
 		newMagicProjectile.movementDirection = attack_direction
 		newMagicProjectile.attackDamage = attackDamage
+		newMagicProjectile.play_player_projectile_animation()
 		add_child(newMagicProjectile)
 		projectilesInActiveRoom.append(newMagicProjectile)
 		set_cellv(world_to_map(newMagicProjectile.position), get_tileset().find_tile_by_name("MAGICPROJECTILE"))
@@ -1023,6 +1024,7 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 			newMagicProjectile.position = player.position + map_to_world(attack_direction*2)
 			newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.PLAYER
 			newMagicProjectile.movementDirection = attack_direction
+			newMagicProjectile.play_player_projectile_animation()
 			add_child(newMagicProjectile)
 			projectilesInActiveRoom.append(newMagicProjectile)
 			magicProjectileMagicProjectileInteraction(newMagicProjectile, get_cell_pawn(world_to_map(player.position) + attack_direction*2))
@@ -1032,6 +1034,10 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 			#print("Hitting EMPTY")
 			player.waitingForEventBeforeContinue = false
 			var newPowerBlock = PowerBlock.instance()
+			if activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
+				newPowerBlock.get_node("PowerBlockModulate/Sprite").set_frame(23)
+			else:
+				newPowerBlock.get_node("PowerBlockModulate/Sprite").set_frame(21)
 			newPowerBlock.position = player.position + map_to_world(attack_direction)
 			add_child(newPowerBlock)
 			if(activeRoom != null):
@@ -1127,6 +1133,7 @@ func on_powerBlock_spawn_magic(powerBlock, signalSpawnMagic):
 	for direction in powerBlock.activeDirections:
 		#print("Spawning magic")
 		var newMagicProjectile = MagicProjectile.instance()
+		newMagicProjectile.play_powerBlock_projectile_animation()
 		newMagicProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
 		match direction:
 			GlobalVariables.DIRECTION.UP:

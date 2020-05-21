@@ -57,9 +57,15 @@ func move_projectile(type):
 	else:
 		emit_signal("projectileMadeMove",type)
 
+func play_player_projectile_animation():
+	$AnimationPlayer.play("shoot")
+	
 func play_enemy_projectile_animation():
 	#print("Animationplayer enemy shoot")
 	$AnimationPlayer.play("enemy_shoot")
+
+func play_powerBlock_projectile_animation():
+	$AnimationPlayer.play("powerblock_shoot")
 	
 func create_mini_projectile(projectile):
 	isMiniProjectile = true

@@ -108,8 +108,8 @@ func explodeBlock():
 		return false 
 		
 	set_process(false)
-	$AnimationPlayer.play("ExplodeBlock", -1, 1.0)
-	$Tween.interpolate_property(self, "position", position, position , $AnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
+	$AnimationPlayer.play("ExplodeBlock", -1, 1.5)
+	$Tween.interpolate_property(self, "position", position, position , $AnimationPlayer.current_animation_length/1.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
 	#position = target_position
 	$Tween.start()
 	yield($AnimationPlayer, "animation_finished")
