@@ -146,7 +146,14 @@ func enemyMovement():
 			var movement_direction = Grid.get_enemy_move_ninja_pattern(self, movementdirection, moveCellCount)
 			var target_position = Grid.request_move(self, movement_direction)
 			if(target_position):
-				position=target_position
+				set_process(false)
+				#play defeat animation 
+				$NinjaAnimationPlayer.play("walk", -1, 3.5)
+				$Tween.interpolate_property(self, "position", position, target_position, $NinjaAnimationPlayer.current_animation_length/3.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+				$Tween.start()
+				yield($NinjaAnimationPlayer, "animation_finished")
+				$NinjaAnimationPlayer.play("idle")
+				set_process(true)
 				movementCount += 1
 				if attackCount < 1:
 					enemyAttack()
@@ -233,11 +240,15 @@ func enemyAttack():
 			if attackDirection != Vector2.ZERO:
 				set_process(false)
 				#play defeat animation 
-				$AnimationPlayer.play("defeat", -1, 3.0)
-				$Tween.interpolate_property($Sprite, "position", attackDirection*GlobalVariables.tileSize, Vector2(), $AnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+				$NinjaAnimationPlayer.play("attack", -1, 3.0)
+				$Tween.interpolate_property($SpriteNinjaEnemy, "position", Vector2(), attackDirection*GlobalVariables.tileSize, $NinjaAnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
 				$Tween.start()
-				yield($AnimationPlayer, "animation_finished")
-				$AnimationPlayer.play("idle")
+				yield($NinjaAnimationPlayer, "animation_finished")
+				$NinjaAnimationPlayer.play("attackBack", -1, 3.0)
+				$Tween.interpolate_property($SpriteNinjaEnemy, "position", attackDirection*GlobalVariables.tileSize, Vector2(), $NinjaAnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+				$Tween.start()
+				yield($NinjaAnimationPlayer, "animation_finished")
+				$NinjaAnimationPlayer.play("idle")
 				set_process(true)
 				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackDirection, attackType, attackDamage)
 				attackCount += 1
@@ -290,7 +301,7 @@ func _on_player_turn_done_signal():
 func generateEnemy(mageEnemyCount): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = 2
+	var enemieToGenerate = 3
 	match enemieToGenerate:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
@@ -299,7 +310,8 @@ func generateEnemy(mageEnemyCount):
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.NINJAENEMY
 			attackType = GlobalVariables.ATTACKTYPE.NINJA
-			get_node("Sprite").set_modulate(Color(0,255,0,1.0))
+			get_node("Sprite").set_visible(false)
+			get_node("SpriteNinjaEnemy").set_visible(true)
 			diagonalAttack = true
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.WARRIROENEMY
@@ -323,14 +335,30 @@ func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition):
 		Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("EMPTY")) 
 		set_process(false)
 		#play defeat animation 
-		$AnimationPlayer.play("defeat", -1, 3.0)
-		#move sprite to position of death 
-		$Tween.interpolate_property(self, "position",  Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset,Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset, $AnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
-		$Tween.start()
-		yield($AnimationPlayer, "animation_finished")
-		set_process(true)
-		emit_signal("enemyDefeated", self)
-		return false
+		match enemyType:
+			GlobalVariables.ENEMYTYPE.NINJAENEMY:
+				$NinjaAnimationPlayer.play("defeat", -1, 1.0)
+				#move sprite to position of death 
+				$Tween.interpolate_property(self, "position",  Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset,Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset, $NinjaAnimationPlayer.current_animation_length/1.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+				$Tween.start()
+				yield($NinjaAnimationPlayer, "animation_finished")
+				set_process(true)
+				emit_signal("enemyDefeated", self)
+				return false
+			_:
+				$AnimationPlayer.play("defeat", -1, 3.0)
+				#move sprite to position of death 
+				$Tween.interpolate_property(self, "position",  Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset,Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset, $AnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+				$Tween.start()
+				yield($AnimationPlayer, "animation_finished")
+				set_process(true)
+				emit_signal("enemyDefeated", self)
+				return false
 	else:
-		return true
+		match enemyType:
+			GlobalVariables.ENEMYTYPE.NINJAENEMY:
+				return true
+			_:
+				return true
+		
 	#set enemy difficulty and type set enemy stats based on difficulty set amount of enemies to spawn based on room size and difficulty 
