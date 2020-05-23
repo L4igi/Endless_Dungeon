@@ -10,6 +10,8 @@ var powerHandCombat = preload ("res://GUI/PowerHandCombat.png")
 
 var powerHandPuzzle = preload ("res://GUI/PowerHandPuzzle.png")
 
+var roomMode = GlobalVariables.ROOM_TYPE.ENEMYROOM
+
 var currentAttackMode = GlobalVariables.ATTACKTYPE.SWORD
 
 onready var HealthBarFill = $PlayerStats/HealthBarFill
@@ -66,6 +68,9 @@ func change_attack_mode(attackmode):
 			$AttackMode/Attacks.texture = pickAxeTexture
 			currentAttackMode = attackmode
 		GlobalVariables.ATTACKTYPE.HAND:
-			$AttackMode/Attacks.texture = powerHandCombat
+			if roomMode == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
+				$AttackMode/Attacks.texture = powerHandPuzzle
+			else:
+				$AttackMode/Attacks.texture = powerHandCombat
 			currentAttackMode = attackmode
 

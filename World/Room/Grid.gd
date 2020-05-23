@@ -664,7 +664,7 @@ func create_enemy_room(unlockedDoor):
 	randomize()
 	#add adjustment for enemy amount 
 	#-2 because of walls on both sides
-	var enemiesToSpawn = 1
+	var enemiesToSpawn = 4
 	if unlockedDoor.roomSizeMultiplier == Vector2(1,1):
 		enemiesToSpawn = randi()%3+1
 	elif unlockedDoor.roomSizeMultiplier == Vector2(2,2):
@@ -873,15 +873,14 @@ func _on_projectiles_made_move(type=null):
 				puzzlePiece.isActivated=false
 			mainPlayer.position = mainPlayer.playerBackupPosition
 			mainPlayer.get_node("Sprite").set_visible(true)
-				
+			set_cellv(world_to_map(mainPlayer.position), get_tileset().find_tile_by_name("PLAYER"))
 			emit_signal("enemyTurnDoneSignal")
 		elif activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 			var tempProjectiles = projectilesInActiveRoom.duplicate()
-			print("Projectiles in active Room " + str(projectilesInActiveRoom))
+			#print("Projectiles in active Room " + str(projectilesInActiveRoom))
 			for projectile in tempProjectiles:
 				if projectile.projectileType == GlobalVariables.PROJECTILETYPE.TICKERPROJECTILE:
-					print("TICKTOCK")
-					
+					#print("TICKTOCK")
 					projectile.move_projectile("tickingProjectile")
 #				elif projectile.projectileType == GlobalVariables.PROJECTILETYPE.TICKERPROJECTILE && projectile.tickAlreadyMoved:
 #					print("ELIF TICKTOCK")
@@ -905,10 +904,10 @@ func _on_projectiles_made_move(type=null):
 						#boxProjectile.get_node("PowerBlockModulate").set_deferred("modulate", "798aff")
 						if boxProjectile == spawnBlockProjectileNextTurnTempCopy[spawnBlockProjectileNextTurnTempCopy.size()-1]:
 							boxProjectile.spawnMagicFromBlock(true)
-							print("Here")
+							#print("Here")
 						else:
 							boxProjectile.spawnMagicFromBlock(false)
-							print("there")
+							#print("there")
 						spawnBlockProjectileNextTurn.erase(boxProjectile)
 					else:
 						boxProjectile.shootDelay-=1
@@ -977,6 +976,7 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 		projectilesInActiveRoom.clear()
 		player.playerBackupPosition = player.position
 		player.get_node("Sprite").set_visible(false)
+		set_cellv(world_to_map(player.position), get_tileset().find_tile_by_name("EMPTY")) 
 		for puzzlePiece in activatedPuzzlePieces:
 			puzzlePiece.isActivated=false
 			puzzlePiece.get_node("Sprite").set_modulate(puzzlePiece.baseModulation)
