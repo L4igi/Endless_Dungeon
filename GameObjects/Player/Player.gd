@@ -194,8 +194,10 @@ func player_passed_door():
 		$AnimationPlayer.play("Idle")
 		set_process(true)
 		if Grid.activeRoom != null && Grid.activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
+			guiElements.change_hand_on_room(GlobalVariables.ROOM_TYPE.PUZZLEROOM)
 			emit_signal("playerMadeMove")
 		else:
+			guiElements.change_hand_on_room(GlobalVariables.ROOM_TYPE.ENEMYROOM)
 			movementCount = 0
 			attackCount = 0
 			playerTurnDone = false

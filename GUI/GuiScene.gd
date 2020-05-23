@@ -53,7 +53,14 @@ func use_potion():
 		HealthBarFill.rect_size.x -= 1*potionRectSize
 		return true
 	return false
-	
+
+func change_hand_on_room(roomMode):
+	self.roomMode = roomMode
+	if roomMode == GlobalVariables.ROOM_TYPE.PUZZLEROOM && currentAttackMode == GlobalVariables.ATTACKTYPE.HAND:
+		$AttackMode/Attacks.texture = powerHandPuzzle
+	elif currentAttackMode == GlobalVariables.ATTACKTYPE.HAND:
+		$AttackMode/Attacks.texture = powerHandCombat
+		
 func change_attack_mode(attackmode):
 	if(attackmode == currentAttackMode):
 		return 

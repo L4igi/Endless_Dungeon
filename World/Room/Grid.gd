@@ -787,11 +787,11 @@ func _on_Player_Made_Move():
 		roomJustEntered = false
 		if activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 			var tempProjectiles = projectilesInActiveRoom.duplicate()
-			print("Projectiles in active Room in Player made move" + str(projectilesInActiveRoom))
+			#print("Projectiles in active Room in Player made move" + str(projectilesInActiveRoom))
 			
 			if tempProjectiles.empty() && !spawnBlockProjectileNextTurn.empty():
 				for projectile in spawnBlockProjectileNextTurn:
-					print("Projectiles waiting for turn " + str(spawnBlockProjectileNextTurn))
+					#print("Projectiles waiting for turn " + str(spawnBlockProjectileNextTurn))
 					_on_projectiles_made_move()
 			else:
 				for projectile in tempProjectiles:
