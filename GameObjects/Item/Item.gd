@@ -22,18 +22,18 @@ func _ready():
 
 func setTexture(textureType):
 	match textureType:
-		"POTION":
+		GlobalVariables.ITEMTYPE.POTION:
 			get_node("Sprite").set_texture(potionTexture)
-			itemType = "POTION"
-		"KEY":
+			itemType = GlobalVariables.ITEMTYPE.POTION
+		GlobalVariables.ITEMTYPE.KEY:
 			get_node("Sprite").set_texture(keyTexture)
-			itemType = "KEY"
-		"WEAPON":
+			itemType = GlobalVariables.ITEMTYPE.KEY
+		GlobalVariables.ITEMTYPE.WEAPON:
 			get_node("Sprite").set_texture(swordTexture)
-			itemType = "WEAPON"
-		"HEARTCONTAINER":
+			itemType = GlobalVariables.ITEMTYPE.WEAPON
+		GlobalVariables.ITEMTYPE.HEARTCONTAINER:
 			get_node("Sprite").set_texture(heartContainerTexture)
-			itemType = "HEARTCONTAINER"
-		"FLASKCONTAINER":
+			itemType = GlobalVariables.ITEMTYPE.HEARTCONTAINER
+		GlobalVariables.ITEMTYPE.FLASKCONTAINER:
 			get_node("Sprite").set_texture(flaskContainerTexture)
-			itemType = "FLASKCONTAINER"
+			itemType = GlobalVariables.ITEMTYPE.FLASKCONTAINER

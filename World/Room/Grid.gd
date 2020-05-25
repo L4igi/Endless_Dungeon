@@ -187,7 +187,7 @@ func request_move(pawn, direction):
 				var object_pawn = get_cell_pawn(cell_target)
 				#print("Item spawned key value " + str(object_pawn.keyValue))
 				#add additional items with || 
-				if(object_pawn.itemType == "POTION"):
+				if(object_pawn.itemType == GlobalVariables.ITEMTYPE.POTION):
 					pawn.add_nonkey_items(object_pawn.itemType)
 				else:
 					pawn.itemsInPosession.append(object_pawn)
@@ -703,7 +703,7 @@ func create_enemy_room(unlockedDoor):
 				var newEnemy = Enemy.instance()
 				#create enemy typ here (enemy. createEnemyType
 				newEnemy.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(spawnCellX, spawnCellY))
-				var generatedEnemyType = newEnemy.generateEnemy(mageEnemyCount)
+				var generatedEnemyType = newEnemy.generateEnemy(mageEnemyCount, self)
 				if(generatedEnemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY):
 					mageEnemyCount += 1
 				newEnemy.connect("enemyMadeMove", self, "_on_enemy_made_move_ready")
@@ -965,7 +965,8 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 	if(get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.ENEMY && attackType == GlobalVariables.ATTACKTYPE.SWORD):
 		print("Woosh Player Sword Attack hit " + str(attackDamage))
 		var attackedEnemy = get_cell_pawn(world_to_map(player.position) + attack_direction)
-		attackedEnemy.inflictDamage(attackDamage, attackType, world_to_map(player.position) + attack_direction)
+		attackedEnemy.inflictDamage(attackDamage, attackType, world_to_map(player.position) + attack_direction, mainPlayer)
+				
 	elif(get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.EMPTY && attackType == GlobalVariables.ATTACKTYPE.SWORD):
 		match attackType:
 			GlobalVariables.ATTACKTYPE.SWORD:
@@ -1275,7 +1276,6 @@ func dropLootInActiveRoom():
 		var itemToGenerate = barrierKeysNoSolution[randi()%barrierKeysNoSolution.size()]
 		barrierKeysSolutionSpawned.append(itemToGenerate)
 		barrierKeysNoSolution.erase(itemToGenerate)
-		var newItem = Item.instance()
 		var newItemPosition = activeRoom.doorRoomLeftMostCorner + map_to_world(activeRoom.roomSize/2)
 		var itemPosMover = Vector2(0,1)
 		while(get_cellv(world_to_map(newItemPosition)) == TILETYPES.PLAYER || get_cellv(world_to_map(newItemPosition)) == TILETYPES.PUZZLEPIECE):
@@ -1284,16 +1284,13 @@ func dropLootInActiveRoom():
 				itemPosMover += Vector2(0,1)
 			else:
 				itemPosMover += Vector2(1,0)
-		newItem.position = newItemPosition
-		if get_cellv(world_to_map(newItem.position))==TILETYPES.BLOCK:
-			get_cell_pawn(world_to_map(newItem.position)).queue_free()
+		itemToGenerate.position = newItemPosition
+		if get_cellv(world_to_map(itemToGenerate.position))==TILETYPES.BLOCK:
+			get_cell_pawn(world_to_map(itemToGenerate.position)).queue_free()
 		if  get_cellv(world_to_map(newItemPosition)) == TILETYPES.ENEMY:
-			get_cell_pawn(world_to_map(newItem.position)).queue_free()
-		newItem.keyValue = itemToGenerate
-		newItem.modulation = Color(randf(),randf(),randf(),1.0)
-		newItem.get_node("Sprite").set_modulate(newItem.modulation)
-		add_child(newItem)
-		set_cellv(world_to_map(newItem.position), get_tileset().find_tile_by_name("ITEM"))
+			get_cell_pawn(world_to_map(itemToGenerate.position)).queue_free()
+		add_child(itemToGenerate)
+		set_cellv(world_to_map(itemToGenerate.position), get_tileset().find_tile_by_name("ITEM"))
 			#set type of item 
 	else:
 		var newItem = Item.instance()
@@ -1311,15 +1308,24 @@ func dropLootInActiveRoom():
 		if  get_cellv(world_to_map(newItemPosition)) == TILETYPES.ENEMY:
 			get_cell_pawn(world_to_map(newItem.position)).queue_free()
 		newItem.keyValue = str(0)
-		newItem.setTexture("POTION")
+		newItem.setTexture(GlobalVariables.ITEMTYPE.POTION)
 		add_child(newItem)
 		set_cellv(world_to_map(newItem.position), get_tileset().find_tile_by_name("ITEM"))
+		
+
+func generate_keyValue_item(keyValue, modulation, type):
+	var newItem = Item.instance()
+	newItem.keyValue = keyValue
+	newItem.modulation = modulation
+	newItem.get_node("Sprite").set_modulate(newItem.modulation)
+	newItem.itemType = type
+	newItem.setTexture(type)
+	barrierKeysNoSolution.append(newItem)
 	
+		
 func create_starting_room(startingRoom=false):
 	create_walls(null, startingRoom, true)
 	update_bitmask_region()
-
-
 
 func create_walls (door = null, startingRoom = false, createDoors = false):
 	#todo:calculate actual position of leftmost corner wall tile of the room

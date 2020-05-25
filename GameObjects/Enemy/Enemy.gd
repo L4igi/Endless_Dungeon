@@ -22,7 +22,9 @@ signal enemyDefeated (enemy)
 
 var lifePoints = 1
 
-var barrierEnemy = false
+var isBarrier = false
+
+var barrierKeyValue
 
 var attackDamage = 1
 
@@ -305,7 +307,7 @@ func _on_player_turn_done_signal():
 				GlobalVariables.ENEMYTYPE.WARRIROENEMY:
 						warriorenemy_type_actions()
 	
-func generateEnemy(mageEnemyCount): 
+func generateEnemy(mageEnemyCount, currentGrid): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
 	var enemieToGenerate = 0
@@ -313,7 +315,7 @@ func generateEnemy(mageEnemyCount):
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
 			attackType = GlobalVariables.ATTACKTYPE.SWORD
-			#get_node("Sprite").set_modulate(Color(randf(),randf(),randf(),1.0))
+			randomEnemyBarrier(currentGrid)
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.NINJAENEMY
 			attackType = GlobalVariables.ATTACKTYPE.NINJA
@@ -334,8 +336,22 @@ func generateEnemy(mageEnemyCount):
 			get_node("Sprite").set_modulate(Color(0,0,255,1.0))
 	return enemyType
 
-func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition):
-	lifePoints -= inflictattackDamage
+func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, mainPlayer = null):
+	var barrierDefeatItem = null
+	#if enemy is barriere only if player posesses item and attacks with sword enemy is killed
+	if mainPlayer!=null && self.isBarrier:
+		for item in mainPlayer.itemsInPosession:
+			print ("Item Key Values: " + str(item.keyValue))
+			if item.keyValue == barrierKeyValue:
+				print("Enemy Barrier " + str(barrierKeyValue) + " was defeated using item weapon " + str(item.keyValue))
+				lifePoints = 0
+				mainPlayer.remove_key_item_from_inventory(item)
+				break 
+		if !barrierDefeatItem:
+			print("need weapon: " + str(barrierKeyValue) + " to defeat enemy ")
+
+	if !self.isBarrier:
+		lifePoints -= inflictattackDamage
 	if lifePoints <= 0 :
 		enemyDefeated = true
 		Grid.activeRoom.enemiesInRoom.erase(self)
@@ -378,3 +394,19 @@ func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition):
 				return true
 		
 	#set enemy difficulty and type set enemy stats based on difficulty set amount of enemies to spawn based on room size and difficulty 
+
+func randomEnemyBarrier(currentGrid):
+	randomize()
+	#determins if door is barrier or not 
+	var barrierChance = randi()%4+1
+	print("Grid " + str(currentGrid))
+	if(barrierChance == 1 && currentGrid.currentNumberRoomsgenerated!=0):
+		isBarrier = true
+		get_node("Sprite").set_modulate(Color(randf(),randf(),randf(),1.0))
+		barrierKeyValue = str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10)
+		#check if generated value is unique and not already used 
+		for count in range (0,currentGrid.barrierKeysNoSolution.size()):
+			if barrierKeyValue == currentGrid.barrierKeysNoSolution[count].keyValue:
+				barrierKeyValue = str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10)
+				count = 0
+		currentGrid.generate_keyValue_item(barrierKeyValue, get_node("Sprite").get_modulate(), GlobalVariables.ITEMTYPE.WEAPON)

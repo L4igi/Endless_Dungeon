@@ -305,7 +305,7 @@ func inflict_damage_playerDefeated(attackDamage, attackType):
 
 func add_nonkey_items(itemtype):
 	match itemtype:
-		"POTION":
+		GlobalVariables.ITEMTYPE.POTION:
 			guiElements.fill_one_potion()
 
 func add_key_item_to_inventory(item):
@@ -314,19 +314,30 @@ func add_key_item_to_inventory(item):
 	newInventoryItem.get_node("ItemTexture").set_texture(item.get_node("Sprite").get_texture())
 	newInventoryItem.get_node("ItemTexture").set_modulate(item.modulation)
 	newInventoryItem.get_node("ItemLabel").set_text(str(item.keyValue))
-	inventoryElements.get_node("Tabs/Key/KeyList").add_child(newInventoryItem)
+	if item.itemType == GlobalVariables.ITEMTYPE.KEY:
+		inventoryElements.get_node("Tabs/Key/KeyList").add_child(newInventoryItem)
+	if item.itemType == GlobalVariables.ITEMTYPE.WEAPON:
+		inventoryElements.get_node("Tabs/Weapon/WeaponList").add_child(newInventoryItem)
 #	inventoryElements.popup()
 #	inventoryElements.rect_position = self.position
 
 func remove_key_item_from_inventory(item):
 	itemsInPosession.erase(item)
 	var keyItemToDelete 
-	for keyitem in inventoryElements.get_node("Tabs/Key/KeyList").get_children():
-		if keyitem.itemKeyValue == item.keyValue:
-			keyItemToDelete = keyitem
-		else:
-			pass
-	inventoryElements.get_node("Tabs/Key/KeyList").remove_child(keyItemToDelete)
+	if item.itemType == GlobalVariables.ITEMTYPE.KEY:
+		for keyitem in inventoryElements.get_node("Tabs/Key/KeyList").get_children():
+			if keyitem.itemKeyValue == item.keyValue:
+				keyItemToDelete = keyitem
+			else:
+				pass
+		inventoryElements.get_node("Tabs/Key/KeyList").remove_child(keyItemToDelete)
+	elif item.itemType == GlobalVariables.ITEMTYPE.WEAPON:
+		for keyitem in inventoryElements.get_node("Tabs/Weapon/WeaponList").get_children():
+			if keyitem.itemKeyValue == item.keyValue:
+				keyItemToDelete = keyitem
+			else:
+				pass
+		inventoryElements.get_node("Tabs/Weapon/WeaponList").remove_child(keyItemToDelete)
 	
 func _unhandled_input(event):
 	if event is InputEventMouseButton:

@@ -46,10 +46,10 @@ func _ready():
 		barrierKeyValue = str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10)
 		#check if generated value is unique and not already used 
 		for count in range (0,Grid.barrierKeysNoSolution.size()):
-			if barrierKeyValue == Grid.barrierKeysNoSolution[count]:
+			if barrierKeyValue == Grid.barrierKeysNoSolution[count].keyValue:
 				barrierKeyValue = str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10)
 				count = 0
-		Grid.barrierKeysNoSolution.append(barrierKeyValue)
+		Grid.generate_keyValue_item(barrierKeyValue, get_node("Sprite").get_modulate(), GlobalVariables.ITEMTYPE.KEY)
 	
 			
 func _process(delta):
@@ -74,7 +74,7 @@ func unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance):
 	#print("Door was unlocked")
 	#choose type of room to be created 
 	#var randRoomType = randi()%100
-	var randRoomType =  100
+	var randRoomType =  20
 	if(randRoomType < enemyRoomChance):
 		#print("create enemy room " + str(randRoomType))
 		roomType = ROOM_TYPE.ENEMYROOM
