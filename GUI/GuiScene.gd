@@ -46,7 +46,8 @@ func set_health(lifepoints):
 
 func fill_one_potion():
 	#print("filling one potion")
-	PotionBarFill.rect_size.x += 1*potionRectSize
+	if PotionBarFill.rect_size.x != 3*potionRectSize:
+		PotionBarFill.rect_size.x += 1*potionRectSize
 
 func use_potion():
 	if HealthBarFill.rect_size.x > 0:

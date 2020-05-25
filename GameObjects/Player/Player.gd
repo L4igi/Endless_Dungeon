@@ -40,7 +40,13 @@ var attackType = GlobalVariables.ATTACKTYPE.SWORD
 
 var GUI = preload("res://GUI/GUIScene.tscn")
 
+var Inventory = preload("res://Inventory/Inventory.tscn")
+
+var InventoryItem = preload("res://Inventory/InventorySlot.tscn")
+
 var guiElements = null
+
+var inventoryElements = null
 
 var movedThroughDoorDirection = Vector2.ZERO 
 
@@ -62,6 +68,10 @@ func _ready():
 	guiElements = GUI.instance()
 	guiElements.set_health(lifePoints)
 	add_child(guiElements)
+	
+	inventoryElements = Inventory.instance()
+	inventoryElements.currentPlayerPosition = self.position
+	add_child(inventoryElements)
 	
 	Grid.connect("enemyTurnDoneSignal", self, "_on_enemy_turn_done_signal")
 
@@ -298,7 +308,26 @@ func add_nonkey_items(itemtype):
 		"POTION":
 			guiElements.fill_one_potion()
 
+func add_key_item_to_inventory(item):
+	var newInventoryItem = InventoryItem.instance()
+	newInventoryItem.itemKeyValue = item.keyValue
+	newInventoryItem.get_node("ItemTexture").set_texture(item.get_node("Sprite").get_texture())
+	newInventoryItem.get_node("ItemTexture").set_modulate(item.modulation)
+	newInventoryItem.get_node("ItemLabel").set_text(str(item.keyValue))
+	inventoryElements.get_node("Tabs/Key/KeyList").add_child(newInventoryItem)
+#	inventoryElements.popup()
+#	inventoryElements.rect_position = self.position
 
+func remove_key_item_from_inventory(item):
+	itemsInPosession.erase(item)
+	var keyItemToDelete 
+	for keyitem in inventoryElements.get_node("Tabs/Key/KeyList").get_children():
+		if keyitem.itemKeyValue == item.keyValue:
+			keyItemToDelete = keyitem
+		else:
+			pass
+	inventoryElements.get_node("Tabs/Key/KeyList").remove_child(keyItemToDelete)
+	
 func _unhandled_input(event):
 	if event is InputEventMouseButton:
 		if event.button_index == BUTTON_WHEEL_UP:

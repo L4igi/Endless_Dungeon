@@ -135,6 +135,7 @@ func set_enum_index(var enumName, var setTo):
 func _ready():
 	var newPlayer = Player.instance()
 	newPlayer.position = Vector2(80,80)
+	newPlayer.set_name("Player")
 	add_child(newPlayer)
 	get_node("Player").connect("playerMadeMove", self, "_on_Player_Made_Move")
 	get_node("Player").connect("playerAttacked", self, "_on_Player_Attacked")
@@ -188,7 +189,9 @@ func request_move(pawn, direction):
 				#add additional items with || 
 				if(object_pawn.itemType == "POTION"):
 					pawn.add_nonkey_items(object_pawn.itemType)
-				pawn.itemsInPosession.append(object_pawn)
+				else:
+					pawn.itemsInPosession.append(object_pawn)
+					pawn.add_key_item_to_inventory(object_pawn)
 				set_cellv(object_pawn.position, get_tileset().find_tile_by_name("EMPTY"))
 				object_pawn.get_node("Sprite").queue_free()
 				#pawn.queue_free()
@@ -196,7 +199,10 @@ func request_move(pawn, direction):
 				return update_pawn_position(pawn, cell_start, cell_target)
 			TILETYPES.DOOR:
 				var object_pawn = get_cell_pawn(cell_target)
-				if(object_pawn.request_door_unlock(pawn.itemsInPosession)):
+				var requestDoorUnlockResult = object_pawn.request_door_unlock(pawn.itemsInPosession)
+				if(requestDoorUnlockResult):
+					if requestDoorUnlockResult is preload("res://GameObjects/Item/Item.gd"):
+						mainPlayer.remove_key_item_from_inventory(requestDoorUnlockResult)
 					object_pawn.unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance)
 					roomJustEntered = true
 					return update_pawn_position(pawn, cell_start, cell_target)
@@ -390,7 +396,7 @@ func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile
 		
 	# PuzzleProjectile puzzleprojectile interaction:
 	elif magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK:
-		print("Magic Projectile Puzzle interaction")
+		print("Magic Projectile Magic Projectile Puzzle Room interaction")
 		projectilesInActiveRoom.erase(magicProjectile1)
 		set_cellv(world_to_map(magicProjectile1.position),get_tileset().find_tile_by_name("EMPTY")) 
 		magicProjectile1.queue_free()
@@ -1284,6 +1290,8 @@ func dropLootInActiveRoom():
 		if  get_cellv(world_to_map(newItemPosition)) == TILETYPES.ENEMY:
 			get_cell_pawn(world_to_map(newItem.position)).queue_free()
 		newItem.keyValue = itemToGenerate
+		newItem.modulation = Color(randf(),randf(),randf(),1.0)
+		newItem.get_node("Sprite").set_modulate(newItem.modulation)
 		add_child(newItem)
 		set_cellv(world_to_map(newItem.position), get_tileset().find_tile_by_name("ITEM"))
 			#set type of item 

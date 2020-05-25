@@ -42,7 +42,7 @@ func _ready():
 	var barrierChance = randi()% 4+1 
 	if(barrierChance == 1 && Grid.currentNumberRoomsgenerated!=0):
 		isBarrier = true
-		get_node("Sprite").set_modulate(Color(0,0,0,1.0))
+		get_node("Sprite").set_modulate(Color(randf(),randf(),randf(),1.0))
 		barrierKeyValue = str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10)
 		#check if generated value is unique and not already used 
 		for count in range (0,Grid.barrierKeysNoSolution.size()):
@@ -62,9 +62,9 @@ func request_door_unlock(playerItemsInPosession):
 		for item in playerItemsInPosession:
 			if item.keyValue == barrierKeyValue:
 				print("Door Barrier " + str(barrierKeyValue) + " was unlocked using item key " + str(item.keyValue))
-				return true
+				return item
 		print("need key: " + str(barrierKeyValue) + " to unlock door ")
-		return false
+		return null
 	return true
 	
 func unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance):
@@ -74,7 +74,7 @@ func unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance):
 	#print("Door was unlocked")
 	#choose type of room to be created 
 	#var randRoomType = randi()%100
-	var randRoomType =  randi()%80
+	var randRoomType =  100
 	if(randRoomType < enemyRoomChance):
 		#print("create enemy room " + str(randRoomType))
 		roomType = ROOM_TYPE.ENEMYROOM
