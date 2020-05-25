@@ -1,5 +1,6 @@
 extends Node2D
 
+onready var Grid = get_parent()
 
 var color 
 
@@ -7,7 +8,11 @@ var baseModulation
 
 var isActivated = false
 
+var isBarrier = false
+
 var activationDelay = 0
+
+var barrierKeyValue
 
 signal puzzlePlayedAnimation 
 
@@ -16,6 +21,7 @@ signal puzzlePieceActivated
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	baseModulation = get_node("Sprite").get_self_modulate()
+	Grid.connect("puzzleBarrierDisableSignal", self, "_on_puzzlepiece_barrier_disable")
 	
 func playColor():
 	set_process(false)
@@ -47,3 +53,22 @@ func playWrongWriteAnimation(right):
 	else:
 		get_node("Sprite").set_self_modulate(baseModulation)
 		$AnimationPlayer.play("Idle")
+
+func makePuzzleBarrier(currentGrid):
+	randomize()
+	if(currentGrid.currentNumberRoomsgenerated!=0):
+		isBarrier = true
+		get_node("Sprite").set_modulate(Color(randf(),randf(),randf(),1.0))
+		barrierKeyValue = str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10)
+		#check if generated value is unique and not already used 
+		for count in range (0,currentGrid.barrierKeysNoSolution.size()):
+			if barrierKeyValue == currentGrid.barrierKeysNoSolution[count].keyValue:
+				barrierKeyValue = str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10)
+				count = 0
+		currentGrid.generate_keyValue_item(barrierKeyValue, get_node("Sprite").get_modulate(), GlobalVariables.ITEMTYPE.PUZZLESWITCH)
+	
+	
+func _on_puzzlepiece_barrier_disable(item, mainPlayer):
+	if item.keyValue == barrierKeyValue:
+		print("Player activated PuzzlePiece Switch")
+		isBarrier = false

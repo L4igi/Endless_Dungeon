@@ -8,10 +8,7 @@ export(GlobalVariables.CELL_TYPES) var type = CELL_TYPES.DOOR
 enum ROOM_TYPE{ENEMYROOM = 0, PUZZLEROOM = 1, EMPTYTREASUREROOM = 2}
 export(ROOM_TYPE) var roomtype = ROOM_TYPE.EMPTYTREASUREROOM
 
-
 var isUnlocked = false
-
-var isBarrier = false 
 
 var barrierKeyValue
 
@@ -26,9 +23,15 @@ var doorLocationDirection
 
 var otherAdjacentRoom = {}
 
+var isBarrier = false 
+
 var enemiesInRoom = []
 
+var isEnemyBarrier = false
+
 var puzzlePiecesInRoom = []
+
+var isPuzzleBarrier = false
 
 var powerBlocksInRoom = []
 
@@ -39,7 +42,8 @@ var roomCleared = false
 func _ready():
 	randomize()
 	#determins if door is barrier or not 
-	var barrierChance = randi()% 4+1 
+#	var barrierChance = randi()% 4+1 
+	var barrierChance = 4
 	if(barrierChance == 1 && Grid.currentNumberRoomsgenerated!=0):
 		isBarrier = true
 		get_node("Sprite").set_modulate(Color(randf(),randf(),randf(),1.0))
@@ -74,7 +78,12 @@ func unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance):
 	#print("Door was unlocked")
 	#choose type of room to be created 
 	#var randRoomType = randi()%100
-	var randRoomType =  20
+	var randRoomType =  60
+	var randomrand = randi()%2+1
+	if randomrand == 1:
+		randRoomType = 60
+	else:
+		randRoomType = 90
 	if(randRoomType < enemyRoomChance):
 		#print("create enemy room " + str(randRoomType))
 		roomType = ROOM_TYPE.ENEMYROOM
