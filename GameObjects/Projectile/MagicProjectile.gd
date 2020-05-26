@@ -14,12 +14,22 @@ var tickAlreadyMoved = false
 
 signal projectileMadeMove (type)
 
+signal playerEnemieProjectileMadeMove (type, projectileCount)
+
 func _ready():
 	pass
 
-func move_projectile(type):
+func move_projectile(type=null, projectileCount=0):
 
-	if(type == "moveEnemyProjectiles" && projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || type =="movePlayerProjectiles" && projectileType == GlobalVariables.PROJECTILETYPE.PLAYER|| type == "movePowerProjectile" && projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK):
+	if(type == "moveEnemyProjectiles" && projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || type =="movePlayerProjectiles" && projectileType == GlobalVariables.PROJECTILETYPE.PLAYER):
+		var target_position = Grid.request_move(self, movementDirection)
+		if(target_position):
+			$Tween.interpolate_property(self, "position", position, target_position , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			$Tween.start()
+			yield($Tween, "tween_completed")
+		emit_signal("playerEnemieProjectileMadeMove",type, projectileCount)
+
+	elif (type == "movePowerProjectile" && projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK):
 		var target_position = Grid.request_move(self, movementDirection)
 		if(target_position):
 			$Tween.interpolate_property(self, "position", position, target_position , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)

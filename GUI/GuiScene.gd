@@ -50,8 +50,8 @@ func fill_one_potion():
 		PotionBarFill.rect_size.x += 1*potionRectSize
 
 func use_potion():
-	if HealthBarFill.rect_size.x > 0:
-		HealthBarFill.rect_size.x -= 1*potionRectSize
+	if PotionBarFill.rect_size.x > 0:
+		PotionBarFill.rect_size.x -= 1*potionRectSize
 		return true
 	return false
 

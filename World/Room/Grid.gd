@@ -198,6 +198,7 @@ func request_move(pawn, direction):
 					pawn.add_key_item_to_inventory(object_pawn)
 				set_cellv(object_pawn.position, get_tileset().find_tile_by_name("EMPTY"))
 				object_pawn.get_node("Sprite").queue_free()
+				object_pawn.position = activeRoom.doorRoomLeftMostCorner+Vector2(activeRoom.roomSize.x, 0)
 				#pawn.queue_free()
 				#print("Player has Items in posession " + str(pawn.itemsInPosession))
 				return update_pawn_position(pawn, cell_start, cell_target)
@@ -296,12 +297,15 @@ func request_move(pawn, direction):
 				if pawn.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER :
 					print("Projectile inflicted damage on enemy")
 					tempEnemy.inflictDamage(pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, cell_target)
+					#projectilesMadeMoveCounter+=1
 					projectilesInActiveRoom.erase(pawn)
 					set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
 					pawn.queue_free()
+					return 
 				if pawn.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
 					projectilesInActiveRoom.erase(pawn)
 					set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
+					#projectilesMadeMoveCounter+=1
 					pawn.queue_free()
 				else:
 					return pawn.position
@@ -367,6 +371,7 @@ func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile
 	if magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
 		projectilesInActiveRoom.erase(magicProjectile1)
 		set_cellv(world_to_map(magicProjectile1.position),get_tileset().find_tile_by_name("EMPTY")) 
+		projectilesMadeMoveCounter+=1
 		magicProjectile1.queue_free()
 		#magicProjectile1.movementDirection *=-1
 	#player enemy projectile interaction
@@ -776,21 +781,27 @@ func _on_enemy_made_move_ready():
 	if(activeRoom != null):
 		enemiesMadeMoveCounter += 1
 		#print("Enemies made move " + str(enemiesMadeMoveCounter) + " enemies in active room " + str(activeRoom.enemiesInRoom.size()))
-		#print("Currently Enemies made move " + str(enemiesMadeMoveCounter) + " of all enemies active " + str(activeRoom.enemiesInRoom.size()))
 		if(enemiesMadeMoveCounter >= activeRoom.enemiesInRoom.size()):
+			enemiesMadeMoveCounter = 0
 			if mainPlayer.playerDefeated:
 				mainPlayer.playerDefeated = false
 				_on_Player_Defeated(mainPlayer)
 				return
 			#print("All Enemies made move " + str(enemiesMadeMoveCounter))
-			enemiesMadeMoveCounter = 0
+			
 			var tempProjectiles = projectilesInActiveRoom.duplicate()
+			var playerProjectileCount = 0
 			for projectile in tempProjectiles:
-				projectile.move_projectile("movePlayerProjectiles")
-			tempProjectiles.clear()
-			if projectilesInActiveRoom.empty():
+				if projectile.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
+					playerProjectileCount +=1
+			if playerProjectileCount == 0:
 				emit_signal("enemyTurnDoneSignal")
-			#if all enemies made their move move all player projectiles 
+			for projectile in tempProjectiles:
+				if activeRoom == null || activeRoom.roomCleared:
+					pass
+				if projectile.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
+					projectile.move_projectile("movePlayerProjectiles", playerProjectileCount)
+			tempProjectiles.clear()
 			
 		
 func _on_Player_Made_Move():
@@ -820,12 +831,17 @@ func _on_Player_Made_Move():
 		
 		else:
 			var tempProjectiles = projectilesInActiveRoom.duplicate()
-			if tempProjectiles.empty():
+			var enemyProjectileCount = 0
+			for projectile in tempProjectiles:
+				if projectile.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
+					enemyProjectileCount +=1
+			if enemyProjectileCount == 0:
 				emit_signal("playerTurnDoneSignal")
 			for projectile in tempProjectiles:
 				if activeRoom == null || activeRoom.roomCleared:
 					pass
-				projectile.move_projectile("moveEnemyProjectiles")
+				if projectile.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
+					projectile.move_projectile("moveEnemyProjectiles", enemyProjectileCount)
 			tempProjectiles.clear()
 			
 		if activeRoom == null:
@@ -877,8 +893,19 @@ func _on_puzzle_piece_activated():
 				for puzzlePiece in activatedPuzzlePieces:
 						puzzlePiece.playWrongWriteAnimation(false)
 						
+func _on_player_enemy_projectile_made_move(type = null, projectileCount = 0):
+	projectilesMadeMoveCounter +=1
+	print("Moving " + str(type) +" projectile current count " + str(projectilesMadeMoveCounter) + " of " + str(projectileCount))
+	if projectilesMadeMoveCounter == projectileCount:
+		projectilesMadeMoveCounter = 0
+		if type == "moveEnemyProjectiles":
+			emit_signal("playerTurnDoneSignal")
+		elif type == "movePlayerProjectiles":
+			emit_signal("enemyTurnDoneSignal")
+						
 func _on_projectiles_made_move(type=null):
 	projectilesMadeMoveCounter +=1
+	print("plese not in here")
 	#print("Projectiles made move " + str(projectilesMadeMoveCounter) + " projectiles in active room " + str(projectilesInActiveRoom.size()) + " type " +str(type)) 
 	if projectilesMadeMoveCounter >= projectilesInActiveRoom.size():
 		projectilesMadeMoveCounter = 0
@@ -1030,6 +1057,7 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 		#create ticking projectile for power block order
 		var newTickingProjectile = MagicProjectile.instance()
 		newTickingProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
+		newTickingProjectile.connect("playerEnemieProjectileMadeMove", self, "_on_player_enemy_projectile_made_move")
 		newTickingProjectile.create_ticking_projectile(activeRoom.doorRoomLeftMostCorner)
 		add_child(newTickingProjectile)
 		projectilesInActiveRoom.append(newTickingProjectile)
@@ -1042,6 +1070,7 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 		print("Magic was used to attack")
 		var newMagicProjectile = MagicProjectile.instance()
 		newMagicProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
+		newMagicProjectile.connect("playerEnemieProjectileMadeMove", self, "_on_player_enemy_projectile_made_move")
 		newMagicProjectile.position = player.position + map_to_world(attack_direction*2)
 		newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.PLAYER
 		newMagicProjectile.movementDirection = attack_direction
@@ -1061,6 +1090,7 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 		else:
 			var newMagicProjectile = MagicProjectile.instance()
 			newMagicProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
+			newMagicProjectile.connect("playerEnemieProjectileMadeMove", self, "_on_player_enemy_projectile_made_move")
 			newMagicProjectile.position = player.position + map_to_world(attack_direction*2)
 			newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.PLAYER
 			newMagicProjectile.movementDirection = attack_direction
@@ -1182,6 +1212,7 @@ func on_powerBlock_spawn_magic(powerBlock, signalSpawnMagic):
 		var newMagicProjectile = MagicProjectile.instance()
 		newMagicProjectile.play_powerBlock_projectile_animation()
 		newMagicProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
+		newMagicProjectile.connect("playerEnemieProjectileMadeMove", self, "_on_player_enemy_projectile_made_move")
 		match direction:
 			GlobalVariables.DIRECTION.UP:
 				newMagicProjectile.position = powerBlock.position+map_to_world(Vector2(0,-1))
@@ -1265,6 +1296,7 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage):
 		if(get_cellv(world_to_map(map_to_world(attackCell)+GlobalVariables.tileOffset))==TILETYPES.EMPTY):
 			var newMagicProjectile = MagicProjectile.instance()
 			newMagicProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
+			newMagicProjectile.connect("playerEnemieProjectileMadeMove", self, "_on_player_enemy_projectile_made_move")
 			newMagicProjectile.position = map_to_world(attackCell)+GlobalVariables.tileOffset
 			newMagicProjectile.movementDirection = attackCell-world_to_map(enemy.position)
 			newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.ENEMY
@@ -1275,6 +1307,14 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage):
 
 func _on_Player_Defeated(player):
 	print("resetting player to start")
+	set_process(false)
+	mainPlayer.get_node("AnimationPlayer").play("defeat", -1, 3.0)
+	mainPlayer.get_node("Tween").interpolate_property(self, "position", Vector2(), Vector2() , mainPlayer.get_node("AnimationPlayer").current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+	#position = target_position
+	mainPlayer.get_node("Tween").start()
+	yield(mainPlayer.get_node("AnimationPlayer"), "animation_finished")
+	mainPlayer.get_node("AnimationPlayer").play("Idle")
+	set_process(true)
 	set_cellv(world_to_map(player.position),get_tileset().find_tile_by_name("EMPTY")) 
 	player.position = Vector2(80,80)
 	player.inClearedRoom = true

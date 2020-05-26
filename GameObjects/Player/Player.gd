@@ -162,9 +162,9 @@ func player_attack(attackDirection):
 			animationPlay = str("attack_pickaxe")
 		if attackType == GlobalVariables.ATTACKTYPE.HAND:
 			animationPlay = str("attack_hand")
-		$AnimationPlayer.play(animationPlay, -1, 2.5)
+		$AnimationPlayer.play(animationPlay, -1, 4.5)
 #		$Tween.interpolate_property($Sprite, "position",attackDirection * GlobalVariables.tileSize, Vector2(), $AnimationPlayer.current_animation_length/2.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
-		$Tween.interpolate_property($Sprite, "position",attackDirection * GlobalVariables.tileSize/4, Vector2(), $AnimationPlayer.current_animation_length/2.5, Tween.TRANS_LINEAR, Tween.EASE_OUT_IN)
+		$Tween.interpolate_property($Sprite, "position",attackDirection * GlobalVariables.tileSize/4, Vector2(), $AnimationPlayer.current_animation_length/4.5, Tween.TRANS_LINEAR, Tween.EASE_OUT_IN)
 		$Tween.start()
 		yield($AnimationPlayer, "animation_finished")
 		$AnimationPlayer.play("Idle")

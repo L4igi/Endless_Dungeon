@@ -6,7 +6,7 @@
 [ext_resource path="res://GameObjects/Enemy/Ninja_Enemy_SpriteSheet.png" type="Texture" id=4]
 [ext_resource path="res://GameObjects/Enemy/Magic_Enemy_SpriteSheet.png" type="Texture" id=5]
 
-[sub_resource type="Animation" id=14]
+[sub_resource type="Animation" id=1]
 resource_name = "attack"
 length = 3.0
 tracks/0/type = "value"
@@ -22,8 +22,7 @@ tracks/0/keys = {
 "values": [ 12, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12 ]
 }
 
-[sub_resource type="Animation" id=1]
-resource_name = "defeat"
+[sub_resource type="Animation" id=2]
 length = 2.0
 tracks/0/type = "value"
 tracks/0/path = NodePath("Sprite:frame")
@@ -38,7 +37,7 @@ tracks/0/keys = {
 "values": [ 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 42 ]
 }
 
-[sub_resource type="Animation" id=2]
+[sub_resource type="Animation" id=3]
 length = 1.2
 loop = true
 tracks/0/type = "value"
@@ -54,8 +53,7 @@ tracks/0/keys = {
 "values": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ]
 }
 
-[sub_resource type="Animation" id=3]
-resource_name = "walk"
+[sub_resource type="Animation" id=4]
 length = 0.5
 tracks/0/type = "value"
 tracks/0/path = NodePath("Sprite:frame")
@@ -70,8 +68,7 @@ tracks/0/keys = {
 "values": [ 0, 2, 5, 8, 11 ]
 }
 
-[sub_resource type="Animation" id=4]
-resource_name = "attack"
+[sub_resource type="Animation" id=5]
 length = 2.9
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteNinjaEnemy:frame")
@@ -98,8 +95,7 @@ tracks/1/keys = {
 "values": [ 0.0, 0.0, -360.0 ]
 }
 
-[sub_resource type="Animation" id=5]
-resource_name = "attackBack"
+[sub_resource type="Animation" id=6]
 length = 2.9
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteNinjaEnemy:frame")
@@ -126,8 +122,7 @@ tracks/1/keys = {
 "values": [ 360.0, 0.0, 0.0 ]
 }
 
-[sub_resource type="Animation" id=6]
-resource_name = "damageTaken"
+[sub_resource type="Animation" id=7]
 length = 2.0
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteNinjaEnemy:frame")
@@ -142,7 +137,7 @@ tracks/0/keys = {
 "values": [ 47, 48, 49, 50, 51, 52, 51, 52, 51, 52, 53, 52, 51, 52, 53, 51, 50, 49, 48, 47 ]
 }
 
-[sub_resource type="Animation" id=7]
+[sub_resource type="Animation" id=8]
 length = 1.7
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteNinjaEnemy:frame")
@@ -157,7 +152,7 @@ tracks/0/keys = {
 "values": [ 47, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62 ]
 }
 
-[sub_resource type="Animation" id=8]
+[sub_resource type="Animation" id=9]
 loop = true
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteNinjaEnemy:frame")
@@ -172,7 +167,7 @@ tracks/0/keys = {
 "values": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ]
 }
 
-[sub_resource type="Animation" id=9]
+[sub_resource type="Animation" id=10]
 length = 5.0
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteNinjaEnemy:frame")
@@ -187,8 +182,7 @@ tracks/0/keys = {
 "values": [ 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30 ]
 }
 
-[sub_resource type="Animation" id=10]
-resource_name = "attack"
+[sub_resource type="Animation" id=11]
 length = 2.2
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteMageEnemy:frame")
@@ -203,7 +197,7 @@ tracks/0/keys = {
 "values": [ 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20 ]
 }
 
-[sub_resource type="Animation" id=13]
+[sub_resource type="Animation" id=12]
 resource_name = "defeat"
 length = 1.4
 tracks/0/type = "value"
@@ -219,8 +213,7 @@ tracks/0/keys = {
 "values": [ 31, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43 ]
 }
 
-[sub_resource type="Animation" id=11]
-resource_name = "idle"
+[sub_resource type="Animation" id=13]
 length = 2.0
 loop = true
 tracks/0/type = "value"
@@ -236,8 +229,7 @@ tracks/0/keys = {
 "values": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 ]
 }
 
-[sub_resource type="Animation" id=12]
-resource_name = "walk"
+[sub_resource type="Animation" id=14]
 length = 3.5
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteMageEnemy:frame")
@@ -263,10 +255,10 @@ script = ExtResource( 3 )
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 autoplay = "idle"
-anims/attack = SubResource( 14 )
-anims/defeat = SubResource( 1 )
-anims/idle = SubResource( 2 )
-anims/walk = SubResource( 3 )
+anims/attack = SubResource( 1 )
+anims/defeat = SubResource( 2 )
+anims/idle = SubResource( 3 )
+anims/walk = SubResource( 4 )
 
 [node name="Tween" type="Tween" parent="."]
 
@@ -278,12 +270,12 @@ frame = 47
 
 [node name="NinjaAnimationPlayer" type="AnimationPlayer" parent="."]
 autoplay = "idle"
-anims/attack = SubResource( 4 )
-anims/attackBack = SubResource( 5 )
-anims/damageTaken = SubResource( 6 )
-anims/defeat = SubResource( 7 )
-anims/idle = SubResource( 8 )
-anims/walk = SubResource( 9 )
+anims/attack = SubResource( 5 )
+anims/attackBack = SubResource( 6 )
+anims/damageTaken = SubResource( 7 )
+anims/defeat = SubResource( 8 )
+anims/idle = SubResource( 9 )
+anims/walk = SubResource( 10 )
 
 [node name="SpriteMageEnemy" type="Sprite" parent="."]
 visible = false
@@ -293,7 +285,7 @@ frame = 39
 
 [node name="MageAnimationPlayer" type="AnimationPlayer" parent="."]
 autoplay = "idle"
-anims/attack = SubResource( 10 )
-anims/defeat = SubResource( 13 )
-anims/idle = SubResource( 11 )
-anims/walk = SubResource( 12 )
+anims/attack = SubResource( 11 )
+anims/defeat = SubResource( 12 )
+anims/idle = SubResource( 13 )
+anims/walk = SubResource( 14 )

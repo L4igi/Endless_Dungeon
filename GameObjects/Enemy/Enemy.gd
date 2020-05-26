@@ -55,29 +55,25 @@ func _ready():
 	
 
 func _process(delta): 
-	randomize()
-	if(isDisabled == false): 
-		if lifePoints > 0:
-			if !enemyTurnDone :
-				#&& !enemyDefeated
-				if movementCount >= 1 && attackCount >= 1 :
-					enemyTurnDone = true 
-					#print("SIGNAL ENEMY MADE MOVE TO PLAYER")
-					emit_signal("enemyMadeMove")
+	pass
 
 
 func barrierenemy_type_actions():
-	enemyAttack()
+	if !isDisabled:
+		enemyAttack()
 
 func ninjaenemy_type_actions():
-	enemyAttack()
+	if !isDisabled:
+		enemyAttack()
 
 func mageenemy_type_actions():
-	enemyMovement()
+	if !isDisabled:
+		enemyMovement()
 
 
 func warriorenemy_type_actions():
-	enemyAttack()
+	if !isDisabled:
+		enemyAttack()
 	
 	#enemyAttack()
 			
@@ -99,6 +95,8 @@ func enemyMovement():
 				movementCount += 1
 				if attackCount < 1:
 					enemyAttack()
+				else:
+					emit_signal("enemyMadeMove")
 		
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			#print("MageEnemy Moving")
@@ -138,6 +136,8 @@ func enemyMovement():
 				movementCount += 1
 				if attackCount < 1:
 					enemyAttack()
+				else:
+					emit_signal("enemyMadeMove")
 				
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			if movementdirection == GlobalVariables.DIRECTION.LEFT:
@@ -166,6 +166,8 @@ func enemyMovement():
 				movementCount += 1
 				if attackCount < 1:
 					enemyAttack()
+				else:
+					emit_signal("enemyMadeMove")
 				
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			var upDownLeftRight = randi()%4+1
@@ -193,6 +195,8 @@ func enemyMovement():
 				movementCount += 1
 				if attackCount < 1:
 					enemyAttack()
+				else:
+					emit_signal("enemyMadeMove")
 	
 			
 func enemyAttack(): 
@@ -212,9 +216,12 @@ func enemyAttack():
 				attackCount += 1
 				if movementCount < 1:
 					enemyMovement()
+				else:
+					emit_signal("enemyMadeMove")
 			else:
 				if movementCount == 1:
 					attackCount += 1
+					emit_signal("enemyMadeMove")
 				if movementCount < 1:
 					enemyMovement()
 
@@ -233,12 +240,18 @@ func enemyAttack():
 					$MageAnimationPlayer.play("idle")
 					set_process(true)
 					emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackDirection, attackType, attackDamage)
-					attackCount += 1
+				attackCount += 1
+				if movementCount < 1:
+					enemyMovement()
 				else:
-					attackCount += 1
+					emit_signal("enemyMadeMove")
 			else:
 				mageOnOff = 1
-				attackCount += 1
+				if movementCount == 1:
+					attackCount += 1
+					emit_signal("enemyMadeMove")
+				if movementCount < 1:
+					enemyMovement()
 		
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			var attackDirection = Grid.enableEnemyAttack(self, attackType, horizontalVerticalAttack, diagonalAttack)
@@ -263,9 +276,12 @@ func enemyAttack():
 				attackCount += 1
 				if movementCount < 1:
 					enemyMovement()
+				else:
+					emit_signal("enemyMadeMove")
 			else:
 				if movementCount == 1:
 					attackCount += 1
+					emit_signal("enemyMadeMove")
 				if movementCount < 1:
 					enemyMovement()
 			
@@ -284,9 +300,12 @@ func enemyAttack():
 				attackCount += 1
 				if movementCount < 1:
 					enemyMovement()
+				else:
+					emit_signal("enemyMadeMove")
 			else:
 				if movementCount == 1:
 					attackCount += 1
+					emit_signal("enemyMadeMove")
 				if movementCount < 1:
 					enemyMovement()
 
@@ -310,7 +329,7 @@ func _on_player_turn_done_signal():
 func generateEnemy(mageEnemyCount, currentGrid): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = 0
+	var enemieToGenerate = randi()%4
 	match enemieToGenerate:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
@@ -333,7 +352,8 @@ func generateEnemy(mageEnemyCount, currentGrid):
 			enemyType = GlobalVariables.ENEMYTYPE.MAGEENEMY
 			mageMoveCount = mageEnemyCount
 			attackType = GlobalVariables.ATTACKTYPE.MAGIC
-			get_node("Sprite").set_modulate(Color(0,0,255,1.0))
+			get_node("Sprite").set_visible(false)
+			get_node("SpriteMageEnemy").set_visible(true)
 	return enemyType
 
 func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, mainPlayer = null):
