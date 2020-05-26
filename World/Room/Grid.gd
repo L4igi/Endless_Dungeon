@@ -347,13 +347,14 @@ func request_move(pawn, direction):
 						spawnBlockProjectileNextTurn.append(get_cell_pawn(cell_target))
 				pawn.queue_free()
 			TILETYPES.PUZZLEPIECE:
+				projectilesInActiveRoom.erase(pawn)
+				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
 				if pawn.projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK:
 					var activatedPuzzlePiece = get_cell_pawn(cell_target)
 					if !activatedPuzzlePiece.isActivated:
-						activatedPuzzlePieces.append(activatedPuzzlePiece)
-						activatedPuzzlePiece.activatePuzzlePiece()
-				projectilesInActiveRoom.erase(pawn)
-				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
+						if !activatePuzzlePieceNextTurn.has(get_cell_pawn(cell_target)):
+							get_cell_pawn(cell_target).activationDelay = 2
+							activatePuzzlePieceNextTurn.append(get_cell_pawn(cell_target))
 				pawn.queue_free()
 			_:
 				projectilesInActiveRoom.erase(pawn)
@@ -919,6 +920,18 @@ func _on_projectiles_made_move(type=null):
 			if !spawnBlockProjectileNextTurn.empty():
 				#print("Projectile waiting in extra condition " + str(spawnBlockProjectileNextTurn) )
 				var spawnBlockProjectileNextTurnTempCopy = spawnBlockProjectileNextTurn.duplicate()
+				if !activatePuzzlePieceNextTurn.empty():
+					var activatePuzzlePieceNextTurnTemp = activatePuzzlePieceNextTurn.duplicate()
+					for puzzlePiece in activatePuzzlePieceNextTurnTemp:
+						if puzzlePiece.activationDelay == 0:
+							if !puzzlePiece.isActivated:
+								activatedPuzzlePieces.append(puzzlePiece)
+								puzzlePiece.activatePuzzlePiece()
+								activatePuzzlePieceNextTurn.erase(puzzlePiece)
+						else:
+							puzzlePiece.activationDelay-=1
+					activatePuzzlePieceNextTurnTemp.clear()
+				
 				for boxProjectile in spawnBlockProjectileNextTurnTempCopy:
 					if boxProjectile.shootDelay == 0:
 						#print("In boxprojectile shootdelay == 0 " + str(boxProjectile))
@@ -936,17 +949,7 @@ func _on_projectiles_made_move(type=null):
 						spawnBlockProjectileNextTurn.erase(boxProjectile)
 					else:
 						boxProjectile.shootDelay-=1
-				if !activatePuzzlePieceNextTurn.empty():
-					var activatePuzzlePieceNextTurnTemp = activatePuzzlePieceNextTurn.duplicate()
-					for puzzlePiece in activatePuzzlePieceNextTurnTemp:
-						if puzzlePiece.activationDelay == 0:
-							if !puzzlePiece.isActivated:
-								activatedPuzzlePieces.append(puzzlePiece)
-								puzzlePiece.activatePuzzlePiece()
-								activatePuzzlePieceNextTurn.erase(puzzlePiece)
-						else:
-							puzzlePiece.activationDelay-=1
-					activatePuzzlePieceNextTurnTemp.clear()
+				
 				spawnBlockProjectileNextTurnTempCopy.clear()
 						
 			elif !activatePuzzlePieceNextTurn.empty():
