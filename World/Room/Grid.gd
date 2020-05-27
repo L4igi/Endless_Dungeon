@@ -273,7 +273,7 @@ func request_move(pawn, direction):
 					projectilesInActiveRoom.erase(tempMagicProjectile)
 					set_cellv(world_to_map(tempMagicProjectile.position),get_tileset().find_tile_by_name("EMPTY"))
 					tempMagicProjectile.queue_free()
-					if pawn.inflictDamage(tempMagicProjectile.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, cell_target):
+					if pawn.inflictDamage(tempMagicProjectile.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, cell_target, mainPlayer):
 						return pawn.position 
 					else:
 						return 
@@ -296,7 +296,7 @@ func request_move(pawn, direction):
 				var tempEnemy = get_cell_pawn(cell_target)
 				if pawn.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER :
 					print("Projectile inflicted damage on enemy")
-					tempEnemy.inflictDamage(pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, cell_target)
+					tempEnemy.inflictDamage(pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, cell_target, mainPlayer)
 					#projectilesMadeMoveCounter+=1
 					projectilesInActiveRoom.erase(pawn)
 					set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
@@ -895,7 +895,7 @@ func _on_puzzle_piece_activated():
 						
 func _on_player_enemy_projectile_made_move(type = null, projectileCount = 0):
 	projectilesMadeMoveCounter +=1
-	print("Moving " + str(type) +" projectile current count " + str(projectilesMadeMoveCounter) + " of " + str(projectileCount))
+	#print("Moving " + str(type) +" projectile current count " + str(projectilesMadeMoveCounter) + " of " + str(projectileCount))
 	if projectilesMadeMoveCounter == projectileCount:
 		projectilesMadeMoveCounter = 0
 		if type == "moveEnemyProjectiles":
@@ -1026,6 +1026,7 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 		print("Woosh Player Sword Attack hit " + str(attackDamage))
 		var attackedEnemy = get_cell_pawn(world_to_map(player.position) + attack_direction)
 		attackedEnemy.inflictDamage(attackDamage, attackType, world_to_map(player.position) + attack_direction, mainPlayer)
+		
 				
 	elif(get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.EMPTY && attackType == GlobalVariables.ATTACKTYPE.SWORD):
 		match attackType:
@@ -1065,7 +1066,7 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 	elif (get_cellv(world_to_map(player.position) + attack_direction*2) == TILETYPES.ENEMY && attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		print("Woosh Player Wand Attack hit")
 		var attackedEnemy = get_cell_pawn(world_to_map(player.position) + attack_direction*2)
-		attackedEnemy.inflictDamage(attackDamage, attackType, world_to_map(player.position) + attack_direction*2)
+		attackedEnemy.inflictDamage(attackDamage, attackType, world_to_map(player.position) + attack_direction*2, mainPlayer)
 	elif (get_cellv(world_to_map(player.position) + attack_direction*2) == TILETYPES.EMPTY && attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		print("Magic was used to attack")
 		var newMagicProjectile = MagicProjectile.instance()
@@ -1178,21 +1179,21 @@ func on_puzzle_Block_interaction(player, puzzleBlockDirection):
 	
 func on_Power_Block_explode(powerBlock):
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(1,0)) == get_tileset().find_tile_by_name("ENEMY"):
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,0)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(1,0))
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,0)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(1,0), mainPlayer)
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(-1,0)) == get_tileset().find_tile_by_name("ENEMY"):
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,0)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(-1,0))
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,0)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(-1,0), mainPlayer)
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(0,1)) == get_tileset().find_tile_by_name("ENEMY"):
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(0,1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(0,1))
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(0,1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(0,1), mainPlayer)
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(0,-1)) == get_tileset().find_tile_by_name("ENEMY"):
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(0,-1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(0,-1))
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(0,-1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(0,-1), mainPlayer)
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(1,1)) == get_tileset().find_tile_by_name("ENEMY"):
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(1,1))
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(1,1), mainPlayer)
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(1,-1)) == get_tileset().find_tile_by_name("ENEMY"):
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,-1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(1,-1))
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,-1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(1,-1), mainPlayer)
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(-1,1)) == get_tileset().find_tile_by_name("ENEMY"):
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(-1,1))
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(-1,1), mainPlayer)
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(-1,-1)) == get_tileset().find_tile_by_name("ENEMY"):
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(-1,-1))
+		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(-1,-1), mainPlayer)
 	
 	if activeRoom != null:
 		activeRoom.powerBlocksInRoom.erase(powerBlock)

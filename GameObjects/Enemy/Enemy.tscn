@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=2]
+[gd_scene load_steps=26 format=2]
 
 [ext_resource path="res://GameObjects/Enemy/Enemy_spritesheet.png" type="Texture" id=1]
 [ext_resource path="res://GameObjects/Enemy/Enemy.gd" type="Script" id=2]
@@ -54,6 +54,84 @@ tracks/0/keys = {
 }
 
 [sub_resource type="Animation" id=4]
+resource_name = "take_damage_magic"
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ),
+"update": 1,
+"values": [ 27, 28, 29, 30, 31, 32, 33, 33, 32, 30 ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Sprite:self_modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 0.4, 1 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ), Color( 0.219608, 1, 0, 1 ), Color( 1, 1, 1, 1 ) ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Sprite:rotation_degrees")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0.001, 1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ -360.0, 0.0 ]
+}
+
+[sub_resource type="Animation" id=5]
+resource_name = "take_damage_physical"
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ),
+"update": 1,
+"values": [ 27, 28, 29, 30, 32, 31, 32, 31, 30, 31 ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Sprite:scale")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0.4, 1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ Vector2( 1, 0.5 ), Vector2( 1, 1 ) ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Sprite:self_modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0, 0.4, 1 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ), Color( 0.831373, 0.352941, 0.352941, 1 ), Color( 1, 1, 1, 1 ) ]
+}
+
+[sub_resource type="Animation" id=6]
 length = 0.5
 tracks/0/type = "value"
 tracks/0/path = NodePath("Sprite:frame")
@@ -68,7 +146,7 @@ tracks/0/keys = {
 "values": [ 0, 2, 5, 8, 11 ]
 }
 
-[sub_resource type="Animation" id=5]
+[sub_resource type="Animation" id=7]
 length = 2.9
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteNinjaEnemy:frame")
@@ -95,7 +173,7 @@ tracks/1/keys = {
 "values": [ 0.0, 0.0, -360.0 ]
 }
 
-[sub_resource type="Animation" id=6]
+[sub_resource type="Animation" id=8]
 length = 2.9
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteNinjaEnemy:frame")
@@ -122,7 +200,7 @@ tracks/1/keys = {
 "values": [ 360.0, 0.0, 0.0 ]
 }
 
-[sub_resource type="Animation" id=7]
+[sub_resource type="Animation" id=9]
 length = 2.0
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteNinjaEnemy:frame")
@@ -137,7 +215,7 @@ tracks/0/keys = {
 "values": [ 47, 48, 49, 50, 51, 52, 51, 52, 51, 52, 53, 52, 51, 52, 53, 51, 50, 49, 48, 47 ]
 }
 
-[sub_resource type="Animation" id=8]
+[sub_resource type="Animation" id=10]
 length = 1.7
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteNinjaEnemy:frame")
@@ -152,7 +230,7 @@ tracks/0/keys = {
 "values": [ 47, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62 ]
 }
 
-[sub_resource type="Animation" id=9]
+[sub_resource type="Animation" id=11]
 loop = true
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteNinjaEnemy:frame")
@@ -167,7 +245,73 @@ tracks/0/keys = {
 "values": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ]
 }
 
-[sub_resource type="Animation" id=10]
+[sub_resource type="Animation" id=17]
+resource_name = "take_damage_magic"
+tracks/0/type = "value"
+tracks/0/path = NodePath("SpriteNinjaEnemy:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ),
+"update": 1,
+"values": [ 47, 48, 50, 51, 52, 53, 54, 53, 51, 51 ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("SpriteNinjaEnemy:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 0.4, 1 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ), Color( 0.192157, 0, 0.870588, 1 ), Color( 1, 1, 1, 1 ) ]
+}
+
+[sub_resource type="Animation" id=18]
+resource_name = "take_damage_physical"
+tracks/0/type = "value"
+tracks/0/path = NodePath("SpriteNinjaEnemy:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ),
+"update": 1,
+"values": [ 50, 51, 52, 53, 52, 51, 52, 53, 54, 53 ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("SpriteNinjaEnemy:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 0.4, 1 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ), Color( 1, 0.141176, 0.027451, 1 ), Color( 1, 1, 1, 1 ) ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("SpriteNinjaEnemy:offset")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0, 0.3, 0.6, 1 ),
+"transitions": PoolRealArray( 1, 1, 1, 1 ),
+"update": 0,
+"values": [ Vector2( 0, 0 ), Vector2( 5, -5 ), Vector2( -5, -5 ), Vector2( 0, 0 ) ]
+}
+
+[sub_resource type="Animation" id=12]
 length = 5.0
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteNinjaEnemy:frame")
@@ -182,7 +326,7 @@ tracks/0/keys = {
 "values": [ 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30 ]
 }
 
-[sub_resource type="Animation" id=11]
+[sub_resource type="Animation" id=13]
 length = 2.2
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteMageEnemy:frame")
@@ -197,8 +341,7 @@ tracks/0/keys = {
 "values": [ 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20 ]
 }
 
-[sub_resource type="Animation" id=12]
-resource_name = "defeat"
+[sub_resource type="Animation" id=14]
 length = 1.4
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteMageEnemy:frame")
@@ -213,7 +356,7 @@ tracks/0/keys = {
 "values": [ 31, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43 ]
 }
 
-[sub_resource type="Animation" id=13]
+[sub_resource type="Animation" id=15]
 length = 2.0
 loop = true
 tracks/0/type = "value"
@@ -229,7 +372,61 @@ tracks/0/keys = {
 "values": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 ]
 }
 
-[sub_resource type="Animation" id=14]
+[sub_resource type="Animation" id=19]
+resource_name = "take_damage_magic"
+tracks/0/type = "value"
+tracks/0/path = NodePath("SpriteMageEnemy:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ),
+"update": 1,
+"values": [ 33, 34, 35, 34, 33, 34, 35, 34, 32, 32 ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("SpriteMageEnemy:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 0.4, 1 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ), Color( 0.0784314, 0.262745, 0.988235, 1 ), Color( 1, 1, 1, 1 ) ]
+}
+
+[sub_resource type="Animation" id=20]
+resource_name = "take_damage_physical"
+tracks/0/type = "value"
+tracks/0/path = NodePath("SpriteMageEnemy:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ),
+"update": 1,
+"values": [ 32, 32, 33, 34, 34, 33, 32, 33, 33, 32 ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("SpriteMageEnemy:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 0.4, 1 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ), Color( 0.996078, 0.0784314, 0.054902, 1 ), Color( 1, 1, 1, 1 ) ]
+}
+
+[sub_resource type="Animation" id=16]
 length = 3.5
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteMageEnemy:frame")
@@ -250,7 +447,7 @@ script = ExtResource( 2 )
 [node name="Sprite" type="Sprite" parent="."]
 texture = ExtResource( 1 )
 hframes = 43
-frame = 12
+frame = 27
 script = ExtResource( 3 )
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
@@ -258,7 +455,9 @@ autoplay = "idle"
 anims/attack = SubResource( 1 )
 anims/defeat = SubResource( 2 )
 anims/idle = SubResource( 3 )
-anims/walk = SubResource( 4 )
+anims/take_damage_magic = SubResource( 4 )
+anims/take_damage_physical = SubResource( 5 )
+anims/walk = SubResource( 6 )
 
 [node name="Tween" type="Tween" parent="."]
 
@@ -266,26 +465,29 @@ anims/walk = SubResource( 4 )
 visible = false
 texture = ExtResource( 4 )
 hframes = 63
-frame = 47
+frame = 50
 
 [node name="NinjaAnimationPlayer" type="AnimationPlayer" parent="."]
 autoplay = "idle"
-anims/attack = SubResource( 5 )
-anims/attackBack = SubResource( 6 )
-anims/damageTaken = SubResource( 7 )
-anims/defeat = SubResource( 8 )
-anims/idle = SubResource( 9 )
-anims/walk = SubResource( 10 )
+anims/attack = SubResource( 7 )
+anims/attackBack = SubResource( 8 )
+anims/damageTaken = SubResource( 9 )
+anims/defeat = SubResource( 10 )
+anims/idle = SubResource( 11 )
+anims/take_damage_magic = SubResource( 17 )
+anims/take_damage_physical = SubResource( 18 )
+anims/walk = SubResource( 12 )
 
 [node name="SpriteMageEnemy" type="Sprite" parent="."]
 visible = false
 texture = ExtResource( 5 )
 hframes = 61
-frame = 39
 
 [node name="MageAnimationPlayer" type="AnimationPlayer" parent="."]
 autoplay = "idle"
-anims/attack = SubResource( 11 )
-anims/defeat = SubResource( 12 )
-anims/idle = SubResource( 13 )
-anims/walk = SubResource( 14 )
+anims/attack = SubResource( 13 )
+anims/defeat = SubResource( 14 )
+anims/idle = SubResource( 15 )
+anims/take_damage_magic = SubResource( 19 )
+anims/take_damage_physical = SubResource( 20 )
+anims/walk = SubResource( 16 )

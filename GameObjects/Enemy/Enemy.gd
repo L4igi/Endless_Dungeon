@@ -5,6 +5,7 @@ onready var Grid = get_parent()
 enum CELL_TYPES{PLAYER=0, WALL=1, ENEMY=2, PUZZLEPIECE=3, ITEM=4, DOOR=5, UNLOCKEDDOOR=6, MAGICPROJECTILE=7, BLOCK=8}
 export(CELL_TYPES) var type = CELL_TYPES.ENEMY
 
+var maxTurnActions = 2
 
 var movementCount = 0
 
@@ -20,7 +21,7 @@ signal enemyAttacked (enemy, attackDirection, attackDamange )
 
 signal enemyDefeated (enemy)
 
-var lifePoints = 1
+var lifePoints = 5
 
 var isBarrier = false
 
@@ -49,6 +50,8 @@ var diagonalAttack = false
 var horizontalVerticalAttack = true
 
 var ninjaAttackRange = 5
+
+var takenDamage = null
 
 func _ready():
 	Grid.connect("playerTurnDoneSignal", self, "_on_player_turn_done_signal")
@@ -93,10 +96,10 @@ func enemyMovement():
 				$AnimationPlayer.play("idle")
 				set_process(true)
 				movementCount += 1
-				if attackCount < 1:
-					enemyAttack()
-				else:
-					emit_signal("enemyMadeMove")
+			if attackCount + movementCount < maxTurnActions:
+				enemyAttack()
+			else:
+				emit_signal("enemyMadeMove")
 		
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			#print("MageEnemy Moving")
@@ -133,11 +136,11 @@ func enemyMovement():
 				yield($MageAnimationPlayer, "animation_finished")
 				$MageAnimationPlayer.play("idle")
 				set_process(true)
-				movementCount += 1
-				if attackCount < 1:
-					enemyAttack()
-				else:
-					emit_signal("enemyMadeMove")
+			movementCount += 1
+			if attackCount + movementCount < maxTurnActions:
+				enemyAttack()
+			else:
+				emit_signal("enemyMadeMove")
 				
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			if movementdirection == GlobalVariables.DIRECTION.LEFT:
@@ -164,7 +167,7 @@ func enemyMovement():
 				$NinjaAnimationPlayer.play("idle")
 				set_process(true)
 				movementCount += 1
-				if attackCount < 1:
+				if attackCount + movementCount < maxTurnActions:
 					enemyAttack()
 				else:
 					emit_signal("enemyMadeMove")
@@ -193,10 +196,10 @@ func enemyMovement():
 				$AnimationPlayer.play("idle")
 				set_process(true)
 				movementCount += 1
-				if attackCount < 1:
-					enemyAttack()
-				else:
-					emit_signal("enemyMadeMove")
+			if attackCount + movementCount < maxTurnActions:
+				enemyAttack()
+			else:
+				emit_signal("enemyMadeMove")
 	
 			
 func enemyAttack(): 
@@ -214,16 +217,10 @@ func enemyAttack():
 				set_process(true)
 				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackDirection, attackType,  attackDamage)
 				attackCount += 1
-				if movementCount < 1:
-					enemyMovement()
-				else:
-					emit_signal("enemyMadeMove")
+			if attackCount + movementCount < maxTurnActions:
+				enemyMovement()
 			else:
-				if movementCount == 1:
-					attackCount += 1
-					emit_signal("enemyMadeMove")
-				if movementCount < 1:
-					enemyMovement()
+				emit_signal("enemyMadeMove")
 
 		
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
@@ -241,17 +238,16 @@ func enemyAttack():
 					set_process(true)
 					emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackDirection, attackType, attackDamage)
 				attackCount += 1
-				if movementCount < 1:
+				if attackCount + movementCount < maxTurnActions:
 					enemyMovement()
 				else:
 					emit_signal("enemyMadeMove")
 			else:
 				mageOnOff = 1
-				if movementCount == 1:
-					attackCount += 1
-					emit_signal("enemyMadeMove")
-				if movementCount < 1:
+				if attackCount + movementCount < maxTurnActions:
 					enemyMovement()
+				else:
+					emit_signal("enemyMadeMove")
 		
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			var attackDirection = Grid.enableEnemyAttack(self, attackType, horizontalVerticalAttack, diagonalAttack)
@@ -274,16 +270,10 @@ func enemyAttack():
 				set_process(true)
 				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackDirection, attackType, attackDamage)
 				attackCount += 1
-				if movementCount < 1:
-					enemyMovement()
-				else:
-					emit_signal("enemyMadeMove")
+			if attackCount + movementCount < maxTurnActions:
+				enemyMovement()
 			else:
-				if movementCount == 1:
-					attackCount += 1
-					emit_signal("enemyMadeMove")
-				if movementCount < 1:
-					enemyMovement()
+				emit_signal("enemyMadeMove")
 			
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			var attackDirection = Grid.enableEnemyAttack(self, attackType, horizontalVerticalAttack, diagonalAttack)
@@ -298,16 +288,10 @@ func enemyAttack():
 				set_process(true)
 				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackDirection, attackType, attackDamage)
 				attackCount += 1
-				if movementCount < 1:
-					enemyMovement()
-				else:
-					emit_signal("enemyMadeMove")
+			if attackCount + movementCount < maxTurnActions:
+				enemyMovement()
 			else:
-				if movementCount == 1:
-					attackCount += 1
-					emit_signal("enemyMadeMove")
-				if movementCount < 1:
-					enemyMovement()
+				emit_signal("enemyMadeMove")
 
 func _on_player_turn_done_signal():
 	if !isDisabled:
@@ -315,21 +299,29 @@ func _on_player_turn_done_signal():
 			movementCount = 0
 			attackCount = 0
 			enemyTurnDone = false
-		
-			match enemyType:
-				GlobalVariables.ENEMYTYPE.BARRIERENEMY:
-					barrierenemy_type_actions()
-				GlobalVariables.ENEMYTYPE.MAGEENEMY:
-					mageenemy_type_actions()
-				GlobalVariables.ENEMYTYPE.NINJAENEMY:
-					ninjaenemy_type_actions()
-				GlobalVariables.ENEMYTYPE.WARRIROENEMY:
-						warriorenemy_type_actions()
-	
+			if takenDamage!= null:
+				print("takendamage " + str(takenDamage))
+				play_take_damage_Animation(takenDamage)
+				takenDamage=null
+			else:
+				matchEnemyTurn()
+
+
+func matchEnemyTurn():
+	match enemyType:
+		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
+			barrierenemy_type_actions()
+		GlobalVariables.ENEMYTYPE.MAGEENEMY:
+			mageenemy_type_actions()
+		GlobalVariables.ENEMYTYPE.NINJAENEMY:
+			ninjaenemy_type_actions()
+		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
+				warriorenemy_type_actions()
+						
 func generateEnemy(mageEnemyCount, currentGrid): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = randi()%4
+	var enemieToGenerate = 1
 	match enemieToGenerate:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
@@ -407,14 +399,71 @@ func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, m
 				emit_signal("enemyDefeated", self)
 				return false
 	else:
-		match enemyType:
-			GlobalVariables.ENEMYTYPE.NINJAENEMY:
-				return true
-			_:
-				return true
+		if mainPlayer!=null && mainPlayer.movementCount + mainPlayer.attackCount < mainPlayer.maxTurnActions-1:
+			play_take_damage_Animation(inflictattackType, mainPlayer, true)
+		else:
+			takenDamage=inflictattackType
+		return true
 		
 	#set enemy difficulty and type set enemy stats based on difficulty set amount of enemies to spawn based on room size and difficulty 
 
+func play_take_damage_Animation(inflictattackType,mainPlayer = null, duringPlayerMove = false):
+	if mainPlayer!=null:
+		mainPlayer.disablePlayerInput = true
+	var animationToPlay = str("take_damage_physical")
+	if inflictattackType == GlobalVariables.ATTACKTYPE.MAGIC:
+		animationToPlay = str("take_damage_magic")
+	#print("animationToPlay " + str(animationToPlay) + " inflictattackType " + str(inflictattackType) + "  " + str(GlobalVariables.ATTACKTYPE.MAGIC))
+	match enemyType:
+		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
+			set_process(false)
+			$AnimationPlayer.play(animationToPlay, -1, 1.0)
+			$Tween.interpolate_property(self, "Sprite", Vector2(), Vector2() , $AnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			$Tween.start()
+			yield($AnimationPlayer, "animation_finished")
+			$AnimationPlayer.play("idle")
+			set_process(true)
+			if duringPlayerMove:
+				mainPlayer.disablePlayerInput = false
+			else:
+				matchEnemyTurn()
+		GlobalVariables.ENEMYTYPE.MAGEENEMY:
+			set_process(false)
+			$MageAnimationPlayer.play(animationToPlay, -1, 1.0)
+			$Tween.interpolate_property(self, "SpriteNinjaEnemy", Vector2(), Vector2() , $MageAnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			$Tween.start()
+			yield($MageAnimationPlayer, "animation_finished")
+			$MageAnimationPlayer.play("idle")
+			set_process(true)
+			if duringPlayerMove:
+				mainPlayer.disablePlayerInput = false
+			else:
+				matchEnemyTurn()
+		GlobalVariables.ENEMYTYPE.NINJAENEMY:
+			set_process(false)
+			$NinjaAnimationPlayer.play(animationToPlay, -1, 1.0)
+			$Tween.interpolate_property(self, "SpriteMageEnemy", Vector2(), Vector2() , $NinjaAnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			$Tween.start()
+			yield($NinjaAnimationPlayer, "animation_finished")
+			$NinjaAnimationPlayer.play("idle")
+			set_process(true)
+			if duringPlayerMove:
+				mainPlayer.disablePlayerInput = false
+			else:
+				matchEnemyTurn()
+		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
+			set_process(false)
+			$AnimationPlayer.play(animationToPlay, -1, 1.0)
+			$Tween.interpolate_property(self, "Sprite", Vector2(), Vector2() , $AnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			$Tween.start()
+			yield($AnimationPlayer, "animation_finished")
+			$AnimationPlayer.play("idle")
+			set_process(true)
+			if duringPlayerMove:
+				mainPlayer.disablePlayerInput = false
+			else:
+				matchEnemyTurn()
+	
 func randomEnemyBarrier(currentGrid):
 	randomize()
 	#determins if door is barrier or not 

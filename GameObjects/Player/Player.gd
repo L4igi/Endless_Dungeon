@@ -20,6 +20,8 @@ var playerPassedDoor = Vector2.ZERO
 
 var movementCount = 0
 
+var maxTurnActions = 4
+
 var attackCount = 0
 
 var attackDamage = 1.5
@@ -101,15 +103,10 @@ func _process(delta):
 			player_movement(movementDirection)
 			player_attack(attackDirection)
 			
-			if movementCount == 1 && attackCount == 1:
+			if (attackCount + movementCount) == maxTurnActions:
 				playerTurnDone=true
 				emit_signal("playerMadeMove")
-			elif movementCount >= 2 && attackCount >= 0: 
-				playerTurnDone=true
-				emit_signal("playerMadeMove")
-			elif attackCount >= 2 && movementCount >= 0:
-				playerTurnDone=true
-				emit_signal("playerMadeMove")
+
 #
 func player_movement(movementDirection):
 	if movementDirection:
@@ -138,7 +135,7 @@ func player_movement(movementDirection):
 			movementCount += 1
 			
 			#print("Moved in Player " + str(attackCount) + " movementCount " +str(movementCount))
-			if !playerPassingDoor && !playerTurnDone && attackCount == 2 && movementCount == 0 || attackCount == 1 && movementCount == 1 || attackCount == 0 && movementCount == 2:
+			if !playerPassingDoor && !playerTurnDone && (attackCount + movementCount) == maxTurnActions:
 				playerTurnDone=true
 				emit_signal("playerMadeMove")
 	
@@ -176,7 +173,7 @@ func player_attack(attackDirection):
 		attackCount += 1
 		
 		#print("Attacked in Player " + str(attackCount) + " movementCount " +str(movementCount))
-		if !waitingForEventBeforeContinue && !playerTurnDone && attackCount == 2 && movementCount == 0 || attackCount == 1 && movementCount == 1 || attackCount == 0 && movementCount == 2:
+		if !waitingForEventBeforeContinue && !playerTurnDone && (attackCount + movementCount) == maxTurnActions:
 			playerTurnDone=true
 			emit_signal("playerMadeMove")
 	
@@ -258,13 +255,13 @@ func get_attack_direction():
 func get_attack_mode():
 	if Input.is_action_just_pressed("Mode_Sword"):
 		guiElements.change_attack_mode(GlobalVariables.ATTACKTYPE.SWORD)
-		attackDamage = 1.5
+		attackDamage = 0.1
 		puzzleBlockInteraction = false
 		return GlobalVariables.ATTACKTYPE.SWORD
 		
 	if Input.is_action_just_pressed("Mode_Magic"):
 		guiElements.change_attack_mode(GlobalVariables.ATTACKTYPE.MAGIC)
-		attackDamage = 0.5
+		attackDamage = 0.1
 		#if used in puzzle room while magic is flying cancels out all magic
 		if attackType == GlobalVariables.ATTACKTYPE.MAGIC:
 			Grid.cancel_magic_in_puzzle_room()
@@ -301,6 +298,16 @@ func inflict_damage_playerDefeated(attackDamage, attackType):
 		playerDefeated = true
 		#emit_signal("onPlayerDefeated", self)
 		return true
+	var animationToPlay = str("take_damage_physical")
+	if attackType == GlobalVariables.ATTACKTYPE.MAGIC:
+		animationToPlay = str("take_damage_magic")
+	set_process(false)
+	$AnimationPlayer.play(animationToPlay, -1)
+	$Tween.interpolate_property(self, "Sprite", Vector2(), Vector2() , $AnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
+	$Tween.start()
+	yield($AnimationPlayer, "animation_finished")
+	$AnimationPlayer.play("Idle")
+	set_process(true)
 	return false
 
 func add_nonkey_items(itemtype):
