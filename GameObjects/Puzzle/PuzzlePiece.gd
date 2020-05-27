@@ -39,9 +39,10 @@ func playColor():
 	emit_signal("puzzlePlayedAnimation")
 
 func activatePuzzlePiece():
-	isActivated = true
-	get_node("Sprite").set_self_modulate(Color(0,255,0,1.0))
-	emit_signal("puzzlePieceActivated")
+	if !isActivated:
+		isActivated = true
+		get_node("Sprite").set_self_modulate(Color(0,255,0,1.0))
+		emit_signal("puzzlePieceActivated")
 	
 func playWrongWriteAnimation(right = true):
 	if right:
