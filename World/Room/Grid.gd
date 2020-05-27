@@ -629,7 +629,7 @@ func enableEnemyAttack(enemy,attackType, horizontalVerticalAttack, diagonalAttac
 
 func create_puzzle_room(unlockedDoor):
 	randomize()
-	var puzzlePiecesToSpwan = 4
+	var puzzlePiecesToSpwan = 5
 	var calculateSpawnAgain = true
 	var alreadyUsedColors = []
 	var spawnCellArray = []
@@ -658,18 +658,9 @@ func create_puzzle_room(unlockedDoor):
 				calculateSpawnAgain = false
 				spawnCellArray.append(spawnCell)
 		
-		var colorToUse = GlobalVariables.COLOR.RED
+		var colorToUse = Color(randf(),randf(),randf(),1.0)
 		while alreadyUsedColors.has(colorToUse):
-			var randColor = randi()%4
-			match randColor:
-				0:
-					colorToUse = GlobalVariables.COLOR.RED
-				1:
-					colorToUse = GlobalVariables.COLOR.BLUE
-				2:
-					colorToUse = GlobalVariables.COLOR.GREEN
-				3:
-					colorToUse = GlobalVariables.COLOR.YELLOW
+			colorToUse = Color(randf(),randf(),randf(),1.0)
 		alreadyUsedColors.append(colorToUse)
 		var newPuzzlePiece = PuzzlePiece.instance()
 		if !barrierPuzzlePieceAlreadySpawned:
@@ -880,11 +871,11 @@ func _on_puzzle_piece_activated():
 			activeRoom.roomCleared=true
 			mainPlayer.inClearedRoom = true
 			#delete all projectiles 
+			cancelMagicPuzzelRoom = true
 			if activeRoom.dropLoot():
 				for puzzlePiece in activatedPuzzlePieces:
 					puzzlePiece.playWrongWriteAnimation(true)
 				dropLootInActiveRoom()
-			cancelMagicPuzzelRoom = true
 		else:
 			if !activeRoom.roomCleared:
 				if puzzlePieceIsBarrier:
@@ -906,7 +897,6 @@ func _on_player_enemy_projectile_made_move(type = null, projectileCount = 0):
 						
 func _on_projectiles_made_move(type=null):
 	projectilesMadeMoveCounter +=1
-	print("plese not in here")
 	#print("Projectiles made move " + str(projectilesMadeMoveCounter) + " projectiles in active room " + str(projectilesInActiveRoom.size()) + " type " +str(type)) 
 	if projectilesMadeMoveCounter >= projectilesInActiveRoom.size():
 		projectilesMadeMoveCounter = 0
@@ -923,8 +913,10 @@ func _on_projectiles_made_move(type=null):
 			projectilesInActiveRoom.clear()
 			tempProjectiles.clear()
 			cancelMagicPuzzelRoom = false
-			for puzzlePiece in activatedPuzzlePieces:
-				puzzlePiece.isActivated=false
+			if !activeRoom.roomCleared:
+				for puzzlePiece in activatedPuzzlePieces:
+					puzzlePiece.isActivated=false
+					puzzlePiece.playWrongWriteAnimation(false)
 			mainPlayer.position = mainPlayer.playerBackupPosition
 			mainPlayer.get_node("Sprite").set_visible(true)
 			set_cellv(world_to_map(mainPlayer.position), get_tileset().find_tile_by_name("PLAYER"))

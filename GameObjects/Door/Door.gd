@@ -81,7 +81,7 @@ func unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance):
 	var randRoomType =  60
 	var randomrand = randi()%2+1
 	if randomrand == 1:
-		randRoomType = 20
+		randRoomType = 50
 	else:
 		randRoomType = 90
 	if(randRoomType < enemyRoomChance):

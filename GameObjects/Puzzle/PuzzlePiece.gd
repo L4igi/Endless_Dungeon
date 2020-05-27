@@ -25,20 +25,17 @@ func _ready():
 	
 func playColor():
 	set_process(false)
-	get_node("Sprite").set_self_modulate(baseModulation)
-	match color:
-		GlobalVariables.COLOR.RED:
-			$AnimationPlayer.play("Red", -1, 1.25)
-		GlobalVariables.COLOR.BLUE:
-			$AnimationPlayer.play("Blue", -1, 1.25)
-		GlobalVariables.COLOR.GREEN:
-			$AnimationPlayer.play("Green", -1, 1.25)
-		GlobalVariables.COLOR.YELLOW:
-			$AnimationPlayer.play("Yellow", -1, 1.25)
-	$Tween.interpolate_property(self, "position", position, position , $AnimationPlayer.current_animation_length*0.75, Tween.TRANS_LINEAR, Tween.EASE_IN)
+	if isBarrier:
+		get_node("Sprite").set_self_modulate(baseModulation)
+		$AnimationPlayer.play("isBarrier", -1, 0.8)
+	else:
+		get_node("Sprite").set_self_modulate(color)
+		$AnimationPlayer.play("playColor", -1, 0.8)
+	$Tween.interpolate_property(self, "position", position, position , $AnimationPlayer.current_animation_length*0.8, Tween.TRANS_LINEAR, Tween.EASE_IN)
 	$Tween.start()
 	yield($AnimationPlayer, "animation_finished")
 	set_process(true)
+	get_node("Sprite").set_self_modulate(baseModulation)
 	emit_signal("puzzlePlayedAnimation")
 
 func activatePuzzlePiece():
@@ -46,7 +43,7 @@ func activatePuzzlePiece():
 	get_node("Sprite").set_self_modulate(Color(0,255,0,1.0))
 	emit_signal("puzzlePieceActivated")
 	
-func playWrongWriteAnimation(right):
+func playWrongWriteAnimation(right = true):
 	if right:
 		get_node("Sprite").set_self_modulate(baseModulation)
 		$AnimationPlayer.play("inactive")
@@ -58,14 +55,14 @@ func makePuzzleBarrier(currentGrid):
 	randomize()
 	if(currentGrid.currentNumberRoomsgenerated!=0):
 		isBarrier = true
-		get_node("Sprite").set_modulate(Color(randf(),randf(),randf(),1.0))
+		get_node("Sprite").set_self_modulate(Color(randf(),randf(),randf(),1.0))
 		barrierKeyValue = str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10)
 		#check if generated value is unique and not already used 
 		for count in range (0,currentGrid.barrierKeysNoSolution.size()):
 			if barrierKeyValue == currentGrid.barrierKeysNoSolution[count].keyValue:
 				barrierKeyValue = str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10)
 				count = 0
-		currentGrid.generate_keyValue_item(barrierKeyValue, get_node("Sprite").get_modulate(), GlobalVariables.ITEMTYPE.PUZZLESWITCH)
+		currentGrid.generate_keyValue_item(barrierKeyValue, get_node("Sprite").get_self_modulate(), GlobalVariables.ITEMTYPE.PUZZLESWITCH)
 	
 	
 func _on_puzzlepiece_barrier_disable(item, mainPlayer):
