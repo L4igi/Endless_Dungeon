@@ -506,6 +506,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 				if activeRoom!= null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.EMPTYTREASUREROOM && !activeRoom.roomCleared:
 					dropLootInActiveRoom()
 					activeRoom.roomCleared = true
+					activeRoom.roomType = GlobalVariables.ROOM_TYPE.EMPTYTREASUREROOM
 			else:
 				pawn.inClearedRoom = false
 
@@ -993,17 +994,6 @@ func _on_projectiles_made_move(type=null):
 				if projectilesInActiveRoom.empty():
 					_on_projectiles_made_move()
 
-						
-#						if projectilesInActiveRoom.empty():
-#							boxProjectile.shootDelay=0
-#							_on_projectiles_made_move(boxProjectile)
-		#print("Projectile type to be moved " + str(type))
-		if type == "moveEnemyProjectiles":
-			#print("Emmiting Player turn done signal")
-			emit_signal("playerTurnDoneSignal")
-		elif type == "movePlayerProjectiles":
-			emit_signal("enemyTurnDoneSignal")
-			#print("Emmiting Enemy turn done signal")
 	if activeRoom == null: 
 		pass
 	elif activeRoom !=null && projectilesInActiveRoom.empty() && activeRoom.roomType != GlobalVariables.ROOM_TYPE.PUZZLEROOM:
@@ -1119,13 +1109,13 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 			#print("Hitting Block")
 			if activeRoom != null:
 				#print("In Puzzle room")
-				if activeRoom.roomType == activeRoom.ROOM_TYPE.PUZZLEROOM:
+				if activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 					player.waitingForEventBeforeContinue = false
 					activeRoom.powerBlocksInRoom.erase(powerBlockToDelete)
 					powerBlockToDelete.queue_free()
 					set_cellv(world_to_map(player.position) + attack_direction, get_tileset().find_tile_by_name("EMPTY"))
 					
-				if activeRoom.roomType == activeRoom.ROOM_TYPE.ENEMYROOM:
+				elif activeRoom.roomType == GlobalVariables.ROOM_TYPE.ENEMYROOM:
 					#print("Calling block explode")
 					if powerBlockToDelete.explodeBlock():
 						pass
@@ -1135,8 +1125,19 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 						activeRoom.powerBlocksInRoom.erase(powerBlockToDelete)
 						powerBlockToDelete.queue_free()
 						set_cellv(world_to_map(player.position) + attack_direction, get_tileset().find_tile_by_name("EMPTY"))
+				
+				elif activeRoom.roomType == GlobalVariables.ROOM_TYPE.EMPTYTREASUREROOM:
+					if powerBlockToDelete.explodeBlock():
+						player.waitingForEventBeforeContinue = true
+					else:
+						#print("block not exploding")
+						player.waitingForEventBeforeContinue = false
+						if activeRoom!= null:
+							activeRoom.powerBlocksInRoom.erase(powerBlockToDelete)
+						powerBlockToDelete.queue_free()
+						set_cellv(world_to_map(player.position) + attack_direction, get_tileset().find_tile_by_name("EMPTY"))
+				
 			else:
-				#print("Calling block explode")
 				if powerBlockToDelete.explodeBlock():
 					player.waitingForEventBeforeContinue = true
 				else:
@@ -1153,7 +1154,7 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 	if(attackType == GlobalVariables.ATTACKTYPE.HAND):
 		if get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.BLOCK:
 			var interactionBlock = get_cell_pawn(world_to_map(player.position) + attack_direction)
-			if activeRoom == null || activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.ENEMYROOM:
+			if activeRoom == null || activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.ENEMYROOM || activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.EMPTYTREASUREROOM:
 				interactionBlock.addCount()
 			elif activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 				player.puzzleBlockInteraction = true
@@ -1289,6 +1290,7 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage):
 	if(get_cellv(attackCell) == TILETYPES.PLAYER):
 		print("Woosh ENEMY Attack hit")
 		var attackedPlayer = get_cell_pawn(attackCell)
+		attackedPlayer.inflict_damage_playerDefeated(attackDamage, attackType)
 	elif (attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		#spawn magic projectile
 		if(get_cellv(world_to_map(map_to_world(attackCell)+GlobalVariables.tileOffset))==TILETYPES.EMPTY):
@@ -1344,10 +1346,10 @@ func _on_enemy_defeated(enemy):
 			projectile.queue_free()
 		projectilesInActiveRoom.clear()
 		emit_signal("enemyTurnDoneSignal")
+		if activeRoom.dropLoot() && !activeRoom.roomCleared:
+			dropLootInActiveRoom()
 		activeRoom.roomCleared=true
 		mainPlayer.inClearedRoom = true
-		if activeRoom.dropLoot():
-			dropLootInActiveRoom()
 	
 func dropLootInActiveRoom():
 	#create loot currently matching with closed doord 
