@@ -197,8 +197,9 @@ func request_move(pawn, direction):
 					pawn.itemsInPosession.append(object_pawn)
 					pawn.add_key_item_to_inventory(object_pawn)
 				set_cellv(object_pawn.position, get_tileset().find_tile_by_name("EMPTY"))
-				object_pawn.get_node("Sprite").queue_free()
+				object_pawn.set_visible(false)
 				object_pawn.position = activeRoom.doorRoomLeftMostCorner+Vector2(activeRoom.roomSize.x, 0)
+				print("Player picket up item")
 				#pawn.queue_free()
 				#print("Player has Items in posession " + str(pawn.itemsInPosession))
 				return update_pawn_position(pawn, cell_start, cell_target)
@@ -274,9 +275,8 @@ func request_move(pawn, direction):
 					set_cellv(world_to_map(tempMagicProjectile.position),get_tileset().find_tile_by_name("EMPTY"))
 					tempMagicProjectile.queue_free()
 					if pawn.inflictDamage(tempMagicProjectile.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, cell_target, mainPlayer):
-						return pawn.position 
-					else:
-						return 
+						return update_pawn_position(pawn, cell_start, cell_target)
+
 				else:
 					projectilesInActiveRoom.erase(tempMagicProjectile)
 					set_cellv(world_to_map(tempMagicProjectile.position),get_tileset().find_tile_by_name("EMPTY"))
@@ -294,9 +294,10 @@ func request_move(pawn, direction):
 				return update_pawn_position(pawn, cell_start, cell_target)
 			TILETYPES.ENEMY:
 				var tempEnemy = get_cell_pawn(cell_target)
-				if pawn.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER :
+				if pawn.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
+					pawn.projectileHitEnemy = tempEnemy
 					print("Projectile inflicted damage on enemy")
-					tempEnemy.inflictDamage(pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, cell_target, mainPlayer)
+					tempEnemy.inflictDamage(pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, cell_target, mainPlayer, true)
 					#projectilesMadeMoveCounter+=1
 					projectilesInActiveRoom.erase(pawn)
 					set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
