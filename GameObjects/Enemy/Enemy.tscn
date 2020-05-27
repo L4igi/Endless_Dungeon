@@ -445,9 +445,11 @@ tracks/0/keys = {
 script = ExtResource( 2 )
 
 [node name="Sprite" type="Sprite" parent="."]
+self_modulate = Color( 0.609804, 1, 0.5, 1 )
+rotation = -1.88684
 texture = ExtResource( 1 )
 hframes = 43
-frame = 27
+frame = 33
 script = ExtResource( 3 )
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
@@ -465,7 +467,7 @@ anims/walk = SubResource( 6 )
 visible = false
 texture = ExtResource( 4 )
 hframes = 63
-frame = 50
+frame = 51
 
 [node name="NinjaAnimationPlayer" type="AnimationPlayer" parent="."]
 autoplay = "idle"
@@ -482,6 +484,7 @@ anims/walk = SubResource( 12 )
 visible = false
 texture = ExtResource( 5 )
 hframes = 61
+frame = 32
 
 [node name="MageAnimationPlayer" type="AnimationPlayer" parent="."]
 autoplay = "idle"

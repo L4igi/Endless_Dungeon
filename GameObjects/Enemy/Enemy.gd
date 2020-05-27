@@ -21,7 +21,7 @@ signal enemyAttacked (enemy, attackDirection, attackDamange )
 
 signal enemyDefeated (enemy)
 
-var lifePoints = 5
+var lifePoints = 1
 
 var isBarrier = false
 
@@ -219,7 +219,7 @@ func enemyAttack():
 			if mageOnOff == 1:
 				mageOnOff = 0
 				var attackDirection = Grid.enableEnemyAttack(self, attackType, horizontalVerticalAttack, diagonalAttack)
-				print("attackDirection  " + str(attackDirection))
+				#print("attackDirection  " + str(attackDirection))
 				if attackDirection != Vector2.ZERO:
 					set_process(false)
 					$MageAnimationPlayer.play("attack", -1, 3.0)
@@ -236,6 +236,7 @@ func enemyAttack():
 					emit_signal("enemyMadeMove")
 			else:
 				mageOnOff = 1
+				attackCount += 1
 				if attackCount + movementCount < maxTurnActions:
 					enemyMovement()
 				else:
@@ -313,7 +314,7 @@ func matchEnemyTurn():
 func generateEnemy(mageEnemyCount, currentGrid): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = 3
+	var enemieToGenerate = 1
 	match enemieToGenerate:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
@@ -356,7 +357,7 @@ func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, m
 
 	if !self.isBarrier:
 		lifePoints -= inflictattackDamage
-	if lifePoints <= 0 :
+	if lifePoints <= 0:
 		enemyDefeated = true
 		Grid.activeRoom.enemiesInRoom.erase(self)
 		Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("EMPTY")) 
@@ -412,8 +413,6 @@ func play_take_damage_Animation(inflictattackType, mainPlayer = null, duringMove
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			set_process(false)
 			$AnimationPlayer.play(animationToPlay, -1, 1.0)
-			$Tween.interpolate_property(self, "Sprite", Vector2(), Vector2() , $AnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
-			$Tween.start()
 			yield($AnimationPlayer, "animation_finished")
 			$AnimationPlayer.play("idle")
 			set_process(true)
@@ -421,8 +420,6 @@ func play_take_damage_Animation(inflictattackType, mainPlayer = null, duringMove
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			set_process(false)
 			$MageAnimationPlayer.play(animationToPlay, -1, 1.0)
-			$Tween.interpolate_property(self, "SpriteNinjaEnemy", Vector2(), Vector2() , $MageAnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
-			$Tween.start()
 			yield($MageAnimationPlayer, "animation_finished")
 			$MageAnimationPlayer.play("idle")
 			set_process(true)
@@ -430,8 +427,6 @@ func play_take_damage_Animation(inflictattackType, mainPlayer = null, duringMove
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			set_process(false)
 			$NinjaAnimationPlayer.play(animationToPlay, -1, 1.0)
-			$Tween.interpolate_property(self, "SpriteMageEnemy", Vector2(), Vector2() , $NinjaAnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
-			$Tween.start()
 			yield($NinjaAnimationPlayer, "animation_finished")
 			$NinjaAnimationPlayer.play("idle")
 			set_process(true)
@@ -439,8 +434,6 @@ func play_take_damage_Animation(inflictattackType, mainPlayer = null, duringMove
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
 			set_process(false)
 			$AnimationPlayer.play(animationToPlay, -1, 1.0)
-			$Tween.interpolate_property(self, "Sprite", Vector2(), Vector2() , $AnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
-			$Tween.start()
 			yield($AnimationPlayer, "animation_finished")
 			$AnimationPlayer.play("idle")
 			set_process(true)

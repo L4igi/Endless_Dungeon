@@ -224,11 +224,11 @@ func request_move(pawn, direction):
 				elif object_pawn.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
 					projectilesInActiveRoom.erase(object_pawn)
 					set_cellv(world_to_map(object_pawn.position), get_tileset().find_tile_by_name("EMPTY"))
-					object_pawn.queue_free()
-					if pawn.inflict_damage_playerDefeated(object_pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC):
-						pawn.movementCount=2
-						pawn.attackCount = 0
-						return
+					object_pawn.play_enemyProjectile_attack_animation(true)
+					#pawn.inflict_damage_playerDefeated(object_pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC)
+					pawn.queueInflictDamage=true
+					pawn.enemyQueueAttackDamage = object_pawn.attackDamage
+					pawn.enemyQueueAttackType = GlobalVariables.ATTACKTYPE.MAGIC
 					return update_pawn_position(pawn, cell_start, cell_target)
 			TILETYPES.BLOCK:
 				return pawn.position
@@ -273,10 +273,9 @@ func request_move(pawn, direction):
 				if tempMagicProjectile.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER :
 					projectilesInActiveRoom.erase(tempMagicProjectile)
 					set_cellv(world_to_map(tempMagicProjectile.position),get_tileset().find_tile_by_name("EMPTY"))
-					tempMagicProjectile.queue_free()
+					tempMagicProjectile.play_playerProjectile_attack_animation(true)
 					if pawn.inflictDamage(tempMagicProjectile.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, cell_target, mainPlayer):
 						return update_pawn_position(pawn, cell_start, cell_target)
-
 				else:
 					projectilesInActiveRoom.erase(tempMagicProjectile)
 					set_cellv(world_to_map(tempMagicProjectile.position),get_tileset().find_tile_by_name("EMPTY"))
@@ -301,7 +300,7 @@ func request_move(pawn, direction):
 					#projectilesMadeMoveCounter+=1
 					projectilesInActiveRoom.erase(pawn)
 					set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
-					pawn.queue_free()
+					pawn.play_playerProjectile_attack_animation(false)
 					return 
 				if pawn.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
 					projectilesInActiveRoom.erase(pawn)
@@ -316,7 +315,7 @@ func request_move(pawn, direction):
 					tempPlayer.inflict_damage_playerDefeated(pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC)
 					projectilesInActiveRoom.erase(pawn)
 					set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
-					pawn.queue_free()
+					pawn.play_enemyProjectile_attack_animation(false)
 				elif activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 					#set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
 					set_cellv(cell_target, get_tileset().find_tile_by_name("MAGICPROJECTILE"))
@@ -1290,9 +1289,6 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage):
 	if(get_cellv(attackCell) == TILETYPES.PLAYER):
 		print("Woosh ENEMY Attack hit")
 		var attackedPlayer = get_cell_pawn(attackCell)
-		#if player died reset player ro starting room 
-		if attackedPlayer.inflict_damage_playerDefeated(attackDamage, attackType):
-			print("Batsuuum Player was defeated reset to start")
 	elif (attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		#spawn magic projectile
 		if(get_cellv(world_to_map(map_to_world(attackCell)+GlobalVariables.tileOffset))==TILETYPES.EMPTY):

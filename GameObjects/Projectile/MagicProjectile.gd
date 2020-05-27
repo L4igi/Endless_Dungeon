@@ -81,6 +81,26 @@ func play_enemy_projectile_animation():
 
 func play_powerBlock_projectile_animation():
 	$AnimationPlayer.play("powerblock_shoot")
+
+func play_playerProjectile_attack_animation(onSpot=true):
+	set_process(false)
+	$AnimationPlayer.play("playerProjectileAttack")
+	if !onSpot:
+		$Tween.interpolate_property($Sprite, "position", Vector2(), movementDirection*GlobalVariables.tileSize, $AnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
+		$Tween.start()
+	yield($AnimationPlayer, "animation_finished")
+	set_process(true)
+	self.queue_free()
+	
+func play_enemyProjectile_attack_animation(onSpot=true):
+	set_process(false)
+	$AnimationPlayer.play("enemyProjectileAttack")
+	if !onSpot:
+		$Tween.interpolate_property($Sprite, "position", Vector2(), movementDirection*GlobalVariables.tileSize, $AnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
+		$Tween.start()
+	yield($AnimationPlayer, "animation_finished")
+	set_process(true)
+	self.queue_free()
 	
 func create_mini_projectile(projectile):
 	isMiniProjectile = true

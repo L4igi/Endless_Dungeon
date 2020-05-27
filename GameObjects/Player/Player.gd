@@ -64,6 +64,12 @@ var playerDefeated = false
 
 var playerPassingDoor = false
 
+var queueInflictDamage = false
+
+var enemyQueueAttackDamage = 0
+
+var enemyQueueAttackType = null
+
 signal puzzleBlockInteractionSignal (player, puzzleBlockDirection)
 
 func _ready():
@@ -131,6 +137,11 @@ func player_movement(movementDirection):
 			$Tween.start()
 			yield($AnimationPlayer, "animation_finished")
 			$AnimationPlayer.play("Idle")
+			if queueInflictDamage == true:
+				inflict_damage_playerDefeated(enemyQueueAttackDamage, enemyQueueAttackType)
+				queueInflictDamage = false
+				enemyQueueAttackDamage = 0
+				enemyQueueAttackType = null
 			set_process(true)
 			movementCount += 1
 			
@@ -292,6 +303,7 @@ func get_use_nonkey_items():
 					guiElements.change_health(-5)
 			
 func inflict_damage_playerDefeated(attackDamage, attackType):
+	disablePlayerInput = true
 	lifePoints -= attackDamage
 	guiElements.change_health(attackDamage)
 	if lifePoints <= 0:
@@ -302,12 +314,14 @@ func inflict_damage_playerDefeated(attackDamage, attackType):
 	if attackType == GlobalVariables.ATTACKTYPE.MAGIC:
 		animationToPlay = str("take_damage_magic")
 	set_process(false)
+	print("Playing hit animation")
 	$AnimationPlayer.play(animationToPlay, -1)
 	$Tween.interpolate_property(self, "Sprite", Vector2(), Vector2() , $AnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
 	$Tween.start()
 	yield($AnimationPlayer, "animation_finished")
 	$AnimationPlayer.play("Idle")
 	set_process(true)
+	disablePlayerInput = false
 	return false
 
 func add_nonkey_items(itemtype):
