@@ -68,5 +68,7 @@ func makePuzzleBarrier(currentGrid):
 	
 func _on_puzzlepiece_barrier_disable(item, mainPlayer):
 	if item.keyValue == barrierKeyValue:
+		get_node("Sprite").set_deferred("self_modulate", "ffffff")
+		baseModulation = "ffffff"
 		print("Player activated PuzzlePiece Switch")
 		isBarrier = false

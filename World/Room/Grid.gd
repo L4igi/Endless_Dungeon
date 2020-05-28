@@ -1381,6 +1381,7 @@ func dropLootInActiveRoom():
 				itemPosMover += Vector2(1,0)
 		newItem.position = newItemPosition
 		if get_cellv(world_to_map(newItem.position))==TILETYPES.BLOCK:
+			activeRoom.powerBlocksInRoom.erase(get_cell_pawn(world_to_map(newItem.position)))
 			get_cell_pawn(world_to_map(newItem.position)).queue_free()
 		if  get_cellv(world_to_map(newItemPosition)) == TILETYPES.ENEMY:
 			get_cell_pawn(world_to_map(newItem.position)).queue_free()
