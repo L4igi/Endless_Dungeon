@@ -316,7 +316,7 @@ func inflict_damage_playerDefeated(attackDamage, attackType):
 	set_process(false)
 	print("Playing hit animation")
 	$AnimationPlayer.play(animationToPlay, -1)
-	$Tween.interpolate_property(self, "Sprite", Vector2(), Vector2() , $AnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
+	$Tween.interpolate_property($Sprite, "position", Vector2(), Vector2() , $AnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
 	$Tween.start()
 	yield($AnimationPlayer, "animation_finished")
 	$AnimationPlayer.play("Idle")

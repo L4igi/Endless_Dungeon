@@ -93,6 +93,7 @@ func play_playerProjectile_attack_animation(onSpot=true):
 	self.queue_free()
 	
 func play_enemyProjectile_attack_animation(onSpot=true):
+	print("Playing projectile animation")
 	set_process(false)
 	$AnimationPlayer.play("enemyProjectileAttack")
 	if !onSpot:

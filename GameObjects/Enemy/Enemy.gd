@@ -122,7 +122,6 @@ func enemyMovement():
 					movementdirection = GlobalVariables.DIRECTION.UP
 			var mage_target_pos = Grid.get_enemy_move_mage_pattern(self, movementdirection)
 			var target_position = Grid.request_move(self, mage_target_pos)
-			mageMoveCount+=1
 			if(target_position):
 				set_process(false)
 				#play defeat animation 
@@ -133,7 +132,7 @@ func enemyMovement():
 				$MageAnimationPlayer.play("idle")
 				set_process(true)
 			movementCount += 1
-				
+			mageMoveCount+=1
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			if movementdirection == GlobalVariables.DIRECTION.LEFT:
 				movementdirection = GlobalVariables.DIRECTION.RIGHT
@@ -314,12 +313,12 @@ func matchEnemyTurn():
 func generateEnemy(mageEnemyCount, currentGrid): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = 2
+	var enemieToGenerate = 1
 	match enemieToGenerate:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
 			attackType = GlobalVariables.ATTACKTYPE.SWORD
-			randomEnemyBarrier(currentGrid)
+			makeEnemyBarrier(currentGrid)
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.NINJAENEMY
 			attackType = GlobalVariables.ATTACKTYPE.NINJA
@@ -351,6 +350,7 @@ func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, m
 				print("Enemy Barrier " + str(barrierKeyValue) + " was defeated using item weapon " + str(item.keyValue))
 				lifePoints = 0
 				mainPlayer.remove_key_item_from_inventory(item)
+				isBarrier = false
 				break 
 		if !barrierDefeatItem:
 			print("need weapon: " + str(barrierKeyValue) + " to defeat enemy ")
@@ -450,10 +450,11 @@ func play_take_damage_Animation(inflictattackType, mainPlayer = null, duringMove
 	else:
 		matchEnemyTurn()
 	
-func randomEnemyBarrier(currentGrid):
+func makeEnemyBarrier(currentGrid):
 	randomize()
 	#determins if door is barrier or not 
 	var barrierChance = randi()%4+1
+	currentGrid.manage_barrier_creation()
 	print("Grid " + str(currentGrid))
 	if(barrierChance == 1 && currentGrid.currentNumberRoomsgenerated!=0):
 		isBarrier = true

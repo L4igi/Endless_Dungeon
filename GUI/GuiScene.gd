@@ -18,6 +18,7 @@ onready var HealthBarFill = $PlayerStats/HealthBarFill
 onready var HealthBarEmpty = $PlayerStats/HealthBarEmpty
 onready var PotionBarEmpty = $PlayerStats/PotionBarEmpty
 onready var PotionBarFill = $PlayerStats/PotionBarFill
+onready var PlayerStats = $PlayerStats
 
 var hearts = 10
 var maxHearts = 10
@@ -28,6 +29,7 @@ var maxPotions = 3
 var potionRectSize = 32
 
 func _ready():
+	PlayerStats.rect_size.x = maxHearts*2+2
 	HealthBarEmpty.rect_size.x = (maxHearts)*healthRectSize
 	HealthBarFill.rect_size.x = (hearts)*healthRectSize
 	PotionBarEmpty.rect_size.x = maxPotions*potionRectSize

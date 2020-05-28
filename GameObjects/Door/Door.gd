@@ -40,22 +40,9 @@ var roomType = ROOM_TYPE.EMPTYTREASUREROOM
 var roomCleared = false
 
 func _ready():
-	randomize()
-	#determins if door is barrier or not 
-#	var barrierChance = randi()% 4+1 
-	var barrierChance = 4
-	if(barrierChance == 1 && Grid.currentNumberRoomsgenerated!=0):
-		isBarrier = true
-		get_node("Sprite").set_modulate(Color(randf(),randf(),randf(),1.0))
-		barrierKeyValue = str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10)
-		#check if generated value is unique and not already used 
-		for count in range (0,Grid.barrierKeysNoSolution.size()):
-			if barrierKeyValue == Grid.barrierKeysNoSolution[count].keyValue:
-				barrierKeyValue = str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10)
-				count = 0
-		Grid.generate_keyValue_item(barrierKeyValue, get_node("Sprite").get_modulate(), GlobalVariables.ITEMTYPE.KEY)
-	
-			
+	pass
+
+# warning-ignore:unused_argument
 func _process(delta):
 	pass
 		
@@ -66,11 +53,13 @@ func request_door_unlock(playerItemsInPosession):
 		for item in playerItemsInPosession:
 			if item.keyValue == barrierKeyValue:
 				print("Door Barrier " + str(barrierKeyValue) + " was unlocked using item key " + str(item.keyValue))
+				isBarrier = false
 				return item
 		print("need key: " + str(barrierKeyValue) + " to unlock door ")
 		return null
 	return true
 	
+# warning-ignore:unused_argument
 func unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance):
 	isUnlocked=true
 	Grid.create_doors(doorRoomLeftMostCorner, false, roomSize.x, roomSize.y, roomSizeMultiplier, doorLocationDirection)
@@ -81,7 +70,7 @@ func unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance):
 	var randRoomType =  60
 	var randomrand = randi()%2+1
 	if randomrand == 1:
-		randRoomType = 50
+		randRoomType = 90
 	else:
 		randRoomType = 90
 	if(randRoomType < enemyRoomChance):
@@ -121,5 +110,21 @@ func get_room_by_movement_direction(direction):
 	return self
 
 func dropLoot():
-	#calculate chance of loot dropping 
+	Grid.numberRoomsCleared+=1
+	print("Number of Cleared Rooms " + str(Grid.numberRoomsCleared))
 	return true
+	
+func makeDoorBarrier(currentGrid):
+	var barrierChance = 1
+	currentGrid.manage_barrier_creation()
+	if(barrierChance == 1 && currentGrid.currentNumberRoomsgenerated!=0):
+		#print("generating door barrier")
+		isBarrier = true
+		get_node("Sprite").set_modulate(Color(randf(),randf(),randf(),1.0))
+		barrierKeyValue = str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10)
+		#check if generated value is unique and not already used 
+		for count in range (0,currentGrid.barrierKeysNoSolution.size()):
+			if barrierKeyValue == currentGrid.barrierKeysNoSolution[count].keyValue:
+				barrierKeyValue = str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10)
+				count = 0
+		currentGrid.generate_keyValue_item(barrierKeyValue, get_node("Sprite").get_modulate(), GlobalVariables.ITEMTYPE.KEY)

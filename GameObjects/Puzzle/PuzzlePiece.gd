@@ -54,7 +54,10 @@ func playWrongWriteAnimation(right = true):
 
 func makePuzzleBarrier(currentGrid):
 	randomize()
-	if(currentGrid.currentNumberRoomsgenerated!=0):
+	currentGrid.manage_barrier_creation()
+	var barrierChance = randi()%4+1 
+	currentGrid.barrierPuzzlePieceAlreadySpawned=true
+	if(barrierChance == 1 && currentGrid.currentNumberRoomsgenerated!=0):
 		isBarrier = true
 		get_node("Sprite").set_self_modulate(Color(randf(),randf(),randf(),1.0))
 		barrierKeyValue = str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10)

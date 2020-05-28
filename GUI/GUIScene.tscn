@@ -37,8 +37,10 @@ __meta__ = {
 }
 
 [node name="PlayerStats" type="TextureRect" parent="."]
-margin_right = 50.0
-margin_bottom = 16.0
+margin_right = 21.0
+margin_bottom = 10.0
+texture = ExtResource( 6 )
+expand = true
 __meta__ = {
 "_edit_use_anchors_": false
 }

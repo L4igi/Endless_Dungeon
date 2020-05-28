@@ -27,6 +27,10 @@ var maxNumberRooms = 12
 
 var currentNumberRoomsgenerated = 0
 
+var numberRoomsBeenTo = 0
+
+var numberRoomsCleared = 0
+
 var activeRoom = null
 
 var movedThroughDoor = false
@@ -199,7 +203,7 @@ func request_move(pawn, direction):
 				set_cellv(object_pawn.position, get_tileset().find_tile_by_name("EMPTY"))
 				object_pawn.set_visible(false)
 				object_pawn.position = activeRoom.doorRoomLeftMostCorner+Vector2(activeRoom.roomSize.x, 0)
-				print("Player picket up item")
+				#print("Player picket up item")
 				#pawn.queue_free()
 				#print("Player has Items in posession " + str(pawn.itemsInPosession))
 				return update_pawn_position(pawn, cell_start, cell_target)
@@ -211,6 +215,7 @@ func request_move(pawn, direction):
 						mainPlayer.remove_key_item_from_inventory(requestDoorUnlockResult)
 					object_pawn.unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance)
 					roomJustEntered = true
+					numberRoomsBeenTo += 1
 					return update_pawn_position(pawn, cell_start, cell_target)
 			TILETYPES.UNLOCKEDDOOR:
 				roomJustEntered = true
@@ -506,7 +511,8 @@ func update_pawn_position(pawn, cell_start, cell_target):
 			if(activeRoom == null || activeRoom.roomType == GlobalVariables.ROOM_TYPE.EMPTYTREASUREROOM):
 				pawn.inClearedRoom = true
 				if activeRoom!= null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.EMPTYTREASUREROOM && !activeRoom.roomCleared:
-					dropLootInActiveRoom()
+					if activeRoom.dropLoot():
+						dropLootInActiveRoom()
 					activeRoom.roomCleared = true
 					activeRoom.roomType = GlobalVariables.ROOM_TYPE.EMPTYTREASUREROOM
 			else:
@@ -666,9 +672,7 @@ func create_puzzle_room(unlockedDoor):
 		alreadyUsedColors.append(colorToUse)
 		var newPuzzlePiece = PuzzlePiece.instance()
 		if !barrierPuzzlePieceAlreadySpawned:
-			if randi()%4 == 0: 
-				barrierPuzzlePieceAlreadySpawned=true
-				newPuzzlePiece.makePuzzleBarrier(self)
+			newPuzzlePiece.makePuzzleBarrier(self)
 		newPuzzlePiece.color = colorToUse
 		newPuzzlePiece.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(spawnCellX, spawnCellY))
 		add_child(newPuzzlePiece)
@@ -1049,10 +1053,16 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 	elif (get_cellv(world_to_map(player.position) + attack_direction*2) == TILETYPES.ENEMY && attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		print("Woosh Player Wand Attack hit")
 		var attackedEnemy = get_cell_pawn(world_to_map(player.position) + attack_direction*2)
+		var newMagicProjectile = MagicProjectile.instance()
+		newMagicProjectile.get_node("Sprite").set_frame(17)
+		newMagicProjectile.position = player.position + map_to_world(attack_direction*2)
+		newMagicProjectile.play_playerProjectile_attack_animation(true)
+		add_child(newMagicProjectile)
 		attackedEnemy.inflictDamage(attackDamage, attackType, world_to_map(player.position) + attack_direction*2, mainPlayer)
 	elif (get_cellv(world_to_map(player.position) + attack_direction*2) == TILETYPES.EMPTY && attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		print("Magic was used to attack")
 		var newMagicProjectile = MagicProjectile.instance()
+		newMagicProjectile.get_node("Sprite").set_frame(17)
 		newMagicProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
 		newMagicProjectile.connect("playerEnemieProjectileMadeMove", self, "_on_player_enemy_projectile_made_move")
 		newMagicProjectile.position = player.position + map_to_world(attack_direction*2)
@@ -1283,11 +1293,18 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage):
 	if(get_cellv(attackCell) == TILETYPES.PLAYER):
 		print("Woosh ENEMY Attack hit")
 		var attackedPlayer = get_cell_pawn(attackCell)
+		if(attackType == GlobalVariables.ATTACKTYPE.MAGIC):
+			var newMagicProjectile = MagicProjectile.instance()
+			newMagicProjectile.get_node("Sprite").set_frame(0)
+			newMagicProjectile.position = map_to_world(attackCell)+GlobalVariables.tileOffset
+			newMagicProjectile.play_enemyProjectile_attack_animation(true)
+			add_child(newMagicProjectile)
 		attackedPlayer.inflict_damage_playerDefeated(attackDamage, attackType)
 	elif (attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		#spawn magic projectile
 		if(get_cellv(world_to_map(map_to_world(attackCell)+GlobalVariables.tileOffset))==TILETYPES.EMPTY):
 			var newMagicProjectile = MagicProjectile.instance()
+			newMagicProjectile.get_node("Sprite").set_frame(0)
 			newMagicProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
 			newMagicProjectile.connect("playerEnemieProjectileMadeMove", self, "_on_player_enemy_projectile_made_move")
 			newMagicProjectile.position = map_to_world(attackCell)+GlobalVariables.tileOffset
@@ -1762,16 +1779,29 @@ func create_doors(roomLeftMostCorner, startingRoom=false, roomSizeHorizontal = 1
 	var doorLocationDirectionsArray = ["LEFT", "RIGHT", "UP", "DOWN"]
 	var doorLocationArray = []
 	var doorArray = []
-	var doorCount = randi()%4+1
+	var doorCount = 0
 	var canCreateDoor = true
 	var doorEvenOddModifier = 0
 			
 	if(evenOddModifier == 0):
 		doorEvenOddModifier = 1
 	#todo: include remaning doors numbers
-	if(!startingRoom):
+	if startingRoom:
+		doorCount = randi()%4+1
+	
+	if doorCount == 0 && numberRoomsBeenTo == currentNumberRoomsgenerated-1:
+		doorCount = randi()%3+1
+	
+	if (doorCount + currentNumberRoomsgenerated) > maxNumberRooms:
+		if maxNumberRooms-currentNumberRoomsgenerated == 0:
+			doorCount = 0
+		else:
+			doorCount = randi()%(maxNumberRooms-currentNumberRoomsgenerated)
+	if !startingRoom:
 		remove_opposite_doorlocation(doorLocationDirectionsArray, doorLocationDirection)
-		doorCount = 3
+#		doorCount = 3
+		print("DoorCount " + str(doorCount))
+		print("DoorLocationSize " + str(doorLocationDirectionsArray.size()))
 
 	while doorCount > 0: 
 		var doorLocation = randi()%doorLocationDirectionsArray.size()-1
@@ -1881,6 +1911,8 @@ func create_doors(roomLeftMostCorner, startingRoom=false, roomSizeHorizontal = 1
 		
 	for door in doorArray:
 		currentNumberRoomsgenerated+=1
+		if !startingRoom:
+			door.makeDoorBarrier(self)
 		#print(currentNumberRoomsgenerated)
 		create_walls(door, false, false)
 		update_bitmask_region()
@@ -1899,3 +1931,9 @@ func remove_opposite_doorlocation(doorLocationDirectionsArray, direction):
 		_:
 			pass
 	return doorLocationDirectionsArray
+
+
+func manage_barrier_creation():
+	var roomsToSpawnSolution = maxNumberRooms-currentNumberRoomsgenerated
+	print("max number of rooms " + str(maxNumberRooms) + " current number rooms " + str(currentNumberRoomsgenerated))
+	print("Rooms to spawn solution " + str(roomsToSpawnSolution))
