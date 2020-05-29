@@ -39,6 +39,8 @@ var roomType = ROOM_TYPE.EMPTYTREASUREROOM
 
 var roomCleared = false
 
+var createExit = false
+
 func _ready():
 	pass
 
@@ -66,13 +68,13 @@ func unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance):
 #	Grid.create_enemy_room(self)
 	#print("Door was unlocked")
 	#choose type of room to be created 
-	#var randRoomType = randi()%100
-	var randRoomType =  60
-	var randomrand = randi()%2+1
-	if randomrand == 1:
-		randRoomType = 90
-	else:
-		randRoomType = 90
+	var randRoomType = 20
+#	var randRoomType =  60
+#	var randomrand = randi()%2+1
+#	if randomrand == 1:
+#		randRoomType = 90
+#	else:
+#		randRoomType = 90
 	if(randRoomType < enemyRoomChance):
 		#print("create enemy room " + str(randRoomType))
 		roomType = ROOM_TYPE.ENEMYROOM
@@ -111,13 +113,13 @@ func get_room_by_movement_direction(direction):
 
 func dropLoot():
 	Grid.numberRoomsCleared+=1
-	print("Number of Cleared Rooms " + str(Grid.numberRoomsCleared))
+	#print("Number of Cleared Rooms " + str(Grid.numberRoomsCleared))
 	return true
 	
 func makeDoorBarrier(currentGrid):
 	var barrierChance = 1
-	currentGrid.manage_barrier_creation()
-	if(barrierChance == 1 && currentGrid.currentNumberRoomsgenerated!=0):
+	var checkBarrierPossible = currentGrid.manage_barrier_creation(GlobalVariables.BARRIERTYPE.DOOR)
+	if(barrierChance == 1 && currentGrid.currentNumberRoomsgenerated!=0 && checkBarrierPossible):
 		#print("generating door barrier")
 		isBarrier = true
 		get_node("Sprite").set_modulate(Color(randf(),randf(),randf(),1.0))

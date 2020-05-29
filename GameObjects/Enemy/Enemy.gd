@@ -89,8 +89,8 @@ func enemyMovement():
 			if(target_position && !enemyDefeated):
 				set_process(false)
 				#play defeat animation 
-				$AnimationPlayer.play("walk", -1, 3.0)
-				$Tween.interpolate_property(self, "position", position, target_position, $AnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+				$AnimationPlayer.play("walk", -1, 1.0)
+				$Tween.interpolate_property(self, "position", position, target_position, $AnimationPlayer.current_animation_length/1.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
 				$Tween.start()
 				yield($AnimationPlayer, "animation_finished")
 				$AnimationPlayer.play("idle")
@@ -183,6 +183,7 @@ func enemyMovement():
 				$AnimationPlayer.play("idle")
 				set_process(true)
 				movementCount += 1
+				
 	if takenDamage != null:
 		play_take_damage_Animation(takenDamage, null, "enemyMove")
 		takenDamage=null
@@ -313,7 +314,7 @@ func matchEnemyTurn():
 func generateEnemy(mageEnemyCount, currentGrid): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = 1
+	var enemieToGenerate = randi()%4
 	match enemieToGenerate:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
@@ -359,38 +360,10 @@ func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, m
 		lifePoints -= inflictattackDamage
 	if lifePoints <= 0:
 		enemyDefeated = true
-		Grid.activeRoom.enemiesInRoom.erase(self)
 		Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("EMPTY")) 
-		set_process(false)
-		#play defeat animation 
-		match enemyType:
-			GlobalVariables.ENEMYTYPE.NINJAENEMY:
-				$NinjaAnimationPlayer.play("defeat", -1, 1.0)
-				#move sprite to position of death 
-				$Tween.interpolate_property(self, "position",  Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset,Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset, $NinjaAnimationPlayer.current_animation_length/1.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
-				$Tween.start()
-				yield($NinjaAnimationPlayer, "animation_finished")
-				set_process(true)
-				emit_signal("enemyDefeated", self)
-				return false
-			GlobalVariables.ENEMYTYPE.MAGEENEMY:
-				$MageAnimationPlayer.play("defeat", -1, 1.0)
-				#move sprite to position of death 
-				$Tween.interpolate_property(self, "position",  Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset,Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset, $MageAnimationPlayer.current_animation_length/1.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
-				$Tween.start()
-				yield($MageAnimationPlayer, "animation_finished")
-				set_process(true)
-				emit_signal("enemyDefeated", self)
-				return false
-			_:
-				$AnimationPlayer.play("defeat", -1, 3.0)
-				#move sprite to position of death 
-				$Tween.interpolate_property(self, "position",  Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset,Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset, $AnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
-				$Tween.start()
-				yield($AnimationPlayer, "animation_finished")
-				set_process(true)
-				emit_signal("enemyDefeated", self)
-				return false
+	
+		play_enemy_defeat_animation()
+
 	else:
 		if mainPlayer!=null && mainPlayer.movementCount + mainPlayer.attackCount < mainPlayer.maxTurnActions-1:
 			play_take_damage_Animation(inflictattackType, mainPlayer, "playerMove")
@@ -401,6 +374,38 @@ func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, m
 		return true
 		
 	#set enemy difficulty and type set enemy stats based on difficulty set amount of enemies to spawn based on room size and difficulty 
+func play_enemy_defeat_animation():
+	#play defeat animation 
+	match enemyType:
+		GlobalVariables.ENEMYTYPE.NINJAENEMY:
+			set_process(false)
+			$NinjaAnimationPlayer.play("defeat", -1, 1.0)
+			#move sprite to position of death 
+			#$Tween.interpolate_property(self, "position",  Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset,Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset, $NinjaAnimationPlayer.current_animation_length/1.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			#$Tween.start()
+			yield($NinjaAnimationPlayer, "animation_finished")
+			set_process(true)
+			emit_signal("enemyDefeated", self)
+
+		GlobalVariables.ENEMYTYPE.MAGEENEMY:
+			set_process(false)
+			$MageAnimationPlayer.play("defeat", -1, 1.0)
+			#move sprite to position of death 
+			#$Tween.interpolate_property(self, "position",  Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset,Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset, $MageAnimationPlayer.current_animation_length/1.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			#$Tween.start()
+			yield($MageAnimationPlayer, "animation_finished")
+			set_process(true)
+			emit_signal("enemyDefeated", self)
+
+		_:
+			set_process(false)
+			$AnimationPlayer.play("defeat", -1, 3.0)
+			#move sprite to position of death 
+			#$Tween.interpolate_property($Sprite, "position",  Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset,Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset, $AnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			#$Tween.start()
+			yield($AnimationPlayer, "animation_finished")
+			set_process(true)
+			emit_signal("enemyDefeated", self)
 
 func play_take_damage_Animation(inflictattackType, mainPlayer = null, duringMove = "", projectileType = null, projectileCount = 0):
 	if mainPlayer!=null:
@@ -453,10 +458,9 @@ func play_take_damage_Animation(inflictattackType, mainPlayer = null, duringMove
 func makeEnemyBarrier(currentGrid):
 	randomize()
 	#determins if door is barrier or not 
-	var barrierChance = randi()%4+1
-	currentGrid.manage_barrier_creation()
-	print("Grid " + str(currentGrid))
-	if(barrierChance == 1 && currentGrid.currentNumberRoomsgenerated!=0):
+	var barrierChance = 1
+	var checkBarrierPossible = currentGrid.manage_barrier_creation(GlobalVariables.BARRIERTYPE.ENEMY)
+	if(barrierChance == 1 && currentGrid.currentNumberRoomsgenerated!=0 && checkBarrierPossible):
 		isBarrier = true
 		get_node("Sprite").set_modulate(Color(randf(),randf(),randf(),1.0))
 		barrierKeyValue = str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10)

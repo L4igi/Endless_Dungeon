@@ -24,7 +24,7 @@ var maxTurnActions = 4
 
 var attackCount = 0
 
-var attackDamage = 1.5
+var attackDamage = 0.5
 
 var maxLifePoints = 10
 
@@ -266,13 +266,13 @@ func get_attack_direction():
 func get_attack_mode():
 	if Input.is_action_just_pressed("Mode_Sword"):
 		guiElements.change_attack_mode(GlobalVariables.ATTACKTYPE.SWORD)
-		attackDamage = 0.1
+		attackDamage = 1
 		puzzleBlockInteraction = false
 		return GlobalVariables.ATTACKTYPE.SWORD
 		
 	if Input.is_action_just_pressed("Mode_Magic"):
 		guiElements.change_attack_mode(GlobalVariables.ATTACKTYPE.MAGIC)
-		attackDamage = 0.1
+		attackDamage = 0.5
 		#if used in puzzle room while magic is flying cancels out all magic
 		if attackType == GlobalVariables.ATTACKTYPE.MAGIC:
 			Grid.cancel_magic_in_puzzle_room()
