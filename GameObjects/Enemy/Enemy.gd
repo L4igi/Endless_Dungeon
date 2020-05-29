@@ -316,7 +316,7 @@ func matchEnemyTurn():
 func generateEnemy(mageEnemyCount, currentGrid): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = 2
+	var enemieToGenerate = randi()%4
 	match enemieToGenerate:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
@@ -427,8 +427,7 @@ func play_taken_damage_animation(inflictattackType, mainPlayer, inflictDamageDur
 			emit_signal("enemyMadeMove")
 			
 	elif inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.PROJECTILE:
-		Grid.projectilesInActiveRoom.erase(hitByProjectile)
-		hitByProjectile.emit_signal("playerEnemieProjectileMadeMove",hitByProjectile,"movePlayerProjectiles", hitByProjectile.projectileCount)
+		hitByProjectile.emit_signal("playerEnemieProjectileMadeMove",hitByProjectile,"movePlayerProjectiles")
 		hitByProjectile.queue_free()
 		hitByProjectile = null
 		

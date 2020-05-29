@@ -10,21 +10,19 @@ var attackDamage = 1
 var projectileType
 var isMiniProjectile = false
 var tickAlreadyMoved = false
-var projectileCount = 0
+var deleteProjectile = false
 
 var waitingForEventBeforeContinue = false
 
 signal projectileMadeMove (type)
 
-signal playerEnemieProjectileMadeMove (projectile ,type, projectileCount)
+signal playerEnemieProjectileMadeMove (projectile ,type, projectileArray)
 
 func _ready():
 	pass
 
-func move_projectile(type=null, projectileCount=0):
+func move_projectile(type=null):
 	
-	self.projectileCount = projectileCount
-
 	if(type == "moveEnemyProjectiles" && projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || type =="movePlayerProjectiles" && projectileType == GlobalVariables.PROJECTILETYPE.PLAYER):
 		var target_position = Grid.request_move(self, movementDirection)
 		if(target_position):
@@ -32,7 +30,7 @@ func move_projectile(type=null, projectileCount=0):
 			$Tween.start()
 			yield($Tween, "tween_completed")
 		if !waitingForEventBeforeContinue:
-			emit_signal("playerEnemieProjectileMadeMove",self, type, projectileCount)
+			emit_signal("playerEnemieProjectileMadeMove",self, type)
 
 	elif (type == "movePowerProjectile" && projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK):
 		var target_position = Grid.request_move(self, movementDirection)
@@ -104,19 +102,26 @@ func play_enemyProjectile_attack_animation(onSpot=true):
 	set_process(true)
 	self.queue_free()
 	
-func create_mini_projectile(projectile):
+func create_mini_projectile(projectile, mainPlayer):
+	mainPlayer.disablePlayerInput = true
 	isMiniProjectile = true
 	attackDamage = 0.5
 	if projectile == 1:
 		$AnimationPlayer.play("mini1shoot")
 		var target_position = Grid.request_move(self, movementDirection)
 		if(target_position):
-			position = target_position
+			$Tween.interpolate_property(self, "position", position, target_position , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			$Tween.start()
+			yield($Tween, "tween_completed")
+			mainPlayer.disablePlayerInput = false
 	if projectile == 2:
 		$AnimationPlayer.play("mini2shoot")
 		var target_position = Grid.request_move(self, movementDirection)
 		if(target_position):
-			position = target_position
+			$Tween.interpolate_property(self, "position", position, target_position , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			$Tween.start()
+			yield($Tween, "tween_completed")
+			mainPlayer.disablePlayerInput = false
 			
 func makeNormalProjectile():
 	isMiniProjectile = true
