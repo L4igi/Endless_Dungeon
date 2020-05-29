@@ -16,7 +16,7 @@ var waitingForEventBeforeContinue = false
 
 signal projectileMadeMove (type)
 
-signal playerEnemieProjectileMadeMove (type, projectileCount)
+signal playerEnemieProjectileMadeMove (projectile ,type, projectileCount)
 
 func _ready():
 	pass
@@ -32,7 +32,7 @@ func move_projectile(type=null, projectileCount=0):
 			$Tween.start()
 			yield($Tween, "tween_completed")
 		if !waitingForEventBeforeContinue:
-			emit_signal("playerEnemieProjectileMadeMove",type, projectileCount)
+			emit_signal("playerEnemieProjectileMadeMove",self, type, projectileCount)
 
 	elif (type == "movePowerProjectile" && projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK):
 		var target_position = Grid.request_move(self, movementDirection)
@@ -90,8 +90,8 @@ func play_playerProjectile_attack_animation(onSpot=true):
 		$Tween.start()
 	yield($AnimationPlayer, "animation_finished")
 	set_process(true)
-#	if !waitingForEventBeforeContinue:
-	self.queue_free()
+	if !waitingForEventBeforeContinue:
+		self.queue_free()
 	
 func play_enemyProjectile_attack_animation(onSpot=true):
 	print("Playing projectile animation")
@@ -117,6 +117,11 @@ func create_mini_projectile(projectile):
 		var target_position = Grid.request_move(self, movementDirection)
 		if(target_position):
 			position = target_position
+			
+func makeNormalProjectile():
+	isMiniProjectile = true
+	attackDamage = 1.0
+	$AnimationPlayer.play("shoot")
 
 func create_ticking_projectile(currentRoomLeftMostCorner):
 	projectileType = GlobalVariables.PROJECTILETYPE.TICKERPROJECTILE

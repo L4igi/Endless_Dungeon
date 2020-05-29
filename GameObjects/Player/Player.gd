@@ -20,7 +20,7 @@ var playerPassedDoor = Vector2.ZERO
 
 var movementCount = 0
 
-var maxTurnActions = 4
+var maxTurnActions = 10
 
 var attackCount = 0
 
@@ -373,6 +373,7 @@ func _on_enemy_turn_done_signal():
 	attackCount = 0
 	playerTurnDone = false
 	disablePlayerInput = false
+	waitingForEventBeforeContinue = false
 
 func end_player_turn():
 	disablePlayerInput=true

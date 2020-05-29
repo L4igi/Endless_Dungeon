@@ -308,7 +308,6 @@ func request_move(pawn, direction):
 				var tempEnemy = get_cell_pawn(cell_target)
 				if pawn.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
 					tempEnemy.hitByProjectile = pawn
-					
 					projectilesInActiveRoom.erase(pawn)
 					set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
 					pawn.waitingForEventBeforeContinue = true
@@ -352,9 +351,9 @@ func request_move(pawn, direction):
 			TILETYPES.MAGICPROJECTILE:
 				#if two enemy projectiles hit each other they bounce back 
 				var targetProjectile = get_cell_pawn(cell_target)
-				if targetProjectile:
-					magicProjectileMagicProjectileInteraction(pawn, targetProjectile)
-				return pawn.position
+				magicProjectileMagicProjectileInteraction(pawn, targetProjectile)
+				return update_pawn_position(pawn, cell_start, cell_target)
+#				return update_pawn_position(pawn, cell_start, cell_target)
 			TILETYPES.BLOCK:
 				projectilesInActiveRoom.erase(pawn)
 				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
@@ -390,16 +389,35 @@ func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile
 		#magicProjectile1.movementDirection *=-1
 	#player enemy projectile interaction
 	elif magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
-			projectilesToDeleteTurnEnd.append(magicProjectile1)
-			projectilesToDeleteTurnEnd.append(magicProjectile2)
 			var magicprojectil1temppos = magicProjectile1.position
 			magicProjectile1.position = magicProjectile2.position
 			magicProjectile2.position = magicprojectil1temppos
 
 	#player player projectile interaction
-	elif magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
+	if magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
 		#print("Player projectiles hit each other " + str(magicProjectile1.movementDirection))
 		#if magicProjectile1.movementDirection == magicProjectile2.movementDirection:
+		if magicProjectile1.isMiniProjectile:
+			projectilesInActiveRoom.erase(magicProjectile1)
+			#set_cellv(world_to_map(magicProjectile1.position),get_tileset().find_tile_by_name("EMPTY")) 
+			#projectilesMadeMoveCounter+=1
+			magicProjectile1.queue_free()
+			return
+		elif magicProjectile2.isMiniProjectile:
+			projectilesInActiveRoom.erase(magicProjectile2)
+			#set_cellv(world_to_map(magicProjectile2.position),get_tileset().find_tile_by_name("EMPTY")) 
+			#projectilesMadeMoveCounter+=1
+			magicProjectile2.queue_free()
+			return
+			
+		elif magicProjectile1.isMiniProjectile && magicProjectile2.isMiniProjectile:
+			projectilesInActiveRoom.erase(magicProjectile1)
+			set_cellv(world_to_map(magicProjectile1.position),get_tileset().find_tile_by_name("EMPTY")) 
+			projectilesMadeMoveCounter+=1
+			magicProjectile1.queue_free()
+			magicProjectile2.makeNormalProjectile()
+			return
+			
 		match magicProjectile1.movementDirection:
 			Vector2(0,1):
 				magicProjectile1.movementDirection = Vector2(1,0)
@@ -415,6 +433,8 @@ func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile
 				magicProjectile2.movementDirection = Vector2(0,-1)
 		magicProjectile1.isMiniProjectile = true
 		magicProjectile2.isMiniProjectile = true
+#		set_cellv(world_to_map(magicProjectile1.position),get_tileset().find_tile_by_name("EMPTY")) 
+#		set_cellv(world_to_map(magicProjectile2.position),get_tileset().find_tile_by_name("EMPTY")) 
 		magicProjectile1.create_mini_projectile(1)
 		magicProjectile2.create_mini_projectile(2)
 		
@@ -807,6 +827,7 @@ func _on_enemy_made_move_ready():
 					pass
 				if projectile.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
 					projectile.move_projectile("movePlayerProjectiles", playerProjectileCount)
+					break
 			tempProjectiles.clear()
 			
 		
@@ -899,10 +920,23 @@ func _on_puzzle_piece_activated():
 				for puzzlePiece in activatedPuzzlePieces:
 						puzzlePiece.playWrongWriteAnimation(false)
 						
-func _on_player_enemy_projectile_made_move(type = null, projectileCount = 0):
+func _on_player_enemy_projectile_made_move(movingProjectile, type = null, projectileCount = 0):
 	projectilesMadeMoveCounter +=1
-	#print("Moving " + str(type) +" projectile current count " + str(projectilesMadeMoveCounter) + " of " + str(projectileCount))
-	if projectilesMadeMoveCounter == projectileCount:
+	var projectileArrayPos = projectilesInActiveRoom.find(movingProjectile)
+	for pos in range (projectileArrayPos+1 , projectilesInActiveRoom.size()):
+		if projectilesInActiveRoom[pos].projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
+			print("Hey moving Projectile " + str(movingProjectile))
+			projectilesInActiveRoom[pos].projectileCount = movingProjectile.projectileCount
+			projectilesInActiveRoom[pos].move_projectile("movePlayerProjectiles", projectilesInActiveRoom[pos].projectileCount)
+			break
+			
+	var tempProjectileCount = 0
+	for projectile in projectilesInActiveRoom:
+		if projectile.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
+			tempProjectileCount +=1
+			
+	print("Moving " + str(type) +" projectile current count " + str(projectilesMadeMoveCounter) + " of " + str(projectileCount))
+	if projectilesMadeMoveCounter == tempProjectileCount:
 		projectilesMadeMoveCounter = 0
 		if type == "moveEnemyProjectiles":
 			emit_signal("playerTurnDoneSignal")
@@ -1090,15 +1124,16 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 			set_cellv(world_to_map(projectileToErase.position),get_tileset().find_tile_by_name("EMPTY")) 
 			projectileToErase.queue_free()
 		else:
+			print("Player player projectile interaction")
 			var newMagicProjectile = MagicProjectile.instance()
 			newMagicProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
 			newMagicProjectile.connect("playerEnemieProjectileMadeMove", self, "_on_player_enemy_projectile_made_move")
 			newMagicProjectile.position = player.position + map_to_world(attack_direction*2)
 			newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.PLAYER
 			newMagicProjectile.movementDirection = attack_direction
-			newMagicProjectile.play_player_projectile_animation()
 			add_child(newMagicProjectile)
 			projectilesInActiveRoom.append(newMagicProjectile)
+			newMagicProjectile.play_player_projectile_animation()
 			magicProjectileMagicProjectileInteraction(newMagicProjectile, get_cell_pawn(world_to_map(player.position) + attack_direction*2))
 	#block generating attack 
 	if(attackType == GlobalVariables.ATTACKTYPE.BLOCK):
@@ -1379,6 +1414,10 @@ func _on_enemy_defeated(enemy, inflictDamageDuringPhase, hitProjectile = null):
 			set_cellv(world_to_map(projectile.position),get_tileset().find_tile_by_name("EMPTY")) 
 			if projectile != hitProjectile:
 				projectile.queue_free()
+			else:
+				print("in hitprojectile")
+				hitProjectile.emit_signal("playerEnemieProjectileMadeMove","movePlayerProjectiles", hitProjectile.projectileCount)
+				hitProjectile.queue_free()
 		projectilesInActiveRoom.clear()
 		if activeRoom.dropLoot() && !activeRoom.roomCleared:
 			dropLootInActiveRoom()
@@ -1397,7 +1436,7 @@ func _on_enemy_defeated(enemy, inflictDamageDuringPhase, hitProjectile = null):
 			mainPlayer.waitingForEventBeforeContinue = false
 	
 	if inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.PROJECTILE:
-		hitProjectile.emit_signal("playerEnemieProjectileMadeMove","movePlayerProjectiles", hitProjectile.projectileCount)
+		hitProjectile.emit_signal("playerEnemieProjectileMadeMove",hitProjectile, "movePlayerProjectiles", hitProjectile.projectileCount)
 		hitProjectile.queue_free()
 	
 func dropLootInActiveRoom():
