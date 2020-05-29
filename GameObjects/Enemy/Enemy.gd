@@ -19,7 +19,9 @@ signal enemyMadeMove
 
 signal enemyAttacked (enemy, attackDirection, attackDamange )
 
-signal enemyDefeated (enemy)
+signal enemyDefeated (enemy, inflictDamageDuringPhase)
+
+signal enemyExplosionDone(enemy)
 
 var lifePoints = 1
 
@@ -51,7 +53,11 @@ var horizontalVerticalAttack = true
 
 var ninjaAttackRange = 5
 
-var takenDamage = null
+var waitingForEventBeforeContinue = null
+
+var inflictattackType = null
+
+var hitByProjectile = null
 
 func _ready():
 	Grid.connect("playerTurnDoneSignal", self, "_on_player_turn_done_signal")
@@ -183,16 +189,17 @@ func enemyMovement():
 				$AnimationPlayer.play("idle")
 				set_process(true)
 				movementCount += 1
-				
-	if takenDamage != null:
-		play_take_damage_Animation(takenDamage, null, "enemyMove")
-		takenDamage=null
-	else:
-		if attackCount + movementCount < maxTurnActions:
-			enemyAttack()
+
+	if waitingForEventBeforeContinue != null:
+		if lifePoints <= 0:
+			play_defeat_animation(Grid.mainPlayer, waitingForEventBeforeContinue)
 		else:
-			emit_signal("enemyMadeMove")
-	
+			play_taken_damage_animation(inflictattackType,Grid.mainPlayer, waitingForEventBeforeContinue)
+	elif attackCount + movementCount < maxTurnActions:
+		enemyAttack()
+	else:
+		emit_signal("enemyMadeMove")
+
 			
 func enemyAttack(): 
 	match enemyType:
@@ -292,12 +299,7 @@ func _on_player_turn_done_signal():
 			movementCount = 0
 			attackCount = 0
 			enemyTurnDone = false
-			if takenDamage!= null:
-				print("takendamage " + str(takenDamage))
-				play_take_damage_Animation(takenDamage)
-				takenDamage=null
-			else:
-				matchEnemyTurn()
+			matchEnemyTurn()
 
 
 func matchEnemyTurn():
@@ -314,7 +316,7 @@ func matchEnemyTurn():
 func generateEnemy(mageEnemyCount, currentGrid): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = randi()%4
+	var enemieToGenerate = 3
 	match enemieToGenerate:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
@@ -341,8 +343,9 @@ func generateEnemy(mageEnemyCount, currentGrid):
 			get_node("SpriteMageEnemy").set_visible(true)
 	return enemyType
 
-func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, mainPlayer = null, projectileTurn = false):
+func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, mainPlayer = null, inflictDamageDuringPhase = null):
 	var barrierDefeatItem = null
+	self.inflictattackType = inflictattackType
 	#if enemy is barriere only if player posesses item and attacks with sword enemy is killed
 	if mainPlayer!=null && self.isBarrier:
 		for item in mainPlayer.itemsInPosession:
@@ -359,61 +362,25 @@ func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, m
 	if !self.isBarrier:
 		lifePoints -= inflictattackDamage
 	if lifePoints <= 0:
-		enemyDefeated = true
-		Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("EMPTY")) 
-	
-		play_enemy_defeat_animation()
-
+		if inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.PLAYER || inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.BLOCK || inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.PROJECTILE:
+			play_defeat_animation(mainPlayer, inflictDamageDuringPhase)
+		elif inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.ENEMY:
+			waitingForEventBeforeContinue = inflictDamageDuringPhase
 	else:
-		if mainPlayer!=null && mainPlayer.movementCount + mainPlayer.attackCount < mainPlayer.maxTurnActions-1:
-			play_take_damage_Animation(inflictattackType, mainPlayer, "playerMove")
-		elif projectileTurn: 
-			pass
-		else:
-			takenDamage=inflictattackType
-		return true
-		
-	#set enemy difficulty and type set enemy stats based on difficulty set amount of enemies to spawn based on room size and difficulty 
-func play_enemy_defeat_animation():
-	#play defeat animation 
-	match enemyType:
-		GlobalVariables.ENEMYTYPE.NINJAENEMY:
-			set_process(false)
-			$NinjaAnimationPlayer.play("defeat", -1, 1.0)
-			#move sprite to position of death 
-			#$Tween.interpolate_property(self, "position",  Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset,Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset, $NinjaAnimationPlayer.current_animation_length/1.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
-			#$Tween.start()
-			yield($NinjaAnimationPlayer, "animation_finished")
-			set_process(true)
-			emit_signal("enemyDefeated", self)
-
-		GlobalVariables.ENEMYTYPE.MAGEENEMY:
-			set_process(false)
-			$MageAnimationPlayer.play("defeat", -1, 1.0)
-			#move sprite to position of death 
-			#$Tween.interpolate_property(self, "position",  Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset,Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset, $MageAnimationPlayer.current_animation_length/1.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
-			#$Tween.start()
-			yield($MageAnimationPlayer, "animation_finished")
-			set_process(true)
-			emit_signal("enemyDefeated", self)
-
-		_:
-			set_process(false)
-			$AnimationPlayer.play("defeat", -1, 3.0)
-			#move sprite to position of death 
-			#$Tween.interpolate_property($Sprite, "position",  Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset,Grid.map_to_world(takeDamagePosition) + GlobalVariables.tileOffset, $AnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
-			#$Tween.start()
-			yield($AnimationPlayer, "animation_finished")
-			set_process(true)
-			emit_signal("enemyDefeated", self)
-
-func play_take_damage_Animation(inflictattackType, mainPlayer = null, duringMove = "", projectileType = null, projectileCount = 0):
-	if mainPlayer!=null:
-		mainPlayer.disablePlayerInput = true
+		if inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.PLAYER || inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.BLOCK || inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.PROJECTILE:
+			play_taken_damage_animation(inflictattackDamage, mainPlayer, inflictDamageDuringPhase)
+		elif inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.ENEMY:
+				waitingForEventBeforeContinue = inflictDamageDuringPhase
+	
+	
+func play_taken_damage_animation(inflictattackType, mainPlayer, inflictDamageDuringPhase):
+	if inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.PLAYER:
+		mainPlayer.waitingForEventBeforeContinue = true
+	elif inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.BLOCK:
+		mainPlayer.waitingForEventBeforeContinue = true
 	var animationToPlay = str("take_damage_physical")
 	if inflictattackType == GlobalVariables.ATTACKTYPE.MAGIC:
 		animationToPlay = str("take_damage_magic")
-	#print("animationToPlay " + str(animationToPlay) + " inflictattackType " + str(inflictattackType) + "  " + str(GlobalVariables.ATTACKTYPE.MAGIC))
 	match enemyType:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			set_process(false)
@@ -442,19 +409,67 @@ func play_take_damage_Animation(inflictattackType, mainPlayer = null, duringMove
 			yield($AnimationPlayer, "animation_finished")
 			$AnimationPlayer.play("idle")
 			set_process(true)
-
-	if duringMove == "playerMove":
-		mainPlayer.disablePlayerInput = false
-	elif duringMove == "enemyMove":
+	
+	if inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.PLAYER:
+		mainPlayer.waitingForEventBeforeContinue = false
+		
+	elif inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.BLOCK:
+		emit_signal("enemyExplosionDone", self)
+		
+		
+	elif inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.ENEMY:
+		inflictattackType = null
+		waitingForEventBeforeContinue = null
+		
 		if attackCount + movementCount < maxTurnActions:
 			enemyAttack()
 		else:
 			emit_signal("enemyMadeMove")
-	elif duringMove == "projectileMove":
-		Grid._on_player_enemy_projectile_made_move(projectileType, projectileCount)
-	else:
-		matchEnemyTurn()
+			
+	elif inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.PROJECTILE:
+		hitByProjectile.emit_signal("playerEnemieProjectileMadeMove","movePlayerProjectiles", hitByProjectile.projectileCount)
+		hitByProjectile.queue_free()
+		hitByProjectile = null
+		
+
+func play_defeat_animation(mainPlayer, inflictDamageDuringPhase):
+	if inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.PLAYER:
+		mainPlayer.waitingForEventBeforeContinue = true
+
+	elif inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.BLOCK:
+		mainPlayer.waitingForEventBeforeContinue = true
 	
+	match enemyType:
+		GlobalVariables.ENEMYTYPE.NINJAENEMY:
+			set_process(false)
+			$NinjaAnimationPlayer.play("defeat", -1, 1.0)
+			yield($NinjaAnimationPlayer, "animation_finished")
+			set_process(true)
+
+		GlobalVariables.ENEMYTYPE.MAGEENEMY:
+			set_process(false)
+			$MageAnimationPlayer.play("defeat", -1, 1.0)
+			yield($MageAnimationPlayer, "animation_finished")
+			set_process(true)
+
+		_:
+			set_process(false)
+			$AnimationPlayer.play("defeat", -1, 3.0)
+			yield($AnimationPlayer, "animation_finished")
+			set_process(true)
+			
+	if inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.PLAYER:
+		emit_signal("enemyDefeated", self, inflictDamageDuringPhase)
+		
+	elif inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.BLOCK:
+		emit_signal("enemyExplosionDone", self)
+		
+	elif inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.ENEMY:
+		emit_signal("enemyDefeated", self, inflictDamageDuringPhase)
+		
+	elif inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.PROJECTILE:
+		emit_signal("enemyDefeated", self, inflictDamageDuringPhase, hitByProjectile)
+		
 func makeEnemyBarrier(currentGrid):
 	randomize()
 	#determins if door is barrier or not 

@@ -8,9 +8,11 @@ export(CELL_TYPES) var type = CELL_TYPES.MAGICPROJECTILE
 var movementDirection 
 var attackDamage = 1
 var projectileType
-var projectileHitEnemy = null
 var isMiniProjectile = false
 var tickAlreadyMoved = false
+var projectileCount = 0
+
+var waitingForEventBeforeContinue = false
 
 signal projectileMadeMove (type)
 
@@ -20,6 +22,8 @@ func _ready():
 	pass
 
 func move_projectile(type=null, projectileCount=0):
+	
+	self.projectileCount = projectileCount
 
 	if(type == "moveEnemyProjectiles" && projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || type =="movePlayerProjectiles" && projectileType == GlobalVariables.PROJECTILETYPE.PLAYER):
 		var target_position = Grid.request_move(self, movementDirection)
@@ -27,11 +31,7 @@ func move_projectile(type=null, projectileCount=0):
 			$Tween.interpolate_property(self, "position", position, target_position , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
 			$Tween.start()
 			yield($Tween, "tween_completed")
-		if projectileHitEnemy != null:
-			print("Projectile hit enemy")
-			projectileHitEnemy.play_take_damage_Animation(GlobalVariables.ATTACKTYPE.MAGIC, null, "projectileMove", type, projectileCount)
-			projectileHitEnemy = null
-		else:
+		if !waitingForEventBeforeContinue:
 			emit_signal("playerEnemieProjectileMadeMove",type, projectileCount)
 
 	elif (type == "movePowerProjectile" && projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK):
@@ -90,6 +90,7 @@ func play_playerProjectile_attack_animation(onSpot=true):
 		$Tween.start()
 	yield($AnimationPlayer, "animation_finished")
 	set_process(true)
+#	if !waitingForEventBeforeContinue:
 	self.queue_free()
 	
 func play_enemyProjectile_attack_animation(onSpot=true):
