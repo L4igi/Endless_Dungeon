@@ -5,7 +5,7 @@ onready var Grid = get_parent()
 enum CELL_TYPES{PLAYER=0, WALL=1, ENEMY=2, PUZZLEPIECE=3, ITEM=4, DOOR=5, UNLOCKEDDOOR=6, MAGICPROJECTILE=7, BLOCK=8}
 export(CELL_TYPES) var type = CELL_TYPES.ENEMY
 
-var maxTurnActions = 1
+var maxTurnActions = 2
 
 var movementCount = 0
 
@@ -15,7 +15,7 @@ var enemyTurnDone = false
 
 var isDisabled = true
 
-signal enemyMadeMove
+signal enemyMadeMove (enemy)
 
 signal enemyAttacked (enemy, attackDirection, attackDamange )
 
@@ -60,7 +60,7 @@ var inflictattackType = null
 var hitByProjectile = null
 
 func _ready():
-	Grid.connect("playerTurnDoneSignal", self, "_on_player_turn_done_signal")
+	pass
 	
 
 func _process(delta): 
@@ -198,7 +198,7 @@ func enemyMovement():
 	elif attackCount + movementCount < maxTurnActions:
 		enemyAttack()
 	else:
-		emit_signal("enemyMadeMove")
+		emit_signal("enemyMadeMove", self)
 
 			
 func enemyAttack(): 
@@ -219,7 +219,7 @@ func enemyAttack():
 			if attackCount + movementCount < maxTurnActions:
 				enemyMovement()
 			else:
-				emit_signal("enemyMadeMove")
+				emit_signal("enemyMadeMove", self)
 
 		
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
@@ -240,14 +240,14 @@ func enemyAttack():
 				if attackCount + movementCount < maxTurnActions:
 					enemyMovement()
 				else:
-					emit_signal("enemyMadeMove")
+					emit_signal("enemyMadeMove", self)
 			else:
 				mageOnOff = 1
 				attackCount += 1
 				if attackCount + movementCount < maxTurnActions:
 					enemyMovement()
 				else:
-					emit_signal("enemyMadeMove")
+					emit_signal("enemyMadeMove", self)
 		
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			var attackDirection = Grid.enableEnemyAttack(self, attackType, horizontalVerticalAttack, diagonalAttack)
@@ -273,7 +273,7 @@ func enemyAttack():
 			if attackCount + movementCount < maxTurnActions:
 				enemyMovement()
 			else:
-				emit_signal("enemyMadeMove")
+				emit_signal("enemyMadeMove", self)
 			
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			var attackDirection = Grid.enableEnemyAttack(self, attackType, horizontalVerticalAttack, diagonalAttack)
@@ -291,9 +291,9 @@ func enemyAttack():
 			if attackCount + movementCount < maxTurnActions:
 				enemyMovement()
 			else:
-				emit_signal("enemyMadeMove")
+				emit_signal("enemyMadeMove", self)
 
-func _on_player_turn_done_signal():
+func make_enemy_turn():
 	if !isDisabled:
 		if(lifePoints > 0):
 			movementCount = 0
@@ -424,7 +424,7 @@ func play_taken_damage_animation(inflictattackType, mainPlayer, CURRENTPHASE):
 		if attackCount + movementCount < maxTurnActions:
 			enemyAttack()
 		else:
-			emit_signal("enemyMadeMove")
+			emit_signal("enemyMadeMove", self)
 			
 	elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.PROJECTILE:
 		hitByProjectile = null

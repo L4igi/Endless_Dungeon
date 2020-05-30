@@ -89,6 +89,8 @@ var onEndlessLoopStopGlobal = 0
 
 var playerEnemyProjectileArray = []
 
+var enemiesToMoveArray = []
+
 var currentActivePhase = GlobalVariables.CURRENTPHASE.PLAYER
 
 func match_Enum(var index):
@@ -823,11 +825,12 @@ func get_enemy_move_mage_pattern(enemy, movementdirection):
 			return world_to_map(activeRoom.doorRoomLeftMostCorner)+ Vector2(1,1)
 	return Vector2.ZERO
 			
-func _on_enemy_made_move_ready():
+func _on_enemy_made_move_ready(currentEnemy):
 	if(activeRoom != null):
-		enemiesMadeMoveCounter += 1
-		#print("Enemies made move " + str(enemiesMadeMoveCounter) + " enemies in active room " + str(activeRoom.enemiesInRoom.size()))
-		if(enemiesMadeMoveCounter >= activeRoom.enemiesInRoom.size()):
+		enemiesToMoveArray.erase(currentEnemy)
+			
+		print("Moving " + str(currentEnemy) + " enemies left to move " + str(enemiesToMoveArray.size()))
+		if enemiesToMoveArray.empty():
 			enemiesMadeMoveCounter = 0
 			if mainPlayer.playerDefeated:
 				mainPlayer.playerDefeated = false
@@ -847,6 +850,8 @@ func _on_enemy_made_move_ready():
 				playerEnemyProjectileArray[0].move_projectile("movePlayerProjectiles")
 			tempProjectiles.clear()
 			
+		else:
+			enemiesToMoveArray[0].make_enemy_turn()
 		
 func _on_Player_Made_Move():
 	if movedThroughDoor:
@@ -859,6 +864,21 @@ func _on_Player_Made_Move():
 			activeRoom.puzzlePiecesInRoom[0].playColor()
 	else:
 		roomJustEntered = false
+		
+		if activeRoom == null || activeRoom!= null && activeRoom.roomCleared:
+			emit_signal("enemyTurnDoneSignal")
+			return
+		elif activeRoom.enemiesInRoom.empty():
+			emit_signal("enemyTurnDoneSignal")
+			return
+		elif projectilesInActiveRoom.empty() && !GlobalVariables.ROOM_TYPE.PUZZLEROOM && !projectilesInActiveRoom.empty():
+			emit_signal("playerTurnDoneSignal")
+			return
+		elif projectilesInActiveRoom.empty() && GlobalVariables.ROOM_TYPE.PUZZLEROOM && !projectilesInActiveRoom.empty():
+			_on_projectiles_made_move()
+			return
+			
+			
 		if activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 			var tempProjectiles = projectilesInActiveRoom.duplicate()
 			#print("Projectiles in active Room in Player made move" + str(projectilesInActiveRoom))
@@ -878,24 +898,18 @@ func _on_Player_Made_Move():
 			for projectile in tempProjectiles:
 				if projectile.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
 					playerEnemyProjectileArray.append(projectile)
+			for enemy in activeRoom.enemiesInRoom:
+				enemiesToMoveArray.append(enemy)
 			if playerEnemyProjectileArray.empty():
 				currentActivePhase = GlobalVariables.CURRENTPHASE.ENEMY
-				emit_signal("playerTurnDoneSignal")
+				enemiesToMoveArray[0].make_enemy_turn()
+				#emit_signal("playerTurnDoneSignal")
 			else:
 				currentActivePhase = GlobalVariables.CURRENTPHASE.PROJECTILE
 				playerEnemyProjectileArray[0].move_projectile("moveEnemyProjectiles")
 			tempProjectiles.clear()
 			
-		if activeRoom == null || activeRoom!= null && activeRoom.roomCleared:
-			emit_signal("enemyTurnDoneSignal")
-		elif activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && !projectilesInActiveRoom.empty() :
-			return
-		elif activeRoom.enemiesInRoom.empty():
-				emit_signal("enemyTurnDoneSignal")
-		elif projectilesInActiveRoom.empty() && !GlobalVariables.ROOM_TYPE.PUZZLEROOM && !projectilesInActiveRoom.empty():
-			emit_signal("playerTurnDoneSignal")
-		elif projectilesInActiveRoom.empty() && GlobalVariables.ROOM_TYPE.PUZZLEROOM && !projectilesInActiveRoom.empty():
-			_on_projectiles_made_move()
+
 			
 func _on_puzzlepiece_played_animation():
 	puzzlePiecesAnimationDoneCounter += 1
@@ -947,7 +961,7 @@ func _on_player_enemy_projectile_made_move(movingProjectile, type = null):
 		projectilesMadeMoveCounter = 0
 		if type == "moveEnemyProjectiles":
 			currentActivePhase = GlobalVariables.CURRENTPHASE.ENEMY
-			emit_signal("playerTurnDoneSignal")
+			enemiesToMoveArray[0].make_enemy_turn()
 		elif type == "movePlayerProjectiles":
 			currentActivePhase = GlobalVariables.CURRENTPHASE.PLAYER
 			emit_signal("enemyTurnDoneSignal")
