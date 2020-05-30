@@ -830,7 +830,7 @@ func _on_enemy_made_move_ready(currentEnemy):
 	if(activeRoom != null):
 		enemiesToMoveArray.erase(currentEnemy)
 			
-		print("Moving " + str(currentEnemy) + " enemies left to move " + str(enemiesToMoveArray.size()))
+		#print("Moving " + str(currentEnemy) + " enemies left to move " + str(enemiesToMoveArray.size()))
 		if enemiesToMoveArray.empty():
 			enemiesMadeMoveCounter = 0
 			if mainPlayer.playerDefeated:

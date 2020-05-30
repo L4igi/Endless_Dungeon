@@ -73,7 +73,7 @@ func unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance):
 #	Grid.create_enemy_room(self)
 	#print("Door was unlocked")
 	#choose type of room to be created 
-	var randRoomType = 80
+	var randRoomType = 20
 #	var randomrand = randi()%2+1
 #	if randomrand == 1:
 #		randRoomType = 90

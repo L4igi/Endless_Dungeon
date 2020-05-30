@@ -107,14 +107,24 @@ func enemyMovement():
 			var movementdirection = Grid.get_enemy_move_towards_player(self)
 #			print(movement_direction)
 			var target_position = Grid.request_move(self, movementdirection)
+			var animationToPlay = "walk_up"
+			match movementdirection:
+				Vector2(-1,0):
+					animationToPlay = "walk_left"
+				Vector2(1,0):
+					animationToPlay = "walk_right"
+				Vector2(0,-1):
+					animationToPlay = "walk_up"
+				Vector2(0,1):
+					animationToPlay = "walk_down"
 			if(target_position && !enemyDefeated):
 				set_process(false)
 				#play defeat animation 
-				$AnimationPlayer.play("walk", -1, 1.0)
-				$Tween.interpolate_property(self, "position", position, target_position, $AnimationPlayer.current_animation_length/1.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+				$WarriorAnimationPlayer.play(animationToPlay, -1, 3.0)
+				$Tween.interpolate_property(self, "position", position, target_position, $WarriorAnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
 				$Tween.start()
-				yield($AnimationPlayer, "animation_finished")
-				$AnimationPlayer.play("idle")
+				yield($WarriorAnimationPlayer, "animation_finished")
+				$WarriorAnimationPlayer.play("idle")
 				set_process(true)
 				movementCount += 1
 		
@@ -224,11 +234,11 @@ func enemyAttack():
 			if(attackDirection != Vector2.ZERO):
 				set_process(false)
 				#play defeat animation 
-				$AnimationPlayer.play("defeat", -1, 3.0)
-				$Tween.interpolate_property($Sprite, "position", attackDirection*GlobalVariables.tileSize, Vector2(), $AnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+				$WarriorAnimationPlayer.play("attack", -1, 3.0)
+				$Tween.interpolate_property($SpriteWarriorEnemy, "position", attackDirection*GlobalVariables.tileSize, Vector2(), $WarriorAnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
 				$Tween.start()
-				yield($AnimationPlayer, "animation_finished")
-				$AnimationPlayer.play("idle")
+				yield($WarriorAnimationPlayer, "animation_finished")
+				$WarriorAnimationPlayer.play("idle")
 				set_process(true)
 				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackDirection, attackType,  attackDamage)
 			attackCount += 1
@@ -332,7 +342,7 @@ func matchEnemyTurn():
 func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = randi()%4
+	var enemieToGenerate = 2
 	match enemieToGenerate:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
@@ -350,8 +360,7 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 			attackDamage = 1 
 			diagonalAttack = true
 			attackType = GlobalVariables.ATTACKTYPE.SWORD
-			get_node("Sprite").set_visible(true)
-			get_node("Sprite").set_modulate(Color(255,0,0,1.0))
+			get_node("SpriteWarriorEnemy").set_visible(true)
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.MAGEENEMY
 			mageMoveCount = mageEnemyCount
@@ -401,30 +410,30 @@ func play_taken_damage_animation(inflictattackType, mainPlayer, CURRENTPHASE):
 	match enemyType:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			set_process(false)
-			$AnimationPlayer.play(animationToPlay, -1, 1.0)
+			$AnimationPlayer.play(animationToPlay, -1, 2.0)
 			yield($AnimationPlayer, "animation_finished")
 			$AnimationPlayer.play("idle")
 			set_process(true)
 
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			set_process(false)
-			$MageAnimationPlayer.play(animationToPlay, -1, 1.0)
+			$MageAnimationPlayer.play(animationToPlay, -1, 2.0)
 			yield($MageAnimationPlayer, "animation_finished")
 			$MageAnimationPlayer.play("idle")
 			set_process(true)
 
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			set_process(false)
-			$NinjaAnimationPlayer.play(animationToPlay, -1, 1.0)
+			$NinjaAnimationPlayer.play(animationToPlay, -1, 2.0)
 			yield($NinjaAnimationPlayer, "animation_finished")
 			$NinjaAnimationPlayer.play("idle")
 			set_process(true)
 
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
 			set_process(false)
-			$AnimationPlayer.play(animationToPlay, -1, 1.0)
-			yield($AnimationPlayer, "animation_finished")
-			$AnimationPlayer.play("idle")
+			$WarriorAnimationPlayer.play(animationToPlay, -1, 2.0)
+			yield($WarriorAnimationPlayer, "animation_finished")
+			$WarriorAnimationPlayer.play("idle")
 			set_process(true)
 	
 	if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER:
@@ -461,16 +470,21 @@ func play_defeat_animation(mainPlayer, CURRENTPHASE):
 	match enemyType:
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			set_process(false)
-			$NinjaAnimationPlayer.play("defeat", -1, 1.0)
+			$NinjaAnimationPlayer.play("defeat", -1, 2.0)
 			yield($NinjaAnimationPlayer, "animation_finished")
 			set_process(true)
 
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			set_process(false)
-			$MageAnimationPlayer.play("defeat", -1, 1.0)
+			$MageAnimationPlayer.play("defeat", -1, 2.0)
 			yield($MageAnimationPlayer, "animation_finished")
 			set_process(true)
-
+			
+		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
+			set_process(false)
+			$WarriorAnimationPlayer.play("defeat", -1, 2.0)
+			yield($WarriorAnimationPlayer, "animation_finished")
+			set_process(true)
 		_:
 			set_process(false)
 			$AnimationPlayer.play("defeat", -1, 3.0)
