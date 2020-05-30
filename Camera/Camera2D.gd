@@ -2,10 +2,11 @@ extends Camera2D
 
 onready var Grid = get_parent()
 
-var standardZoomLevel = Vector2(0.2, 0.2)
+var standardZoomLevel = Vector2(0.214, 0.214)
 var standardPosition = Vector2.ZERO
 var controlMap = false
-#var standardZoomLevel = Vector2(7,7)
+var beforeMapPosition = Vector2.ZERO
+var beforeMapZoom = Vector2.ZERO
 
 signal cameraSmoothTransition (camera, target_position)
 
@@ -14,27 +15,34 @@ signal toggleMapSignal()
 onready var window_size = OS.get_window_size()
 
 func _ready():
-	pass
-#	var roomSize = float(GlobalVariables.roomDimensions)/2
-#	print(roomSize)
-#	standardPosition = (Vector2(roomSize,roomSize)*32)
-#	self.position = standardPosition
+	position = Vector2.ZERO + Vector2(GlobalVariables.roomDimensions, GlobalVariables.roomDimensions)*GlobalVariables.tileSize/2
+	set_as_toplevel(true)
 	standardZoomLevel = standardZoomLevel * Vector2(GlobalVariables.roomDimensions, GlobalVariables.roomDimensions)
 	self.zoom = standardZoomLevel
 
 func _process(delta):
 	var toggleMap = toggle_map()
-	if toggleMap:
-		emit_signal("toggleMapSignal")
+	if toggleMap && !get_node("Tween").is_active():
 		if get_tree().paused == false:
 			get_tree().paused = true
+			beforeMapPosition = position
+			beforeMapZoom = zoom
+			$Tween.interpolate_property(self, "zoom", zoom, Vector2(10,10) , 0.8, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			$Tween.start()
+			yield($Tween, "tween_completed")
+			emit_signal("toggleMapSignal")
 			controlMap = true
 		else:
 			controlMap = false
-			$Tween.interpolate_property(self, "position", position, get_parent().position , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			emit_signal("toggleMapSignal")
+			$Tween.interpolate_property(self, "position", position, beforeMapPosition , 0.7, Tween.TRANS_LINEAR, Tween.EASE_OUT)
+			$Tween.start()
+			yield($Tween, "tween_completed")
+			$Tween.interpolate_property(self, "zoom", zoom, beforeMapZoom , 0.8, Tween.TRANS_LINEAR, Tween.EASE_OUT)
 			$Tween.start()
 			yield($Tween, "tween_completed")
 			get_tree().paused = false
+
 			
 			
 	if controlMap:
@@ -48,53 +56,56 @@ func _process(delta):
 				position += Vector2(0,-20)
 			GlobalVariables.DIRECTION.DOWN:
 				position += Vector2(0,20)
+		
+		var zoomCameraKeyBoard = zoom_camera_keyboard()
+		match zoomCameraKeyBoard:
+			"IN":
+				if(zoom > standardZoomLevel && zoom - Vector2(1.0,1.0) >= standardZoomLevel):
+					zoom = zoom - Vector2(0.3,0.3)
+				else:
+					zoom = standardZoomLevel
+			"OUT":
+				zoom = zoom + Vector2(0.3,0.3)
 	
 func on_move_camera_signal(activeRoom):
+	get_parent().disablePlayerInput = true
 	if activeRoom == null:
-		self.zoom = standardZoomLevel
-		self.position = standardPosition
-#	self.make_current()
-	#implement camera zoom
-	#use tween to move camera
-	#emit_signal("cameraSmoothTransition")
+		var goToPos = Vector2.ZERO + Vector2(GlobalVariables.roomDimensions, GlobalVariables.roomDimensions)*GlobalVariables.tileSize/2
+		$Tween.interpolate_property(self, "position", position, goToPos , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+		$Tween.interpolate_property(self, "zoom", zoom, standardZoomLevel , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+		$Tween.start()
+		yield($Tween, "tween_completed")
+		get_parent().disablePlayerInput = false
 	else:
-		print("In camera room type " + str(activeRoom.roomType))
-		position = (activeRoom.doorRoomLeftMostCorner + activeRoom.roomSize)
-		if(activeRoom.roomSizeMultiplier == Vector2(1,2) || activeRoom.roomSizeMultiplier == Vector2(2,1)):
-			zoom = standardZoomLevel*Vector2(2,2)
-		else:
-			zoom = standardZoomLevel * activeRoom.roomSizeMultiplier
-#		self.make_current()
+		var goToPos = activeRoom.doorRoomLeftMostCorner + activeRoom.roomSize *GlobalVariables.tileSize/2 - GlobalVariables.tileOffset
+		var goToZoom = standardZoomLevel
+		match activeRoom.roomSizeMultiplier:
+			Vector2(1,1):
+				goToZoom = standardZoomLevel
+			Vector2(1,2):
+				goToZoom = standardZoomLevel * Vector2(2,2)
+			Vector2(2,1):
+				goToZoom = standardZoomLevel * Vector2(2,2)
+			Vector2(2,2):
+				goToZoom = standardZoomLevel * Vector2(2,2)
+		$Tween.interpolate_property(self, "position", position, goToPos , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+		$Tween.interpolate_property(self, "zoom", zoom, goToZoom , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+		$Tween.start()
+		yield($Tween, "tween_completed")
+		get_parent().disablePlayerInput = false
 	
-func zoomInOut(inOut):
-	match inOut:
-		"IN":
-			if(zoom > standardZoomLevel && zoom - Vector2(1.0,1.0) >= standardZoomLevel):
-				zoom = zoom - Vector2(1.0,1.0)
-			else:
-				zoom = standardZoomLevel
-		"OUT":
-			zoom = zoom + Vector2(0.5,0.5)
-	#self.make_current()
-	
-func set_camera_starting_room():
-	#print("standard zoom level " + str(standardZoomLevel) + " standardposition " + str(standardPosition))
-	self.zoom = standardZoomLevel
-	self.position = standardPosition
-	#self.make_current()
 
 func toggle_map():
 	if Input.is_action_just_pressed("toggleMap"):
 		return true
 	return false
 	
-func _unhandled_input(event):
-	if event is InputEventMouseButton:
-		if event.button_index == BUTTON_WHEEL_UP:
-			if event.pressed:
-				zoomInOut("IN")
-		if event.button_index == BUTTON_WHEEL_DOWN:
-			zoomInOut("OUT")
+			
+func zoom_camera_keyboard():
+	if Input.is_action_pressed("Attack_Up"):	
+		return("IN")
+	elif Input.is_action_pressed("Attack_Down"):
+		return("OUT")
 			
 func move_camera_keyboard():
 	if Input.is_action_pressed("player_down"):

@@ -20,7 +20,7 @@ var playerPassedDoor = Vector2.ZERO
 
 var movementCount = 0
 
-var maxTurnActions = 50
+var maxTurnActions = 3
 var attackCount = 0
 
 var attackDamage = 0.5
@@ -86,7 +86,7 @@ func _ready():
 	
 	mainCamera = PlayerCamera.instance()
 	mainCamera.make_current()
-	#mainCamera
+	Grid.connect("moveCameraSignal", mainCamera, "on_move_camera_signal")
 	add_child(mainCamera)
 	
 	Grid.connect("enemyTurnDoneSignal", self, "_on_enemy_turn_done_signal")
