@@ -19,7 +19,7 @@ signal enemyMadeMove
 
 signal enemyAttacked (enemy, attackDirection, attackDamange )
 
-signal enemyDefeated (enemy, inflictDamageDuringPhase)
+signal enemyDefeated (enemy, CURRENTPHASE)
 
 signal enemyExplosionDone(enemy)
 
@@ -343,7 +343,7 @@ func generateEnemy(mageEnemyCount, currentGrid):
 			get_node("SpriteMageEnemy").set_visible(true)
 	return enemyType
 
-func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, mainPlayer = null, inflictDamageDuringPhase = null):
+func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, mainPlayer = null, CURRENTPHASE = null):
 	var barrierDefeatItem = null
 	self.inflictattackType = inflictattackType
 	#if enemy is barriere only if player posesses item and attacks with sword enemy is killed
@@ -362,21 +362,21 @@ func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, m
 	if !self.isBarrier:
 		lifePoints -= inflictattackDamage
 	if lifePoints <= 0:
-		if inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.PLAYER || inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.BLOCK || inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.PROJECTILE:
-			play_defeat_animation(mainPlayer, inflictDamageDuringPhase)
-		elif inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.ENEMY:
-			waitingForEventBeforeContinue = inflictDamageDuringPhase
+		if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER || CURRENTPHASE == GlobalVariables.CURRENTPHASE.BLOCK || CURRENTPHASE == GlobalVariables.CURRENTPHASE.PROJECTILE:
+			play_defeat_animation(mainPlayer, CURRENTPHASE)
+		elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMY:
+			waitingForEventBeforeContinue = CURRENTPHASE
 	else:
-		if inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.PLAYER || inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.BLOCK || inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.PROJECTILE:
-			play_taken_damage_animation(inflictattackDamage, mainPlayer, inflictDamageDuringPhase)
-		elif inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.ENEMY:
-				waitingForEventBeforeContinue = inflictDamageDuringPhase
+		if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER || CURRENTPHASE == GlobalVariables.CURRENTPHASE.BLOCK || CURRENTPHASE == GlobalVariables.CURRENTPHASE.PROJECTILE:
+			play_taken_damage_animation(inflictattackDamage, mainPlayer, CURRENTPHASE)
+		elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMY:
+				waitingForEventBeforeContinue = CURRENTPHASE
 	
 	
-func play_taken_damage_animation(inflictattackType, mainPlayer, inflictDamageDuringPhase):
-	if inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.PLAYER:
+func play_taken_damage_animation(inflictattackType, mainPlayer, CURRENTPHASE):
+	if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER:
 		mainPlayer.waitingForEventBeforeContinue = true
-	elif inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.BLOCK:
+	elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.BLOCK:
 		mainPlayer.waitingForEventBeforeContinue = true
 	var animationToPlay = str("take_damage_physical")
 	if inflictattackType == GlobalVariables.ATTACKTYPE.MAGIC:
@@ -410,14 +410,14 @@ func play_taken_damage_animation(inflictattackType, mainPlayer, inflictDamageDur
 			$AnimationPlayer.play("idle")
 			set_process(true)
 	
-	if inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.PLAYER:
+	if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER:
 		mainPlayer.waitingForEventBeforeContinue = false
 		
-	elif inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.BLOCK:
+	elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.BLOCK:
 		emit_signal("enemyExplosionDone", self)
 		
 		
-	elif inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.ENEMY:
+	elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMY:
 		inflictattackType = null
 		waitingForEventBeforeContinue = null
 		
@@ -426,17 +426,17 @@ func play_taken_damage_animation(inflictattackType, mainPlayer, inflictDamageDur
 		else:
 			emit_signal("enemyMadeMove")
 			
-	elif inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.PROJECTILE:
+	elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.PROJECTILE:
 		hitByProjectile.emit_signal("playerEnemieProjectileMadeMove",hitByProjectile,"movePlayerProjectiles")
 		hitByProjectile.queue_free()
 		hitByProjectile = null
 		
 
-func play_defeat_animation(mainPlayer, inflictDamageDuringPhase):
-	if inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.PLAYER:
+func play_defeat_animation(mainPlayer, CURRENTPHASE):
+	if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER:
 		mainPlayer.waitingForEventBeforeContinue = true
 
-	elif inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.BLOCK:
+	elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.BLOCK:
 		mainPlayer.waitingForEventBeforeContinue = true
 	
 	match enemyType:
@@ -458,17 +458,17 @@ func play_defeat_animation(mainPlayer, inflictDamageDuringPhase):
 			yield($AnimationPlayer, "animation_finished")
 			set_process(true)
 			
-	if inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.PLAYER:
-		emit_signal("enemyDefeated", self, inflictDamageDuringPhase)
+	if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER:
+		emit_signal("enemyDefeated", self, CURRENTPHASE)
 		
-	elif inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.BLOCK:
+	elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.BLOCK:
 		emit_signal("enemyExplosionDone", self)
 		
-	elif inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.ENEMY:
-		emit_signal("enemyDefeated", self, inflictDamageDuringPhase)
+	elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMY:
+		emit_signal("enemyDefeated", self, CURRENTPHASE)
 		
-	elif inflictDamageDuringPhase == GlobalVariables.INFLICTDAMAGEDURINGPHASE.PROJECTILE:
-		emit_signal("enemyDefeated", self, inflictDamageDuringPhase, hitByProjectile)
+	elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.PROJECTILE:
+		emit_signal("enemyDefeated", self, CURRENTPHASE, hitByProjectile)
 		
 func makeEnemyBarrier(currentGrid):
 	randomize()

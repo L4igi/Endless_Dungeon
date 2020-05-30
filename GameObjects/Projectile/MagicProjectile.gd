@@ -102,26 +102,23 @@ func play_enemyProjectile_attack_animation(onSpot=true):
 	set_process(true)
 	self.queue_free()
 	
-func create_mini_projectile(projectile, mainPlayer):
-	mainPlayer.disablePlayerInput = true
+func create_mini_projectile(projectile, mainPlayer, currentPhase):
+	if currentPhase == GlobalVariables.CURRENTPHASE.PLAYER:
+		mainPlayer.disablePlayerInput = true
 	isMiniProjectile = true
 	attackDamage = 0.5
 	if projectile == 1:
 		$AnimationPlayer.play("mini1shoot")
-		var target_position = Grid.request_move(self, movementDirection)
-		if(target_position):
-			$Tween.interpolate_property(self, "position", position, target_position , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
-			$Tween.start()
-			yield($Tween, "tween_completed")
-			mainPlayer.disablePlayerInput = false
+
 	if projectile == 2:
 		$AnimationPlayer.play("mini2shoot")
+	if currentPhase == GlobalVariables.CURRENTPHASE.PLAYER:
 		var target_position = Grid.request_move(self, movementDirection)
 		if(target_position):
 			$Tween.interpolate_property(self, "position", position, target_position , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
 			$Tween.start()
 			yield($Tween, "tween_completed")
-			mainPlayer.disablePlayerInput = false
+		mainPlayer.disablePlayerInput = false
 			
 func makeNormalProjectile():
 	isMiniProjectile = true
