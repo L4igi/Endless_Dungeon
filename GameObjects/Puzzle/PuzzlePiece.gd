@@ -52,7 +52,7 @@ func playWrongWriteAnimation(right = true):
 		get_node("Sprite").set_self_modulate(baseModulation)
 		$AnimationPlayer.play("Idle")
 
-func makePuzzleBarrier(currentGrid):
+func makePuzzleBarrier(currentGrid, unlockedDoor):
 	randomize()
 	var barrierChance = 1
 	var checkBarrierPossible = currentGrid.manage_barrier_creation(GlobalVariables.BARRIERTYPE.PUZZLE)
@@ -66,7 +66,7 @@ func makePuzzleBarrier(currentGrid):
 			if barrierKeyValue == currentGrid.barrierKeysNoSolution[count].keyValue:
 				barrierKeyValue = str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10)
 				count = 0
-		currentGrid.generate_keyValue_item(barrierKeyValue, get_node("Sprite").get_self_modulate(), GlobalVariables.ITEMTYPE.PUZZLESWITCH)
+		currentGrid.generate_keyValue_item(barrierKeyValue, get_node("Sprite").get_self_modulate(), GlobalVariables.ITEMTYPE.PUZZLESWITCH, unlockedDoor)
 	
 	
 func _on_puzzlepiece_barrier_disable(item, mainPlayer):

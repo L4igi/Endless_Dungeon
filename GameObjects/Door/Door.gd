@@ -42,14 +42,13 @@ var roomCleared = false
 var createExit = false
 
 func _ready():
-	pass
+	var mainCamera = get_node("/root/MainCamera")
+	mainCamera.connect("toggleMapSignal", self, "on_toggle_map")
 
 # warning-ignore:unused_argument
 func _process(delta):
 	pass
 		
-func setBarrierBG():
-	get_node("showBarrierItemsTextRekt").set_dimensions(roomSize, position, doorRoomLeftMostCorner)
 	
 func request_door_unlock(playerItemsInPosession):
 	for item in playerItemsInPosession:
@@ -119,7 +118,7 @@ func dropLoot():
 	return true
 	
 func makeDoorBarrier(currentGrid):
-	var barrierChance = 4
+	var barrierChance = 1
 	var checkBarrierPossible = currentGrid.manage_barrier_creation(GlobalVariables.BARRIERTYPE.DOOR)
 	if(barrierChance == 1 && currentGrid.currentNumberRoomsgenerated!=0 && checkBarrierPossible):
 		#print("generating door barrier")
@@ -131,4 +130,15 @@ func makeDoorBarrier(currentGrid):
 			if barrierKeyValue == currentGrid.barrierKeysNoSolution[count].keyValue:
 				barrierKeyValue = str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10)
 				count = 0
-		currentGrid.generate_keyValue_item(barrierKeyValue, get_node("Sprite").get_modulate(), GlobalVariables.ITEMTYPE.KEY)
+		currentGrid.generate_keyValue_item(barrierKeyValue, get_node("Sprite").get_modulate(), GlobalVariables.ITEMTYPE.KEY, self)
+
+
+#functions to add/change Map Boxes 
+func setBoxMapBG():
+	get_node("showBarrierItemsTextRekt").set_dimensions(roomSize, position, doorRoomLeftMostCorner)
+	
+func setBoxMapItems(item):
+	get_node("showBarrierItemsTextRekt").addBoxElement(item)
+
+func on_toggle_map():
+	print("toggle map")

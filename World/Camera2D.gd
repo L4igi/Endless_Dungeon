@@ -6,6 +6,8 @@ var standardPosition = Vector2.ZERO
 
 signal cameraSmoothTransition (camera, target_position)
 
+signal toggleMapSignal()
+
 onready var window_size = OS.get_window_size()
 
 func _ready():
@@ -15,7 +17,14 @@ func _ready():
 	self.position = standardPosition
 	standardZoomLevel = standardZoomLevel * roomSize
 	self.zoom = standardZoomLevel
-	
+
+func _process(delta):
+	var toggleMap = toggle_map()
+	if toggleMap:
+		emit_signal("toggleMapSignal")
+	else:
+		return
+
 func move_and_zoom_camera_to_room(roomLeftMostCorner, roomDimensions, roomSizeMultiplier):
 	#implement camera zoom
 	#use tween to move camera
@@ -43,3 +52,8 @@ func set_camera_starting_room():
 	self.zoom = standardZoomLevel
 	self.position = standardPosition
 	self.make_current()
+
+func toggle_map():
+	if Input.is_action_just_pressed("toggleMap"):
+		return true
+	return false

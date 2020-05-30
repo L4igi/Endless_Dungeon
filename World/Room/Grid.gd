@@ -724,7 +724,7 @@ func create_puzzle_room(unlockedDoor):
 		alreadyUsedColors.append(colorToUse)
 		var newPuzzlePiece = PuzzlePiece.instance()
 		if !barrierPuzzlePieceAlreadySpawned:
-			newPuzzlePiece.makePuzzleBarrier(self)
+			newPuzzlePiece.makePuzzleBarrier(self, unlockedDoor)
 		newPuzzlePiece.color = colorToUse
 		newPuzzlePiece.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(spawnCellX, spawnCellY))
 		add_child(newPuzzlePiece)
@@ -771,7 +771,7 @@ func create_enemy_room(unlockedDoor):
 				var newEnemy = Enemy.instance()
 				#create enemy typ here (enemy. createEnemyType
 				newEnemy.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(spawnCellX, spawnCellY))
-				var generatedEnemyType = newEnemy.generateEnemy(mageEnemyCount, self)
+				var generatedEnemyType = newEnemy.generateEnemy(mageEnemyCount, self, unlockedDoor)
 				if(generatedEnemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY):
 					mageEnemyCount += 1
 				newEnemy.connect("enemyMadeMove", self, "_on_enemy_made_move_ready")
@@ -1522,7 +1522,7 @@ func dropLootInActiveRoom():
 		set_cellv(world_to_map(newItem.position), get_tileset().find_tile_by_name("ITEM"))
 		
 
-func generate_keyValue_item(keyValue, modulation, type):
+func generate_keyValue_item(keyValue, modulation, type, barrierRoom):
 	var newItem = Item.instance()
 	newItem.keyValue = keyValue
 	newItem.modulation = modulation
@@ -1530,6 +1530,7 @@ func generate_keyValue_item(keyValue, modulation, type):
 	newItem.itemType = type
 	newItem.setTexture(type)
 	barrierKeysNoSolution.append(newItem)
+	barrierRoom.setBoxMapItems(newItem)
 	
 		
 func create_starting_room(startingRoom=false):
@@ -1960,7 +1961,7 @@ func create_doors(roomLeftMostCorner, startingRoom=false, roomSizeHorizontal = 1
 			door.makeDoorBarrier(self)
 		#print(currentNumberRoomsgenerated)
 		create_walls(door, false, false)
-		door.setBarrierBG()
+		door.setBoxMapBG()
 		update_bitmask_region()
 		#print(str(newDoor.position) + " element "+ str(element))
 

@@ -329,7 +329,7 @@ func matchEnemyTurn():
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
 				warriorenemy_type_actions()
 						
-func generateEnemy(mageEnemyCount, currentGrid): 
+func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
 	var enemieToGenerate = randi()%4
@@ -338,7 +338,7 @@ func generateEnemy(mageEnemyCount, currentGrid):
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
 			attackType = GlobalVariables.ATTACKTYPE.SWORD
 			get_node("Sprite").set_visible(true)
-			makeEnemyBarrier(currentGrid)
+			makeEnemyBarrier(currentGrid, unlockedDoor)
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.NINJAENEMY
 			attackType = GlobalVariables.ATTACKTYPE.NINJA
@@ -488,7 +488,7 @@ func play_defeat_animation(mainPlayer, CURRENTPHASE):
 	elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.PROJECTILE:
 		emit_signal("enemyDefeated", self, CURRENTPHASE, hitByProjectile)
 		
-func makeEnemyBarrier(currentGrid):
+func makeEnemyBarrier(currentGrid, unlockedDoor):
 	randomize()
 	#determins if door is barrier or not 
 	var barrierChance = 1
@@ -502,4 +502,4 @@ func makeEnemyBarrier(currentGrid):
 			if barrierKeyValue == currentGrid.barrierKeysNoSolution[count].keyValue:
 				barrierKeyValue = str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10)
 				count = 0
-		currentGrid.generate_keyValue_item(barrierKeyValue, get_node("Sprite").get_modulate(), GlobalVariables.ITEMTYPE.WEAPON)
+		currentGrid.generate_keyValue_item(barrierKeyValue, get_node("Sprite").get_modulate(), GlobalVariables.ITEMTYPE.WEAPON, unlockedDoor)
