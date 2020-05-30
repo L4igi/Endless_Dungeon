@@ -2,6 +2,8 @@ extends TextureRect
 
 var itemBoxes = []
 
+var solvedTexture = preload("res://GameObjects/Door/roomMapSolved.png")
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	pass # Replace with function body.
@@ -21,14 +23,19 @@ func addBoxElement(item):
 	var boxToAddTo = get_node("BoxBarrierItems/BoxKeys")
 	#fill and expand
 	boxToAddTo.set_h_size_flags(3)
+	var newName = "key"
 	match item.itemType:
 		GlobalVariables.ITEMTYPE.KEY:
 			boxToAddTo = get_node("BoxBarrierItems/BoxKeys")
+			newName = "key"
 		GlobalVariables.ITEMTYPE.WEAPON:
 			boxToAddTo = get_node("BoxBarrierItems/BoxWeapons")
+			newName = "weapon"
 		GlobalVariables.ITEMTYPE.PUZZLESWITCH:
 			boxToAddTo = get_node("BoxBarrierItems/BoxPuzzle")
+			newName = "puzzleswitch"
 	var addVBoxTextureLabel = VBoxContainer.new()
+	addVBoxTextureLabel.set_name(newName + str(item.keyValue))
 	addVBoxTextureLabel.set_h_size_flags(3)
 	addVBoxTextureLabel.set_v_size_flags(3)
 	var addTextureRect = TextureRect.new()
@@ -51,8 +58,25 @@ func addBoxElement(item):
 	boxToAddTo.add_child(addVBoxTextureLabel)
 	
 func delete_Box_item(item):
-	#todo: delete element from box if used 
-	pass
+	print("In Map deleting Barrier item from map")
+	var boxToDelete = null
+	var nameToDel = "key"
+	match item.itemType:
+		GlobalVariables.ITEMTYPE.KEY:
+			boxToDelete = get_node("BoxBarrierItems/BoxKeys")
+			nameToDel = "key"
+		GlobalVariables.ITEMTYPE.WEAPON:
+			boxToDelete = get_node("BoxBarrierItems/BoxWeapons")
+			nameToDel = "weapon"
+		GlobalVariables.ITEMTYPE.PUZZLESWITCH:
+			boxToDelete = get_node("BoxBarrierItems/BoxPuzzle")
+			nameToDel = "puzzleswitch"
+			
+	for child in boxToDelete.get_children():
+		print(child.get_name())
+		if child.get_name() == nameToDel+str(item.keyValue):
+			child.queue_free()
+			break
 	
 func toggleBox():
 	if !self.is_visible():
@@ -60,5 +84,6 @@ func toggleBox():
 	else:
 		self.set_visible(false)
 	
-	
+func setSolvedTexture():
+	self.set_texture(solvedTexture)
 	

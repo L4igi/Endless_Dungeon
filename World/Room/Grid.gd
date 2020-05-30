@@ -223,6 +223,7 @@ func request_move(pawn, direction):
 				var requestDoorUnlockResult = object_pawn.request_door_unlock(pawn.itemsInPosession)
 				if(requestDoorUnlockResult):
 					if requestDoorUnlockResult is preload("res://GameObjects/Item/Item.gd"):
+						object_pawn.on_use_key_item(requestDoorUnlockResult)
 						mainPlayer.remove_key_item_from_inventory(requestDoorUnlockResult)
 					#see if any other rooms are compleatly blocked by walls 
 					object_pawn.unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance)
@@ -686,7 +687,7 @@ func enableEnemyAttack(enemy,attackType, horizontalVerticalAttack, diagonalAttac
 
 func create_puzzle_room(unlockedDoor):
 	randomize()
-	var puzzlePiecesToSpwan = 5
+	var puzzlePiecesToSpwan = 2
 	var calculateSpawnAgain = true
 	var alreadyUsedColors = []
 	var spawnCellArray = []

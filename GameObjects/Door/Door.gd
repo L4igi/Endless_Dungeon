@@ -73,7 +73,7 @@ func unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance):
 #	Grid.create_enemy_room(self)
 	#print("Door was unlocked")
 	#choose type of room to be created 
-	var randRoomType = 20
+	var randRoomType = 80
 #	var randomrand = randi()%2+1
 #	if randomrand == 1:
 #		randRoomType = 90
@@ -117,7 +117,7 @@ func get_room_by_movement_direction(direction):
 
 func dropLoot():
 	Grid.numberRoomsCleared+=1
-	#print("Number of Cleared Rooms " + str(Grid.numberRoomsCleared))
+	on_room_solved()
 	return true
 	
 func makeDoorBarrier(currentGrid):
@@ -145,3 +145,9 @@ func setBoxMapItems(item):
 
 func on_toggle_map():
 	get_node("showBarrierItemsTextRekt").toggleBox()
+	
+func on_use_key_item(item):
+	get_node("showBarrierItemsTextRekt").delete_Box_item(item)
+
+func on_room_solved():
+	get_node("showBarrierItemsTextRekt").setSolvedTexture()

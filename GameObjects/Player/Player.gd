@@ -20,7 +20,7 @@ var playerPassedDoor = Vector2.ZERO
 
 var movementCount = 0
 
-var maxTurnActions = 3
+var maxTurnActions = 50
 var attackCount = 0
 
 var attackDamage = 0.5
@@ -73,6 +73,8 @@ var enemyQueueAttackDamage = 0
 
 var enemyQueueAttackType = null
 
+var inInventory = false
+
 signal puzzleBlockInteractionSignal (player, puzzleBlockDirection)
 
 func _ready():
@@ -92,7 +94,7 @@ func _ready():
 	Grid.connect("enemyTurnDoneSignal", self, "_on_enemy_turn_done_signal")
 
 func _process(delta):
-	if !disablePlayerInput:
+	if !disablePlayerInput && !inInventory:
 		if movedThroughDoorDirection!=Vector2.ZERO:
 			player_passed_door()
 			movedThroughDoorDirection=Vector2.ZERO

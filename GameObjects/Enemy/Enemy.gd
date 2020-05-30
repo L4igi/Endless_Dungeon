@@ -370,6 +370,7 @@ func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, m
 				print("Enemy Barrier " + str(barrierKeyValue) + " was defeated using item weapon " + str(item.keyValue))
 				lifePoints = 0
 				mainPlayer.remove_key_item_from_inventory(item)
+				Grid.activeRoom.on_use_key_item(item)
 				isBarrier = false
 				break 
 		if !barrierDefeatItem:

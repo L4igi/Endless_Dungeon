@@ -12,6 +12,8 @@ var isBarrier = false
 
 var activationDelay = 0
 
+var inRoom = null
+
 var barrierKeyValue
 
 signal puzzlePlayedAnimation 
@@ -59,6 +61,7 @@ func makePuzzleBarrier(currentGrid, unlockedDoor):
 	#currentGrid.barrierPuzzlePieceAlreadySpawned = true
 	if(barrierChance == 1 && currentGrid.currentNumberRoomsgenerated!=0 && checkBarrierPossible):
 		isBarrier = true
+		inRoom = unlockedDoor
 		get_node("Sprite").set_self_modulate(Color(randf(),randf(),randf(),1.0))
 		barrierKeyValue = str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10)
 		#check if generated value is unique and not already used 
@@ -75,3 +78,4 @@ func _on_puzzlepiece_barrier_disable(item, mainPlayer):
 		baseModulation = "ffffff"
 		print("Player activated PuzzlePiece Switch")
 		isBarrier = false
+		inRoom.on_use_key_item(item)
