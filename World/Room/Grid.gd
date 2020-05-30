@@ -402,12 +402,14 @@ func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile
 		if magicProjectile1.isMiniProjectile:
 			print("IN THERE")
 			projectilesInActiveRoom.erase(magicProjectile1)
+			playerEnemyProjectileArray.erase(magicProjectile1)
 			magicProjectile1.queue_free()
 			mainPlayer.disablePlayerInput = false
 			return
 		elif magicProjectile2.isMiniProjectile:
 			print("IN HERE")
 			projectilesInActiveRoom.erase(magicProjectile2)
+			playerEnemyProjectileArray.erase(magicProjectile2)
 			magicProjectile2.queue_free()
 			mainPlayer.disablePlayerInput = false
 			return
@@ -439,6 +441,7 @@ func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile
 #		set_cellv(world_to_map(magicProjectile2.position),get_tileset().find_tile_by_name("EMPTY")) 
 		magicProjectile1.create_mini_projectile(1, mainPlayer)
 		magicProjectile2.create_mini_projectile(2, mainPlayer)
+
 		return false
 		
 	# PuzzleProjectile puzzleprojectile interaction:
