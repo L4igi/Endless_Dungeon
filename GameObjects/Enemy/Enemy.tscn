@@ -245,7 +245,7 @@ tracks/0/keys = {
 "values": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ]
 }
 
-[sub_resource type="Animation" id=17]
+[sub_resource type="Animation" id=12]
 resource_name = "take_damage_magic"
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteNinjaEnemy:frame")
@@ -272,7 +272,7 @@ tracks/1/keys = {
 "values": [ Color( 1, 1, 1, 1 ), Color( 0.192157, 0, 0.870588, 1 ), Color( 1, 1, 1, 1 ) ]
 }
 
-[sub_resource type="Animation" id=18]
+[sub_resource type="Animation" id=13]
 resource_name = "take_damage_physical"
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteNinjaEnemy:frame")
@@ -311,7 +311,7 @@ tracks/2/keys = {
 "values": [ Vector2( 0, 0 ), Vector2( 5, -5 ), Vector2( -5, -5 ), Vector2( 0, 0 ) ]
 }
 
-[sub_resource type="Animation" id=12]
+[sub_resource type="Animation" id=14]
 length = 5.0
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteNinjaEnemy:frame")
@@ -326,7 +326,7 @@ tracks/0/keys = {
 "values": [ 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30 ]
 }
 
-[sub_resource type="Animation" id=13]
+[sub_resource type="Animation" id=15]
 length = 2.2
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteMageEnemy:frame")
@@ -341,7 +341,7 @@ tracks/0/keys = {
 "values": [ 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20 ]
 }
 
-[sub_resource type="Animation" id=14]
+[sub_resource type="Animation" id=16]
 length = 1.4
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteMageEnemy:frame")
@@ -356,7 +356,7 @@ tracks/0/keys = {
 "values": [ 31, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43 ]
 }
 
-[sub_resource type="Animation" id=15]
+[sub_resource type="Animation" id=17]
 length = 2.0
 loop = true
 tracks/0/type = "value"
@@ -372,7 +372,7 @@ tracks/0/keys = {
 "values": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 ]
 }
 
-[sub_resource type="Animation" id=19]
+[sub_resource type="Animation" id=18]
 resource_name = "take_damage_magic"
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteMageEnemy:frame")
@@ -399,7 +399,7 @@ tracks/1/keys = {
 "values": [ Color( 1, 1, 1, 1 ), Color( 0.0784314, 0.262745, 0.988235, 1 ), Color( 1, 1, 1, 1 ) ]
 }
 
-[sub_resource type="Animation" id=20]
+[sub_resource type="Animation" id=19]
 resource_name = "take_damage_physical"
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteMageEnemy:frame")
@@ -426,7 +426,7 @@ tracks/1/keys = {
 "values": [ Color( 1, 1, 1, 1 ), Color( 0.996078, 0.0784314, 0.054902, 1 ), Color( 1, 1, 1, 1 ) ]
 }
 
-[sub_resource type="Animation" id=16]
+[sub_resource type="Animation" id=20]
 length = 3.5
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteMageEnemy:frame")
@@ -445,6 +445,7 @@ tracks/0/keys = {
 script = ExtResource( 2 )
 
 [node name="Sprite" type="Sprite" parent="."]
+visible = false
 texture = ExtResource( 1 )
 hframes = 43
 frame = 33
@@ -474,9 +475,9 @@ anims/attackBack = SubResource( 8 )
 anims/damageTaken = SubResource( 9 )
 anims/defeat = SubResource( 10 )
 anims/idle = SubResource( 11 )
-anims/take_damage_magic = SubResource( 17 )
-anims/take_damage_physical = SubResource( 18 )
-anims/walk = SubResource( 12 )
+anims/take_damage_magic = SubResource( 12 )
+anims/take_damage_physical = SubResource( 13 )
+anims/walk = SubResource( 14 )
 
 [node name="SpriteMageEnemy" type="Sprite" parent="."]
 visible = false
@@ -486,9 +487,9 @@ frame = 32
 
 [node name="MageAnimationPlayer" type="AnimationPlayer" parent="."]
 autoplay = "idle"
-anims/attack = SubResource( 13 )
-anims/defeat = SubResource( 14 )
-anims/idle = SubResource( 15 )
-anims/take_damage_magic = SubResource( 19 )
-anims/take_damage_physical = SubResource( 20 )
-anims/walk = SubResource( 16 )
+anims/attack = SubResource( 15 )
+anims/defeat = SubResource( 16 )
+anims/idle = SubResource( 17 )
+anims/take_damage_magic = SubResource( 18 )
+anims/take_damage_physical = SubResource( 19 )
+anims/walk = SubResource( 20 )

@@ -84,7 +84,22 @@ func warriorenemy_type_actions():
 	if !isDisabled:
 		enemyAttack()
 	
-	#enemyAttack()
+func toggleVisibility(makeInVisible):
+	print("changing visibility")
+	var spriteToToggle = null
+	match enemyType:
+		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
+			spriteToToggle = get_node("Sprite")
+		GlobalVariables.ENEMYTYPE.MAGEENEMY:
+			spriteToToggle = get_node("SpriteMageEnemy")
+		GlobalVariables.ENEMYTYPE.NINJAENEMY:
+			spriteToToggle = get_node("SpriteNinjaEnemy")
+		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
+			spriteToToggle = get_node("Sprite")
+	if makeInVisible:
+		spriteToToggle.set_visible(false)
+	else:
+		spriteToToggle.set_visible(true)
 			
 func enemyMovement():
 	match enemyType:
@@ -139,6 +154,7 @@ func enemyMovement():
 				set_process(true)
 			movementCount += 1
 			mageMoveCount+=1
+			
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			if movementdirection == GlobalVariables.DIRECTION.LEFT:
 				movementdirection = GlobalVariables.DIRECTION.RIGHT
@@ -321,11 +337,11 @@ func generateEnemy(mageEnemyCount, currentGrid):
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
 			attackType = GlobalVariables.ATTACKTYPE.SWORD
+			get_node("Sprite").set_visible(true)
 			makeEnemyBarrier(currentGrid)
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.NINJAENEMY
 			attackType = GlobalVariables.ATTACKTYPE.NINJA
-			get_node("Sprite").set_visible(false)
 			get_node("SpriteNinjaEnemy").set_visible(true)
 			diagonalAttack = true
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
@@ -334,12 +350,12 @@ func generateEnemy(mageEnemyCount, currentGrid):
 			attackDamage = 1 
 			diagonalAttack = true
 			attackType = GlobalVariables.ATTACKTYPE.SWORD
+			get_node("Sprite").set_visible(true)
 			get_node("Sprite").set_modulate(Color(255,0,0,1.0))
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.MAGEENEMY
 			mageMoveCount = mageEnemyCount
 			attackType = GlobalVariables.ATTACKTYPE.MAGIC
-			get_node("Sprite").set_visible(false)
 			get_node("SpriteMageEnemy").set_visible(true)
 	return enemyType
 

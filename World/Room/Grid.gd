@@ -510,7 +510,9 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					#disable elements in room just left
 					if !activeRoom.enemiesInRoom.empty():
 						for element in activeRoom.enemiesInRoom:
+							print("Enemies in Room count " + str(activeRoom.enemiesInRoom.size()))
 							element.isDisabled = true
+							
 					#remove rojectiles in old room
 				activeRoom = oldCellTargetNode
 				if activeRoom != null:
@@ -519,7 +521,6 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					for element in activeRoom.enemiesInRoom:
 						element.isDisabled = false
 						element.enemyTurnDone=true
-						
 				else:
 					pawn.inRoomType = null
 					#print ("Player in Room " + str(pawn.inRoomType))
@@ -535,6 +536,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					if !activeRoom.enemiesInRoom.empty():
 						for element in activeRoom.enemiesInRoom:
 							element.isDisabled = true
+							#element.toggleVisibility(true)
 					#remove rojectiles in old room
 				activeRoom=oldCellTargetNode.get_room_by_movement_direction(direction)
 				if activeRoom != null:
@@ -542,6 +544,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					#print ("Player in Room " + str(pawn.inRoomType))
 					for element in activeRoom.enemiesInRoom:
 						element.isDisabled = false
+						#element.toggleVisibility(false)
 				else:
 					pawn.inRoomType = null
 					#print ("Player in Room " + str(pawn.inRoomType))
@@ -1536,6 +1539,7 @@ func create_starting_room(startingRoom=false):
 func create_walls (door = null, startingRoom = false, createDoors = false):
 	#todo:calculate actual position of leftmost corner wall tile of the room
 	randomize()
+	#GlobalVariables.roomDimensions = randi()%10+5
 	var leftmostCorner = Vector2.ZERO
 	var roomSizeHorizontal = roomDimensions
 	var roomSizeVertical = roomDimensions
@@ -1956,6 +1960,7 @@ func create_doors(roomLeftMostCorner, startingRoom=false, roomSizeHorizontal = 1
 			door.makeDoorBarrier(self)
 		#print(currentNumberRoomsgenerated)
 		create_walls(door, false, false)
+		door.setBarrierBG()
 		update_bitmask_region()
 		#print(str(newDoor.position) + " element "+ str(element))
 
@@ -2070,10 +2075,10 @@ func manage_barrier_creation(barrierType):
 		if barrier.itemType == GlobalVariables.ITEMTYPE.KEY:
 			countLockedDoors +=1
 	var roomsPossibleSolution = currentNumberRoomsgenerated-numberRoomsCleared-countLockedDoors
-	print("Rooms possible Solution Drop " + str(roomsPossibleSolution))
-	print("Current number rooms generated " + str(currentNumberRoomsgenerated))
-	print("Current number rooms cleared " + str(numberRoomsCleared))
-	print("Current Barriers with no Solution Spawned " +str(barrierKeysNoSolution.size()))
+#	print("Rooms possible Solution Drop " + str(roomsPossibleSolution))
+#	print("Current number rooms generated " + str(currentNumberRoomsgenerated))
+#	print("Current number rooms cleared " + str(numberRoomsCleared))
+#	print("Current Barriers with no Solution Spawned " +str(barrierKeysNoSolution.size()))
 	if barrierKeysNoSolution.size () < roomsPossibleSolution:
 		return true
 	return false

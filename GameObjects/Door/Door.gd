@@ -48,6 +48,9 @@ func _ready():
 func _process(delta):
 	pass
 		
+func setBarrierBG():
+	get_node("showBarrierItemsTextRekt").set_dimensions(roomSize, position, doorRoomLeftMostCorner)
+	
 func request_door_unlock(playerItemsInPosession):
 	for item in playerItemsInPosession:
 		print("Player items in posession " + str(item.keyValue))
@@ -68,7 +71,7 @@ func unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance):
 #	Grid.create_enemy_room(self)
 	#print("Door was unlocked")
 	#choose type of room to be created 
-	var randRoomType = 60
+	var randRoomType = 20
 #	var randomrand = randi()%2+1
 #	if randomrand == 1:
 #		randRoomType = 90
@@ -116,7 +119,7 @@ func dropLoot():
 	return true
 	
 func makeDoorBarrier(currentGrid):
-	var barrierChance = 1
+	var barrierChance = 4
 	var checkBarrierPossible = currentGrid.manage_barrier_creation(GlobalVariables.BARRIERTYPE.DOOR)
 	if(barrierChance == 1 && currentGrid.currentNumberRoomsgenerated!=0 && checkBarrierPossible):
 		#print("generating door barrier")
