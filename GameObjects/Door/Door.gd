@@ -42,9 +42,12 @@ var roomCleared = false
 var createExit = false
 
 func _ready():
-	var mainCamera = get_node("/root/MainCamera")
-	mainCamera.connect("toggleMapSignal", self, "on_toggle_map")
-
+	pass
+	var player = Grid.get_node("Player")
+	for child in player.get_children():
+		if child is Camera2D:
+			child.connect("toggleMapSignal", self, "on_toggle_map")
+	
 # warning-ignore:unused_argument
 func _process(delta):
 	pass
@@ -141,4 +144,4 @@ func setBoxMapItems(item):
 	get_node("showBarrierItemsTextRekt").addBoxElement(item)
 
 func on_toggle_map():
-	print("toggle map")
+	get_node("showBarrierItemsTextRekt").toggleBox()

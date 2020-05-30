@@ -59,6 +59,8 @@ signal playerTurnDoneSignal
 
 signal puzzleBarrierDisableSignal (item, mainPlayer)
 
+signal moveCameraSignal (activeRoom)
+
 var cancelMagicPuzzelRoom = false
 
 var projectilesToDeleteTurnEnd = []
@@ -154,9 +156,11 @@ func _ready():
 	get_node("Player").connect("playerAttacked", self, "_on_Player_Attacked")
 	get_node("Player").connect("onPlayerDefeated", self, "_on_Player_Defeated")
 	get_node("Player").connect("puzzleBlockInteractionSignal", self, "on_puzzle_Block_interaction")
+#	get_parent().get_node("MainCamera").connect_grid_camera_signal()
 	mainPlayer = get_node("Player")
 	for child in get_children():
-		set_cellv(world_to_map(child.position), get_tileset().find_tile_by_name(match_Enum(child.type)))
+		if !child is Camera2D:
+			set_cellv(world_to_map(child.position), get_tileset().find_tile_by_name(match_Enum(child.type)))
 	for element in TILETYPES:
 		set_enum_index(element, get_tileset().find_tile_by_name(element))
 		#print(get_tileset().find_tile_by_name(element))
@@ -550,14 +554,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					#print ("Player in Room " + str(pawn.inRoomType))
 						
 			#update camera position 
-			var mainCamera = get_node("/root/MainCamera")
-			if(activeRoom != null):
-				#print(activeRoom.doorRoomLeftMostCorner) 
-				mainCamera.move_and_zoom_camera_to_room(activeRoom.doorRoomLeftMostCorner, Vector2(float(activeRoom.roomSize.x)/2, float(activeRoom.roomSize.y)/2) * GlobalVariables.tileSize - GlobalVariables.tileOffset, activeRoom.roomSizeMultiplier) 
-			else:
-				mainCamera.set_camera_starting_room()
-			#mainCamera.zoom = mainCamera.zoom + Vector2(1,1)
-			mainCamera.make_current()
+			emit_signal("moveCameraSignal", activeRoom)
 
 			#let player move freely if room is cleared
 			if(activeRoom == null || activeRoom.roomType == GlobalVariables.ROOM_TYPE.EMPTYTREASUREROOM):
@@ -1425,7 +1422,7 @@ func _on_Player_Defeated(player):
 	#todo: dont hardcode life
 	player.lifePoints = 10
 	mainPlayer.guiElements.set_health(10)
-	MainCamera.set_camera_starting_room()
+	emit_signal("moveCameraSignal", null)
 	emit_signal("enemyTurnDoneSignal")
 
 	if(activeRoom != null && activeRoom.enemiesInRoom.size() != 0):

@@ -45,6 +45,10 @@ var Inventory = preload("res://Inventory/Inventory.tscn")
 
 var InventoryItem = preload("res://Inventory/InventorySlot.tscn")
 
+var PlayerCamera = preload("res://Camera/Camera.tscn")
+
+var mainCamera = null
+
 var guiElements = null
 
 var inventoryElements = null
@@ -79,6 +83,11 @@ func _ready():
 	inventoryElements = Inventory.instance()
 	inventoryElements.currentPlayerPosition = self.position
 	add_child(inventoryElements)
+	
+	mainCamera = PlayerCamera.instance()
+	mainCamera.make_current()
+	#mainCamera
+	add_child(mainCamera)
 	
 	Grid.connect("enemyTurnDoneSignal", self, "_on_enemy_turn_done_signal")
 
@@ -358,14 +367,6 @@ func remove_key_item_from_inventory(item):
 			else:
 				pass
 		inventoryElements.get_node("Tabs/Weapon/WeaponList").remove_child(keyItemToDelete)
-	
-func _unhandled_input(event):
-	if event is InputEventMouseButton:
-		if event.button_index == BUTTON_WHEEL_UP:
-			if event.pressed:
-				MainCamera.zoomInOut("IN")
-		if event.button_index == BUTTON_WHEEL_DOWN:
-			MainCamera.zoomInOut("OUT")
 
 func _on_enemy_turn_done_signal():
 	movementCount = 0

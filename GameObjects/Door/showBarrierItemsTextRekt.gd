@@ -1,10 +1,6 @@
 extends TextureRect
 
-
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
-
+var itemBoxes = []
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -21,6 +17,7 @@ func set_dimensions(roomSize, doorPos, doorRoomLeftMostCorner):
 #	print("leftmostcorner " + str(doorRoomLeftMostCorner))
 
 func addBoxElement(item):
+	itemBoxes.append(item)
 	var boxToAddTo = get_node("BoxBarrierItems/BoxKeys")
 	#fill and expand
 	boxToAddTo.set_h_size_flags(3)
@@ -56,6 +53,12 @@ func addBoxElement(item):
 func delete_Box_item(item):
 	#todo: delete element from box if used 
 	pass
+	
+func toggleBox():
+	if !self.is_visible():
+		self.set_visible(true)
+	else:
+		self.set_visible(false)
 	
 	
 	

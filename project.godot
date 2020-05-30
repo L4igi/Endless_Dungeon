@@ -21,7 +21,6 @@ config/icon="res://icon.png"
 
 [autoload]
 
-MainCamera="*res://World/Camera2D.gd"
 GlobalVariables="*res://GlobalVariables/GlobalVariables.gd"
 
 [display]
