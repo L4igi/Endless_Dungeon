@@ -109,10 +109,11 @@ func create_mini_projectile(projectile, mainPlayer, currentPhase):
 	attackDamage = 0.5
 	if projectile == 1:
 		$AnimationPlayer.play("mini1shoot")
-
 	if projectile == 2:
 		$AnimationPlayer.play("mini2shoot")
+		
 	if currentPhase == GlobalVariables.CURRENTPHASE.PLAYER:
+		print ("IN mini projectile movement")
 		var target_position = Grid.request_move(self, movementDirection)
 		if(target_position):
 			$Tween.interpolate_property(self, "position", position, target_position , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
@@ -121,7 +122,7 @@ func create_mini_projectile(projectile, mainPlayer, currentPhase):
 		mainPlayer.disablePlayerInput = false
 			
 func makeNormalProjectile():
-	isMiniProjectile = true
+	isMiniProjectile = false
 	attackDamage = 1.0
 	$AnimationPlayer.play("shoot")
 

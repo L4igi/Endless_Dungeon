@@ -5,7 +5,7 @@ onready var Grid = get_parent()
 enum CELL_TYPES{PLAYER=0, WALL=1, ENEMY=2, PUZZLEPIECE=3, ITEM=4, DOOR=5, UNLOCKEDDOOR=6, MAGICPROJECTILE=7, BLOCK=8}
 export(CELL_TYPES) var type = CELL_TYPES.ENEMY
 
-var maxTurnActions = 2 
+var maxTurnActions = 1
 
 var movementCount = 0
 
@@ -427,12 +427,14 @@ func play_taken_damage_animation(inflictattackType, mainPlayer, CURRENTPHASE):
 			emit_signal("enemyMadeMove")
 			
 	elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.PROJECTILE:
-		hitByProjectile.emit_signal("playerEnemieProjectileMadeMove",hitByProjectile,"movePlayerProjectiles")
-		hitByProjectile.queue_free()
 		hitByProjectile = null
+		if hitByProjectile!=null:
+			hitByProjectile.emit_signal("playerEnemieProjectileMadeMove",hitByProjectile,"movePlayerProjectiles")
+			hitByProjectile.queue_free()
 		
 
 func play_defeat_animation(mainPlayer, CURRENTPHASE):
+	Grid.set_cellv(Grid.world_to_map(self.position), Grid.get_tileset().find_tile_by_name("EMPTY")) 
 	if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER:
 		mainPlayer.waitingForEventBeforeContinue = true
 
