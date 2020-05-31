@@ -36,6 +36,8 @@ func playColor():
 	$Tween.interpolate_property(self, "position", position, position , $AnimationPlayer.current_animation_length*0.8, Tween.TRANS_LINEAR, Tween.EASE_IN)
 	$Tween.start()
 	yield($AnimationPlayer, "animation_finished")
+	if !isBarrier:
+		$AnimationPlayer.play("Idle")
 	set_process(true)
 	get_node("Sprite").set_self_modulate(baseModulation)
 	emit_signal("puzzlePlayedAnimation")
@@ -43,7 +45,8 @@ func playColor():
 func activatePuzzlePiece():
 	if !isActivated:
 		isActivated = true
-		get_node("Sprite").set_self_modulate(Color(0,255,0,1.0))
+		if !isBarrier:
+			get_node("Sprite").set_self_modulate(color)
 		emit_signal("puzzlePieceActivated")
 	
 func playWrongWriteAnimation(right = true):
@@ -52,7 +55,10 @@ func playWrongWriteAnimation(right = true):
 		$AnimationPlayer.play("inactive")
 	else:
 		get_node("Sprite").set_self_modulate(baseModulation)
-		$AnimationPlayer.play("Idle")
+		if isBarrier:
+			$AnimationPlayer.play("isBarrier")
+		else:
+			$AnimationPlayer.play("wrong")
 
 func makePuzzleBarrier(currentGrid, unlockedDoor):
 	randomize()

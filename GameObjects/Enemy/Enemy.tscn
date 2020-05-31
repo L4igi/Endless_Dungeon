@@ -489,7 +489,7 @@ tracks/0/keys = {
 "values": [ 0, 1, 2, 3, 4, 4, 3, 2, 1, 0 ]
 }
 
-[sub_resource type="Animation" id=28]
+[sub_resource type="Animation" id=24]
 resource_name = "take_damage_magic"
 length = 1.1
 tracks/0/type = "value"
@@ -529,7 +529,7 @@ tracks/2/keys = {
 "values": [ 0.0, -15.0, 15.0, 0.0 ]
 }
 
-[sub_resource type="Animation" id=29]
+[sub_resource type="Animation" id=25]
 resource_name = "take_damage_physical"
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteWarriorEnemy:frame")
@@ -568,8 +568,7 @@ tracks/2/keys = {
 "values": [ Vector2( 1, 1 ), Vector2( 1, 0.8 ), Vector2( 0.850282, 1 ), Vector2( 1, 1 ) ]
 }
 
-[sub_resource type="Animation" id=24]
-resource_name = "walk_down"
+[sub_resource type="Animation" id=26]
 length = 0.8
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteWarriorEnemy:frame")
@@ -584,8 +583,7 @@ tracks/0/keys = {
 "values": [ 31, 32, 33, 34, 35, 36, 37, 38 ]
 }
 
-[sub_resource type="Animation" id=25]
-resource_name = "walk_left"
+[sub_resource type="Animation" id=27]
 length = 0.9
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteWarriorEnemy:frame")
@@ -600,8 +598,7 @@ tracks/0/keys = {
 "values": [ 39, 40, 41, 42, 43, 44, 45, 46, 47 ]
 }
 
-[sub_resource type="Animation" id=26]
-resource_name = "walk_right"
+[sub_resource type="Animation" id=28]
 length = 0.9
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteWarriorEnemy:frame")
@@ -616,8 +613,7 @@ tracks/0/keys = {
 "values": [ 48, 49, 50, 51, 52, 53, 54, 55, 56 ]
 }
 
-[sub_resource type="Animation" id=27]
-resource_name = "walk_up"
+[sub_resource type="Animation" id=29]
 length = 0.9
 tracks/0/type = "value"
 tracks/0/path = NodePath("SpriteWarriorEnemy:frame")
@@ -637,7 +633,6 @@ script = ExtResource( 2 )
 
 [node name="Sprite" type="Sprite" parent="."]
 visible = false
-modulate = Color( 1, 0.504927, 0.504927, 1 )
 texture = ExtResource( 1 )
 hframes = 43
 frame = 33
@@ -690,16 +685,16 @@ visible = false
 rotation = 0.0654499
 texture = ExtResource( 6 )
 hframes = 68
-frame = 40
+frame = 56
 
 [node name="WarriorAnimationPlayer" type="AnimationPlayer" parent="."]
 autoplay = "idle"
 anims/attack = SubResource( 21 )
 anims/defeat = SubResource( 22 )
 anims/idle = SubResource( 23 )
-anims/take_damage_magic = SubResource( 28 )
-anims/take_damage_physical = SubResource( 29 )
-anims/walk_down = SubResource( 24 )
-anims/walk_left = SubResource( 25 )
-anims/walk_right = SubResource( 26 )
-anims/walk_up = SubResource( 27 )
+anims/take_damage_magic = SubResource( 24 )
+anims/take_damage_physical = SubResource( 25 )
+anims/walk_down = SubResource( 26 )
+anims/walk_left = SubResource( 27 )
+anims/walk_right = SubResource( 28 )
+anims/walk_up = SubResource( 29 )

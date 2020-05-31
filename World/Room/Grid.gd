@@ -687,7 +687,7 @@ func enableEnemyAttack(enemy,attackType, horizontalVerticalAttack, diagonalAttac
 
 func create_puzzle_room(unlockedDoor):
 	randomize()
-	var puzzlePiecesToSpwan = 2
+	var puzzlePiecesToSpwan = randi()%4+3
 	var calculateSpawnAgain = true
 	var alreadyUsedColors = []
 	var spawnCellArray = []
@@ -829,7 +829,6 @@ func get_enemy_move_mage_pattern(enemy, movementdirection):
 func _on_enemy_made_move_ready(currentEnemy):
 	if(activeRoom != null):
 		enemiesToMoveArray.erase(currentEnemy)
-			
 		#print("Moving " + str(currentEnemy) + " enemies left to move " + str(enemiesToMoveArray.size()))
 		if enemiesToMoveArray.empty():
 			enemiesMadeMoveCounter = 0
@@ -996,7 +995,7 @@ func _on_projectiles_made_move(type=null):
 			if !activeRoom.roomCleared:
 				for puzzlePiece in activatedPuzzlePieces:
 					puzzlePiece.isActivated=false
-					puzzlePiece.playWrongWriteAnimation(false)
+					puzzlePiece.get_node("AnimationPlayer").play("Idle")
 			set_cellv(world_to_map(mainPlayer.position), get_tileset().find_tile_by_name("PLAYER"))
 			emit_signal("enemyTurnDoneSignal")
 		elif activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
@@ -1459,7 +1458,7 @@ func _on_enemy_defeated(enemy, CURRENTPHASE, hitProjectile = null):
 		return
 	
 	if CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMY:
-		enemy.emit_signal("enemyMadeMove")
+		enemy.emit_signal("enemyMadeMove", enemy)
 	enemy.queue_free()
 	#set room to cleared if all enemies were defeated
 	if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER || CURRENTPHASE == GlobalVariables.CURRENTPHASE.BLOCK:
@@ -1853,6 +1852,22 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 		while horizontalAddcount < roomSizeHorizontal:
 			var spawn_pos = leftmostCorner + Vector2(horizontalAddcount*GlobalVariables.tileSize,verticalAddcount*GlobalVariables.tileSize)
 			var newWallPiece = Wall.instance()
+			if spawn_pos == leftmostCorner:
+				newWallPiece.set_Texture("corner", 0)
+			elif spawn_pos == leftmostCorner + Vector2((roomSizeHorizontal-1)*GlobalVariables.tileSize,0):
+				newWallPiece.set_Texture("corner", 90)
+			elif spawn_pos == leftmostCorner + Vector2((roomSizeHorizontal-1)*GlobalVariables.tileSize, (roomSizeVertical-1)*GlobalVariables.tileSize):
+				newWallPiece.set_Texture("corner", 180)
+			elif spawn_pos == leftmostCorner + Vector2(0, (roomSizeVertical-1)*GlobalVariables.tileSize):
+				newWallPiece.set_Texture("corner", 270)
+			
+			elif spawn_pos.x == leftmostCorner.x + (roomSizeHorizontal-1)*GlobalVariables.tileSize && spawn_pos.y > leftmostCorner.y && spawn_pos.y < leftmostCorner.y + (roomSizeVertical-1)*GlobalVariables.tileSize:
+				newWallPiece.set_Texture("wall", 90)
+			elif spawn_pos.x < leftmostCorner.x + (roomSizeHorizontal-1)*GlobalVariables.tileSize && spawn_pos.x > leftmostCorner.x && spawn_pos.y == leftmostCorner.y + (roomSizeVertical-1)*GlobalVariables.tileSize:
+				newWallPiece.set_Texture("wall", 180)
+			elif spawn_pos.x == leftmostCorner.x && spawn_pos.y > leftmostCorner.y && spawn_pos.y < leftmostCorner.y + (roomSizeVertical-1)*GlobalVariables.tileSize:
+				newWallPiece.set_Texture("wall", 270)
+				
 			add_child(newWallPiece)
 			newWallPiece.position = spawn_pos
 			set_cellv(world_to_map(newWallPiece.position), get_tileset().find_tile_by_name(match_Enum(newWallPiece.type)))
@@ -1945,6 +1960,7 @@ func create_doors(roomLeftMostCorner, startingRoom=false, roomSizeHorizontal = 1
 			var object_pawn = get_cell_pawn(world_to_map(newDoor.position))
 			object_pawn.queue_free()
 			set_cellv(world_to_map(newDoor.position), get_tileset().find_tile_by_name(match_Enum(newDoor.type)))
+			get_cell(world_to_map(newDoor.position).x, world_to_map(newDoor.position).y)
 			doorArray.append(newDoor)
 		
 		#failsave create exit in room if no other alternative is left 
@@ -1960,6 +1976,7 @@ func create_doors(roomLeftMostCorner, startingRoom=false, roomSizeHorizontal = 1
 		#print(currentNumberRoomsgenerated)
 		create_walls(door, false, false)
 		door.setBoxMapBG()
+		door.rotateDoor()
 		update_bitmask_region()
 		#print(str(newDoor.position) + " element "+ str(element))
 

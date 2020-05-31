@@ -47,11 +47,30 @@ func _ready():
 	for child in player.get_children():
 		if child is Camera2D:
 			child.connect("toggleMapSignal", self, "on_toggle_map")
+			
+	get_node("Sprite").set_frame(6)
+		
 	
 # warning-ignore:unused_argument
 func _process(delta):
 	pass
 		
+
+func rotateDoor():
+	print(doorLocationDirection)
+	match doorLocationDirection:
+		"LEFT":
+			get_node("Sprite").rotation_degrees = 270
+			get_node("Gate").rotation_degrees = 270
+		"RIGHT":
+			get_node("Sprite").rotation_degrees = 90
+			get_node("Gate").rotation_degrees = 90
+		"UP":
+			get_node("Sprite").rotation_degrees = 0
+			get_node("Gate").rotation_degrees = 0
+		"DOWN":
+			get_node("Sprite").rotation_degrees = 180
+			get_node("Gate").rotation_degrees = 180
 	
 func request_door_unlock(playerItemsInPosession):
 	for item in playerItemsInPosession:
@@ -61,18 +80,19 @@ func request_door_unlock(playerItemsInPosession):
 			if item.keyValue == barrierKeyValue:
 				print("Door Barrier " + str(barrierKeyValue) + " was unlocked using item key " + str(item.keyValue))
 				isBarrier = false
+				get_node("Sprite").set_visible(false)
 				return item
 		print("need key: " + str(barrierKeyValue) + " to unlock door ")
 		return null
+	get_node("Sprite").set_visible(false)
 	return true
 	
 # warning-ignore:unused_argument
 func unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance):
 	isUnlocked=true
+
 	Grid.create_doors(doorRoomLeftMostCorner, false, roomSize.x, roomSize.y, roomSizeMultiplier, doorLocationDirection)
-#	Grid.create_enemy_room(self)
-	#print("Door was unlocked")
-	#choose type of room to be created 
+
 	var randRoomType = 20
 #	var randomrand = randi()%2+1
 #	if randomrand == 1:

@@ -42,14 +42,18 @@ func change_tab_move_list():
 			get_node("Tabs").set_current_tab(1)
 	if Input.is_action_pressed("player_up"):
 		if get_node("Tabs").get_current_tab() == 0:
-			get_node("Tabs/Key").scroll_vertical-=2
+			if get_node("Tabs/Key/KeyList").get_child_count()>2:
+				get_node("Tabs/Key").scroll_vertical-=2
 		elif get_node("Tabs").get_current_tab() == 1:
-			get_node("Tabs/Weapon").scroll_vertical-=2
+			if get_node("Tabs/Weapon/WeaponList").get_child_count()>2:
+				get_node("Tabs/Weapon").scroll_vertical-=2
 	elif Input.is_action_pressed("player_down"):
 		if get_node("Tabs").get_current_tab() == 0:
-			get_node("Tabs/Key").scroll_vertical+=2
+			if get_node("Tabs/Key/KeyList").get_child_count()>2:
+				get_node("Tabs/Key").scroll_vertical+=2
 		elif get_node("Tabs").get_current_tab() == 1:
-			get_node("Tabs/Weapon").scroll_vertical+=2
+			if get_node("Tabs/Weapon/WeaponList").get_child_count()>2:
+				get_node("Tabs/Weapon").scroll_vertical+=2
 			
 func move_list_up_down():
 	if Input.is_action_just_pressed("player_down"):
