@@ -29,11 +29,11 @@ func playColor():
 	set_process(false)
 	if isBarrier:
 		get_node("Sprite").set_self_modulate(baseModulation)
-		$AnimationPlayer.play("isBarrier", -1, 0.8)
+		$AnimationPlayer.play("isBarrier", -1, 1.1)
 	else:
 		get_node("Sprite").set_self_modulate(color)
-		$AnimationPlayer.play("playColor", -1, 0.8)
-	$Tween.interpolate_property(self, "position", position, position , $AnimationPlayer.current_animation_length*0.8, Tween.TRANS_LINEAR, Tween.EASE_IN)
+		$AnimationPlayer.play("playColor", -1, 1.1)
+	$Tween.interpolate_property(self, "position", position, position , $AnimationPlayer.current_animation_length*1.1, Tween.TRANS_LINEAR, Tween.EASE_IN)
 	$Tween.start()
 	yield($AnimationPlayer, "animation_finished")
 	if !isBarrier:

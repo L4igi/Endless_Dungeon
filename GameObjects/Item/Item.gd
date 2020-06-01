@@ -11,6 +11,7 @@ var swordTexture = preload ("res://GameObjects/Item/Sword_Color.png")
 var heartContainerTexture = preload ("res://GameObjects/Item/Heart_Item.png")
 var flaskContainerTexture = preload ("res://GameObjects/Item/Flask_Item.png")
 var puzzleSwitch = preload("res://GameObjects/Item/PuzzleSwitch.png")
+var exit = preload("res://GameObjects/Item/exit_item.png")
 
 var keyValue 
 
@@ -41,3 +42,6 @@ func setTexture(textureType):
 		GlobalVariables.ITEMTYPE.PUZZLESWITCH:
 			get_node("Sprite").set_texture(puzzleSwitch)
 			itemType = GlobalVariables.ITEMTYPE.PUZZLESWITCH
+		GlobalVariables.ITEMTYPE.EXIT:
+			get_node("Sprite").set_texture(exit)
+			itemType = GlobalVariables.ITEMTYPE.EXIT

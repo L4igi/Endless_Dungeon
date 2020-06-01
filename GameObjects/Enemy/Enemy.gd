@@ -460,7 +460,7 @@ func play_taken_damage_animation(inflictattackType, mainPlayer, CURRENTPHASE):
 		
 
 func play_defeat_animation(mainPlayer, CURRENTPHASE):
-	Grid.set_cellv(Grid.world_to_map(self.position), Grid.get_tileset().find_tile_by_name("EMPTY")) 
+	Grid.set_cellv(Grid.world_to_map(self.position), Grid.get_tileset().find_tile_by_name("FLOOR")) 
 	if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER:
 		mainPlayer.waitingForEventBeforeContinue = true
 
