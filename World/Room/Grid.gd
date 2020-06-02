@@ -364,15 +364,22 @@ func request_move(pawn, direction):
 				projectilesInActiveRoom.erase(pawn)
 				pawn.deleteProjectilePlayAnimation = "delete"
 				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
+				if activeRoom!= null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && pawn.projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK:
+					pawn.play_projectile_animation(false, "delete")
+				
 				#print("Deleting magic projectile " + str(projectilesInActiveRoom.size()))
 			TILETYPES.DOOR:
 				projectilesInActiveRoom.erase(pawn)
 				pawn.deleteProjectilePlayAnimation = "delete"
 				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
+				if activeRoom!= null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && pawn.projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK:
+					pawn.play_projectile_animation(false, "delete")
 			TILETYPES.UNLOCKEDDOOR:
 				projectilesInActiveRoom.erase(pawn)
 				pawn.deleteProjectilePlayAnimation = "delete"
 				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
+				if activeRoom!= null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && pawn.projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK:
+					pawn.play_projectile_animation(false, "delete")
 			TILETYPES.MAGICPROJECTILE:
 				#if two enemy projectiles hit each other they bounce back 
 				var targetProjectile = get_cell_pawn(cell_target)
@@ -390,7 +397,7 @@ func request_move(pawn, direction):
 					if !spawnBlockProjectileNextTurn.has(get_cell_pawn(cell_target)):
 						get_cell_pawn(cell_target).shootDelay = 2
 						spawnBlockProjectileNextTurn.append(get_cell_pawn(cell_target))
-					pawn.queue_free()
+					pawn.play_projectile_animation(false, "delete")
 			TILETYPES.PUZZLEPIECE:
 				projectilesInActiveRoom.erase(pawn)
 				pawn.deleteProjectilePlayAnimation = "delete"
@@ -401,7 +408,7 @@ func request_move(pawn, direction):
 						if !activatePuzzlePieceNextTurn.has(get_cell_pawn(cell_target)):
 							get_cell_pawn(cell_target).activationDelay = 2
 							activatePuzzlePieceNextTurn.append(get_cell_pawn(cell_target))
-					pawn.queue_free()
+					pawn.play_projectile_animation(false, "delete")
 			_:
 				projectilesInActiveRoom.erase(pawn)
 				pawn.deleteProjectilePlayAnimation = "delete"
@@ -784,6 +791,7 @@ func create_enemy_room(unlockedDoor):
 				newEnemy.connect("enemyAttacked", self, "_on_enemy_attacked")
 				newEnemy.connect("enemyDefeated", self, "_on_enemy_defeated")
 				newEnemy.connect("enemyExplosionDone", self, "_on_enemy_explosion_done")
+				newEnemy.calc_enemy_move_to(GlobalVariables.MOVEMENTCALCMODE.PREVIEW)
 				add_child(newEnemy)
 				set_cellv(world_to_map(newEnemy.position), get_tileset().find_tile_by_name(match_Enum(newEnemy.type)))
 				unlockedDoor.enemiesInRoom.append(newEnemy)
@@ -1330,6 +1338,7 @@ func on_powerBlock_spawn_magic(powerBlock, signalSpawnMagic):
 	for direction in powerBlock.activeDirections:
 		#print("Spawning magic")
 		var newMagicProjectile = MagicProjectile.instance()
+		add_child(newMagicProjectile)
 		newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.POWERBLOCK
 		newMagicProjectile.play_powerBlock_projectile_animation()
 		newMagicProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
@@ -1356,6 +1365,7 @@ func on_powerBlock_spawn_magic(powerBlock, signalSpawnMagic):
 					activatedPuzzlePiece.activationDelay = 0
 				else:
 					activatedPuzzlePiece.activationDelay = 0
+			#newMagicProjectile.play_projectile_animation(false, "delete")
 			newMagicProjectile.queue_free()
 		elif get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("BLOCK"):
 			var blockHit = get_cell_pawn(world_to_map(newMagicProjectile.position))
@@ -1374,7 +1384,7 @@ func on_powerBlock_spawn_magic(powerBlock, signalSpawnMagic):
 					activatedPuzzlePiece.activationDelay = 1
 				else:
 					activatedPuzzlePiece.activationDelay = 1
-			newMagicProjectile.queue_free()
+			newMagicProjectile.play_projectile_animation(false, "delete")
 			
 		elif get_cellv(world_to_map(newMagicProjectile.position)+newMagicProjectile.movementDirection) == get_tileset().find_tile_by_name("BLOCK"):
 			var blockHit = get_cell_pawn(world_to_map(newMagicProjectile.position)+newMagicProjectile.movementDirection)
@@ -1384,15 +1394,14 @@ func on_powerBlock_spawn_magic(powerBlock, signalSpawnMagic):
 					blockHit.shootDelay = 1
 				else:
 					blockHit.shootDelay = 1
-			newMagicProjectile.queue_free()
+			newMagicProjectile.play_projectile_animation(false, "delete")
 
 		elif get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("FLOOR") || get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("PLAYER"):
-			add_child(newMagicProjectile)
 			projectilesInActiveRoom.append(newMagicProjectile)
 			#set_cellv(world_to_map(newMagicProjectile.position), get_tileset().find_tile_by_name("MAGICPROJECTILE"))
 			newMagicProjectile.move_projectile("movePowerProjectile")
 		else: 
-			newMagicProjectile.queue_free()
+			newMagicProjectile.play_projectile_animation(false, "delete")
 	for projectile in projectilesInActiveRoom:
 		if projectile.projectileType == GlobalVariables.PROJECTILETYPE.TICKERPROJECTILE && !projectile.tickAlreadyMoved:
 			print("Moving ticking projectile")

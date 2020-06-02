@@ -59,6 +59,8 @@ var inflictattackType = null
 
 var hitByProjectile = null
 
+var moveTo = null
+
 func _ready():
 	pass
 	
@@ -101,38 +103,18 @@ func toggleVisibility(makeInVisible):
 	else:
 		spriteToToggle.set_visible(true)
 			
-func enemyMovement():
+
+func calc_enemy_move_to(calcMode):
+	var cell_target = Vector2.ZERO
+	var movementdirection = Vector2.ZERO
 	match enemyType:
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
-			var movementdirection = Grid.get_enemy_move_towards_player(self)
-#			print(movement_direction)
-			var target_position = Grid.request_move(self, movementdirection)
-			var animationToPlay = "walk_up"
-			match movementdirection:
-				Vector2(-1,0):
-					animationToPlay = "walk_left"
-				Vector2(1,0):
-					animationToPlay = "walk_right"
-				Vector2(0,-1):
-					animationToPlay = "walk_up"
-				Vector2(0,1):
-					animationToPlay = "walk_down"
-			if(target_position && !enemyDefeated):
-				set_process(false)
-				#play defeat animation 
-				$WarriorAnimationPlayer.play(animationToPlay, -1, 3.0)
-				$Tween.interpolate_property(self, "position", position, target_position, $WarriorAnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
-				$Tween.start()
-				yield($WarriorAnimationPlayer, "animation_finished")
-				$WarriorAnimationPlayer.play("idle")
-				set_process(true)
-				movementCount += 1
-		
+			movementdirection = Grid.get_enemy_move_towards_player(self)
+			cell_target = Grid.world_to_map(position)+ movementdirection
+
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
-			#print("MageEnemy Moving")
 			if mageMoveCount == 6:
 				mageMoveCount = 0
-		#move towards enemy get direction from the grid
 			match mageMoveCount:
 				0:
 					movementdirection = GlobalVariables.DIRECTION.MIDDLE
@@ -151,20 +133,10 @@ func enemyMovement():
 				5:
 					#moves to left top corner 
 					movementdirection = GlobalVariables.DIRECTION.UP
-			var mage_target_pos = Grid.get_enemy_move_mage_pattern(self, movementdirection)
-			var target_position = Grid.request_move(self, mage_target_pos)
-			if(target_position):
-				set_process(false)
-				#play defeat animation 
-				$MageAnimationPlayer.play("walk", -1, 4.5)
-				$Tween.interpolate_property(self, "position", position, target_position, $MageAnimationPlayer.current_animation_length/4.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
-				$Tween.start()
-				yield($MageAnimationPlayer, "animation_finished")
-				$MageAnimationPlayer.play("idle")
-				set_process(true)
-			movementCount += 1
-			mageMoveCount+=1
-			
+			movementdirection = Grid.get_enemy_move_mage_pattern(self, movementdirection)
+			cell_target = Grid.world_to_map(position)+ movementdirection
+					
+
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			if movementdirection == GlobalVariables.DIRECTION.LEFT:
 				movementdirection = GlobalVariables.DIRECTION.RIGHT
@@ -178,13 +150,78 @@ func enemyMovement():
 				moveCellCount = 2
 			elif moveCellCount == 2: 
 				moveCellCount = 1
-			var movement_direction = Grid.get_enemy_move_ninja_pattern(self, movementdirection, moveCellCount)
-			var target_position = Grid.request_move(self, movement_direction)
-			if(target_position):
+			movementdirection = Grid.get_enemy_move_ninja_pattern(self, movementdirection, moveCellCount)
+			cell_target = Grid.world_to_map(position)+ movementdirection
+			
+
+		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
+			var upDownLeftRight = randi()%4+1
+			match upDownLeftRight:
+				1:
+					movementdirection = Vector2(1,0)
+				2:
+					movementdirection = Vector2(-1,0)
+				3: 
+					movementdirection = Vector2(0,1)
+				4:
+					movementdirection = Vector2(0,-1)
+			cell_target = Grid.world_to_map(position)+ movementdirection
+
+	if calcMode == GlobalVariables.MOVEMENTCALCMODE.PREVIEW:
+		var target_position = Grid.map_to_world(cell_target) + Grid.cell_size / GlobalVariables.isometricFactor
+		if target_position:
+			moveTo = target_position
+	elif calcMode == GlobalVariables.MOVEMENTCALCMODE.TOMOVE:
+		var target_position = Grid.request_move(self, movementdirection)
+		if target_position:
+			moveTo = target_position
+		else:
+			moveTo = null
+			
+func enemyMovement():
+	match enemyType:
+		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
+			var animationToPlay = "walk_up"
+			match movementdirection:
+				Vector2(-1,0):
+					animationToPlay = "walk_left"
+				Vector2(1,0):
+					animationToPlay = "walk_right"
+				Vector2(0,-1):
+					animationToPlay = "walk_up"
+				Vector2(0,1):
+					animationToPlay = "walk_down"
+#			if moveTo && !enemyDefeated:
+			if moveTo:
+				set_process(false)
+				#play defeat animation 
+				$WarriorAnimationPlayer.play(animationToPlay, -1, 3.0)
+				$Tween.interpolate_property(self, "position", position, moveTo, $WarriorAnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+				$Tween.start()
+				yield($WarriorAnimationPlayer, "animation_finished")
+				$WarriorAnimationPlayer.play("idle")
+				set_process(true)
+				movementCount += 1
+		
+		GlobalVariables.ENEMYTYPE.MAGEENEMY:
+			if moveTo:
+				set_process(false)
+				#play defeat animation 
+				$MageAnimationPlayer.play("walk", -1, 4.5)
+				$Tween.interpolate_property(self, "position", position, moveTo, $MageAnimationPlayer.current_animation_length/4.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+				$Tween.start()
+				yield($MageAnimationPlayer, "animation_finished")
+				$MageAnimationPlayer.play("idle")
+				set_process(true)
+			movementCount += 1
+			mageMoveCount+=1
+			
+		GlobalVariables.ENEMYTYPE.NINJAENEMY:
+			if moveTo:
 				set_process(false)
 				#play defeat animation 
 				$NinjaAnimationPlayer.play("walk", -1, 4.5)
-				$Tween.interpolate_property(self, "position", position, target_position, $NinjaAnimationPlayer.current_animation_length/4.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+				$Tween.interpolate_property(self, "position", position, moveTo, $NinjaAnimationPlayer.current_animation_length/4.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
 				$Tween.start()
 				yield($NinjaAnimationPlayer, "animation_finished")
 				$NinjaAnimationPlayer.play("idle")
@@ -192,24 +229,11 @@ func enemyMovement():
 				movementCount += 1
 				
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
-			var upDownLeftRight = randi()%4+1
-			var movement_direction = Vector2.ZERO
-			match upDownLeftRight:
-				1:
-					movement_direction = Vector2(1,0)
-				2:
-					movement_direction = Vector2(-1,0)
-				3: 
-					movement_direction = Vector2(0,1)
-				4:
-					movement_direction = Vector2(0,-1)
-
-			var target_position = Grid.request_move(self, movement_direction)
-			if(target_position):
+			if moveTo:
 				set_process(false)
 				#play defeat animation 
 				$AnimationPlayer.play("walk", -1, 1.0)
-				$Tween.interpolate_property(self, "position", position, target_position, $AnimationPlayer.current_animation_length/1.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+				$Tween.interpolate_property(self, "position", position, moveTo, $AnimationPlayer.current_animation_length/1.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
 				$Tween.start()
 				yield($AnimationPlayer, "animation_finished")
 				$AnimationPlayer.play("idle")

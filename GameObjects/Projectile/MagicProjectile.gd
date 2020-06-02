@@ -104,6 +104,8 @@ func play_projectile_animation(onSpot=true, projectileAnimation="playerProjectil
 				animationToPlay = "EnemyProjectileDelete"
 			elif projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
 				animationToPlay = "PlayerProjectileDelete"
+			elif projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK:
+				animationToPlay = "PowerBlockProjectileDelete"
 		"attack":
 			if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
 				animationToPlay = "enemyProjectileAttack"
@@ -115,7 +117,7 @@ func play_projectile_animation(onSpot=true, projectileAnimation="playerProjectil
 			elif projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
 				isMiniProjectile = false
 				attackDamage = 1.0
-				animationToPlay = "shoot"
+				animationToPlay = "playerPoweredUpProjectile"
 				
 	set_process(false)
 	$AnimationPlayer.play(animationToPlay)
@@ -124,7 +126,17 @@ func play_projectile_animation(onSpot=true, projectileAnimation="playerProjectil
 		$Tween.start()
 	yield($AnimationPlayer, "animation_finished")
 	set_process(true)
-	if Grid.activeRoom == null || Grid.activeRoom != null && Grid.activeRoom.roomCleared || Grid.currentActivePhase != GlobalVariables.CURRENTPHASE.PROJECTILE:
+	if projectileAnimation == "merge": 
+		#play idle animation 
+		if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
+			$AnimationPlayer.play("enemy_shoot")
+		elif projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
+			print("playing shoot " + str(projectileAnimation))
+			$AnimationPlayer.play("shoot")
+	elif Grid.activeRoom == null || Grid.activeRoom != null && Grid.activeRoom.roomCleared || Grid.currentActivePhase != GlobalVariables.CURRENTPHASE.PROJECTILE:
+		Grid.projectilesInActiveRoom.erase(self)
+		self.queue_free()
+	elif Grid.activeRoom != null && Grid.activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 		Grid.projectilesInActiveRoom.erase(self)
 		self.queue_free()
 	else:
