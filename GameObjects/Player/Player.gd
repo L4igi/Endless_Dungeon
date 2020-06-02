@@ -153,6 +153,7 @@ func player_movement(movementDirection):
 				enemyQueueAttackDamage = 0
 				enemyQueueAttackType = null
 			set_process(true)
+			update_enemy_move_attack()
 			movementCount += 1
 			
 			#print("Moved in Player " + str(attackCount) + " movementCount " +str(movementCount))
@@ -187,6 +188,7 @@ func player_attack(attackDirection):
 		yield($AnimationPlayer, "animation_finished")
 		$AnimationPlayer.play("Idle")
 		set_process(true)
+		update_enemy_move_attack()
 		if attackType == GlobalVariables.ATTACKTYPE.BLOCK:
 			waitingForEventBeforeContinue = true
 		
@@ -221,6 +223,7 @@ func player_passed_door():
 		yield($AnimationPlayer, "animation_finished")
 		$AnimationPlayer.play("Idle")
 		set_process(true)
+		update_enemy_move_attack()
 		if Grid.activeRoom != null && Grid.activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 			guiElements.change_hand_on_room(GlobalVariables.ROOM_TYPE.PUZZLEROOM)
 			emit_signal("playerMadeMove")
@@ -382,3 +385,10 @@ func end_player_turn():
 	playerTurnDone=true
 	movementCount = 1
 	attackCount = 1
+	
+#update enemy attack after each Player move/attack
+func update_enemy_move_attack():
+	if Grid.activeRoom != null: 
+		if !Grid.activeRoom.enemiesInRoom.empty():
+			for enemy in Grid.activeRoom.enemiesInRoom:
+				enemy.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)

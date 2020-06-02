@@ -598,107 +598,6 @@ func enablePlayerAttack(player):
 #			return 
 #	player.playerCanAttack=false
 
-func enableEnemyAttack(enemy,attackType, horizontalVerticalAttack, diagonalAttack):
-	if attackType == GlobalVariables.ATTACKTYPE.SWORD || attackType == GlobalVariables.ATTACKTYPE.NINJA:
-		if horizontalVerticalAttack && !diagonalAttack:
-			if(get_cellv(world_to_map(enemy.position)+Vector2(1,0)) == TILETYPES.PLAYER):
-				return Vector2(1,0)
-			elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,0)) == TILETYPES.PLAYER):
-				return Vector2(-1,0)
-			elif(get_cellv(world_to_map(enemy.position)+Vector2(0,1)) == TILETYPES.PLAYER):
-				return Vector2(0,1)
-			elif(get_cellv(world_to_map(enemy.position)+Vector2(0,-1)) == TILETYPES.PLAYER):
-				return Vector2(0,-1)
-		elif !horizontalVerticalAttack && diagonalAttack:
-			if(get_cellv(world_to_map(enemy.position)+Vector2(1,1)) == TILETYPES.PLAYER):
-				return Vector2(1,1)
-			elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,-1)) == TILETYPES.PLAYER):
-				return Vector2(-1,-1)
-			elif(get_cellv(world_to_map(enemy.position)+Vector2(1,-1)) == TILETYPES.PLAYER):
-				return Vector2(1,-1)
-			elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,1)) == TILETYPES.PLAYER):
-				return Vector2(-1,1)
-		else:
-			if(get_cellv(world_to_map(enemy.position)+Vector2(1,0)) == TILETYPES.PLAYER):
-				return Vector2(1,0)
-			elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,0)) == TILETYPES.PLAYER):
-				return Vector2(-1,0)
-			elif(get_cellv(world_to_map(enemy.position)+Vector2(0,1)) == TILETYPES.PLAYER):
-				return Vector2(0,1)
-			elif(get_cellv(world_to_map(enemy.position)+Vector2(0,-1)) == TILETYPES.PLAYER):
-				return Vector2(0,-1)
-			if(get_cellv(world_to_map(enemy.position)+Vector2(1,1)) == TILETYPES.PLAYER):
-				return Vector2(1,1)
-			elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,-1)) == TILETYPES.PLAYER):
-				return Vector2(-1,-1)
-			elif(get_cellv(world_to_map(enemy.position)+Vector2(1,-1)) == TILETYPES.PLAYER):
-				return Vector2(1,-1)
-			elif(get_cellv(world_to_map(enemy.position)+Vector2(-1,1)) == TILETYPES.PLAYER):
-				return Vector2(-1,1)
-	if attackType == GlobalVariables.ATTACKTYPE.MAGIC:
-		var possibleDirectionArray = []
-
-		if get_cellv(world_to_map(enemy.position)+Vector2(-1,0)) != TILETYPES.WALL && get_cellv(world_to_map(enemy.position)+Vector2(-1,0)) != TILETYPES.BLOCK && get_cellv(world_to_map(enemy.position)+Vector2(-1,0)) != TILETYPES.ENEMY:
-			possibleDirectionArray.append(GlobalVariables.DIRECTION.LEFT)
-		if get_cellv(world_to_map(enemy.position)+Vector2(1,0)) != TILETYPES.WALL && get_cellv(world_to_map(enemy.position)+Vector2(1,0)) != TILETYPES.BLOCK && get_cellv(world_to_map(enemy.position)+Vector2(1,0)) != TILETYPES.ENEMY:
-			possibleDirectionArray.append(GlobalVariables.DIRECTION.RIGHT)
-		if get_cellv(world_to_map(enemy.position)+Vector2(0,1)) != TILETYPES.WALL && get_cellv(world_to_map(enemy.position)+Vector2(0,1)) != TILETYPES.BLOCK && get_cellv(world_to_map(enemy.position)+Vector2(0,1)) != TILETYPES.ENEMY:
-			possibleDirectionArray.append(GlobalVariables.DIRECTION.DOWN)
-		if get_cellv(world_to_map(enemy.position)+Vector2(0,-1)) != TILETYPES.WALL && get_cellv(world_to_map(enemy.position)+Vector2(0,-1)) != TILETYPES.BLOCK && get_cellv(world_to_map(enemy.position)+Vector2(0,-1)) != TILETYPES.ENEMY:
-			possibleDirectionArray.append(GlobalVariables.DIRECTION.UP)
-		
-		#print (possibleDirectionArray)
-		if !possibleDirectionArray.empty():
-			var shootDirection = randi()%possibleDirectionArray.size()
-			match possibleDirectionArray[shootDirection]:
-				GlobalVariables.DIRECTION.LEFT:
-					return Vector2(-1,0)
-				GlobalVariables.DIRECTION.RIGHT:
-					return Vector2(1,0)
-				GlobalVariables.DIRECTION.UP:
-					return Vector2(0,-1)
-				GlobalVariables.DIRECTION.DOWN:
-					return Vector2(0,1)
-		else:
-			return Vector2.ZERO
-	#enable ninja range attack 
-	if attackType == GlobalVariables.ATTACKTYPE.NINJA:
-		var attackdirectionArray = []
-		match enemy.movementdirection:
-			GlobalVariables.DIRECTION.LEFT:
-				attackdirectionArray.append(Vector2(0,1))
-				attackdirectionArray.append(Vector2(0,-1))
-			GlobalVariables.DIRECTION.RIGHT:
-				attackdirectionArray.append(Vector2(0,1))
-				attackdirectionArray.append(Vector2(0,-1))
-			GlobalVariables.DIRECTION.UP:
-				attackdirectionArray.append(Vector2(1,0))
-				attackdirectionArray.append(Vector2(-1,0))
-			GlobalVariables.DIRECTION.DOWN:
-				attackdirectionArray.append(Vector2(1,0))
-				attackdirectionArray.append(Vector2(-1,0))
-				
-		for direction in attackdirectionArray:
-			for count in range (enemy.ninjaAttackRange):
-				if direction == Vector2(1,0):
-					if get_cellv(world_to_map(enemy.position)+Vector2(count,0)) == TILETYPES.PLAYER:
-						#print("Player RIGHT " + str(Vector2(count,0)))
-						return Vector2(count,0)
-				elif direction == Vector2(-1,0):
-					if get_cellv(world_to_map(enemy.position)-Vector2(count,0)) == TILETYPES.PLAYER:
-						#print("Player LEFT " + str(Vector2(count,0)))
-						return Vector2(-count,0)
-				if direction == Vector2(0,1):
-					if get_cellv(world_to_map(enemy.position)+Vector2(0,count)) == TILETYPES.PLAYER:
-						#print("Player DOWN " + str(Vector2(count,0)))
-						return Vector2(0,count)
-				elif direction == Vector2(0,-1):
-					if get_cellv(world_to_map(enemy.position)-Vector2(0,count)) == TILETYPES.PLAYER:
-						#print("Player UP " + str(Vector2(count,0)))
-						return Vector2(0,-count)
-				
-	return Vector2.ZERO
-
 func create_puzzle_room(unlockedDoor):
 	randomize()
 	var puzzlePiecesToSpwan = randi()%3+4
@@ -793,7 +692,7 @@ func create_enemy_room(unlockedDoor):
 				newEnemy.connect("enemyExplosionDone", self, "_on_enemy_explosion_done")
 				add_child(newEnemy)
 				newEnemy.calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW, unlockedDoor)
-				newEnemy.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
+				#newEnemy.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
 				set_cellv(world_to_map(newEnemy.position), get_tileset().find_tile_by_name(match_Enum(newEnemy.type)))
 				unlockedDoor.enemiesInRoom.append(newEnemy)
 	#print(spawnCellArray)

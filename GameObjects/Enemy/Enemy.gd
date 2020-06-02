@@ -61,7 +61,27 @@ var hitByProjectile = null
 
 var moveTo = null
 
-var attackTo = null
+var attackTo = Vector2.ZERO
+
+var attackCell = Vector2.ZERO
+
+#attackDirections: 
+
+var attackRangeRight = 0
+
+var attackRangeLeft = 0
+
+var attackRangeUp = 0
+
+var attackRangeDown = 0
+
+var attackRangeUpLeft = 0
+
+var attackRangeUpRight = 0
+
+var attackRangeDownLeft = 0
+
+var attackRangeDownRight = 0
 
 func _ready():
 	pass
@@ -253,23 +273,14 @@ func enemyMovement():
 		emit_signal("enemyMadeMove", self)
 
 func calc_enemy_attack_to(calcMode):
-	match enemyType:
-		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
-			attackTo = Grid.enableEnemyAttack(self, attackType, horizontalVerticalAttack, diagonalAttack)
-		GlobalVariables.ENEMYTYPE.MAGEENEMY:
-			attackTo = Grid.enableEnemyAttack(self, attackType, horizontalVerticalAttack, diagonalAttack)
-		GlobalVariables.ENEMYTYPE.NINJAENEMY:
-			attackTo = Grid.enableEnemyAttack(self, attackType, horizontalVerticalAttack, diagonalAttack)
-		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
-			attackTo = Grid.enableEnemyAttack(self, attackType, horizontalVerticalAttack, diagonalAttack)
-			
-	if calcMode == GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW:
-		pass
+	adjust_enemy_attack_range_enable_attack(calcMode)
+
 			
 func enemyAttack(): 
 	match enemyType:
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
 			if attackTo != Vector2.ZERO:
+				print("attack to " + str(attackTo))
 				set_process(false)
 				#play defeat animation 
 				$WarriorAnimationPlayer.play("attack", -1, 3.0)
@@ -352,7 +363,106 @@ func enemyAttack():
 				enemyMovement()
 			else:
 				emit_signal("enemyMadeMove", self)
-
+				
+func adjust_enemy_attack_range_enable_attack(calcMode):
+	var enemyMapPostion = Grid.world_to_map(position)
+	var attackToSet = false
+	if attackRangeUp > 0: 
+		for attackRange in range (1,attackRangeUp+1):
+			print(attackRange)
+			var checkCell = enemyMapPostion + Vector2(0, -attackRange)
+			var checkCellValue = Grid.get_cellv(checkCell)
+			if checkCellValue == Grid.get_tileset().find_tile_by_name("PLAYER"):
+				attackTo = Vector2(0, -attackRange)
+				attackCell = checkCell
+				attackToSet = true
+			elif checkCellValue == GlobalVariables.CELL_TYPES.WALL || checkCellValue == GlobalVariables.CELL_TYPES.DOOR || checkCellValue == GlobalVariables.CELL_TYPES.UNLOCKEDDOOR:
+				attackRangeUp = attackRange - 1
+				break
+	if attackRangeDown > 0: 
+		for attackRange in range (1, attackRangeDown+1):
+			var checkCell = enemyMapPostion + Vector2(0, attackRange)
+			var checkCellValue = Grid.get_cellv(checkCell)
+			if checkCellValue == Grid.get_tileset().find_tile_by_name("PLAYER"):
+				attackTo = Vector2(0, attackRange)
+				attackCell = checkCell
+				attackToSet = true
+			elif checkCellValue == GlobalVariables.CELL_TYPES.WALL || checkCellValue == GlobalVariables.CELL_TYPES.DOOR || checkCellValue == GlobalVariables.CELL_TYPES.UNLOCKEDDOOR:
+				attackRangeDown = attackRange - 1
+				break
+	if attackRangeRight > 0: 
+		for attackRange in range (1,attackRangeRight+1):
+			var checkCell = enemyMapPostion + Vector2(attackRange,0)
+			var checkCellValue = Grid.get_cellv(checkCell)
+			if checkCellValue == Grid.get_tileset().find_tile_by_name("PLAYER"):
+				attackTo = Vector2(attackRange,0)
+				attackCell = checkCell
+				attackToSet = true
+			elif checkCellValue == GlobalVariables.CELL_TYPES.WALL || checkCellValue == GlobalVariables.CELL_TYPES.DOOR || checkCellValue == GlobalVariables.CELL_TYPES.UNLOCKEDDOOR:
+				attackRangeRight = attackRange - 1
+				break
+	if attackRangeLeft > 0: 
+		for attackRange in range (1,attackRangeLeft+1):
+			var checkCell = enemyMapPostion + Vector2(-attackRange,0)
+			var checkCellValue = Grid.get_cellv(checkCell)
+			if checkCellValue == Grid.get_tileset().find_tile_by_name("PLAYER"):
+				attackTo = Vector2(-attackRange,0)
+				attackCell = checkCell
+				attackToSet = true
+			elif checkCellValue == GlobalVariables.CELL_TYPES.WALL || checkCellValue == GlobalVariables.CELL_TYPES.DOOR || checkCellValue == GlobalVariables.CELL_TYPES.UNLOCKEDDOOR:
+				attackRangeLeft = attackRange - 1
+				break
+	if attackRangeUpLeft > 0: 
+		for attackRange in range (1,attackRangeUpLeft+1):
+			var checkCell = enemyMapPostion + Vector2(-attackRange, -attackRange)
+			var checkCellValue = Grid.get_cellv(checkCell)
+			if checkCellValue == Grid.get_tileset().find_tile_by_name("PLAYER"):
+				attackTo = Vector2(-attackRange, -attackRange)
+				attackCell = checkCell
+				attackToSet = true
+			elif checkCellValue == GlobalVariables.CELL_TYPES.WALL || checkCellValue == GlobalVariables.CELL_TYPES.DOOR || checkCellValue == GlobalVariables.CELL_TYPES.UNLOCKEDDOOR:
+				attackRangeUpLeft = attackRange - 1
+				break
+	if attackRangeUpRight > 0: 
+		for attackRange in range (1,attackRangeUpRight+1):
+			var checkCell = enemyMapPostion + Vector2(attackRange, -attackRange)
+			var checkCellValue = Grid.get_cellv(checkCell)
+			if checkCellValue == Grid.get_tileset().find_tile_by_name("PLAYER"):
+				attackTo = Vector2(attackRange, -attackRange)
+				attackCell = checkCell
+				attackToSet = true
+			elif checkCellValue == GlobalVariables.CELL_TYPES.WALL || checkCellValue == GlobalVariables.CELL_TYPES.DOOR || checkCellValue == GlobalVariables.CELL_TYPES.UNLOCKEDDOOR:
+				attackRangeUpRight = attackRange - 1
+				break
+	if attackRangeDownLeft > 0: 
+		for attackRange in range (1,attackRangeDownLeft+1):
+			var checkCell = enemyMapPostion + Vector2(-attackRange, attackRange)
+			var checkCellValue = Grid.get_cellv(checkCell)
+			if checkCellValue == Grid.get_tileset().find_tile_by_name("PLAYER"):
+				attackTo = Vector2(-attackRange, attackRange)
+				attackCell = checkCell
+				attackToSet = true
+			elif checkCellValue == GlobalVariables.CELL_TYPES.WALL || checkCellValue == GlobalVariables.CELL_TYPES.DOOR || checkCellValue == GlobalVariables.CELL_TYPES.UNLOCKEDDOOR:
+				attackRangeDownLeft = attackRange - 1
+				break
+	if attackRangeDownRight > 0: 
+		for attackRange in range (1,attackRangeDownRight+1):
+			var checkCell = enemyMapPostion + Vector2(attackRange, attackRange)
+			var checkCellValue = Grid.get_cellv(checkCell)
+			if checkCellValue == Grid.get_tileset().find_tile_by_name("PLAYER"):
+				attackTo = Vector2(attackRange, attackRange)
+				attackCell = checkCell
+				attackToSet = true
+			elif checkCellValue == GlobalVariables.CELL_TYPES.WALL || checkCellValue == GlobalVariables.CELL_TYPES.DOOR || checkCellValue == GlobalVariables.CELL_TYPES.UNLOCKEDDOOR:
+				attackRangeDownRight = attackRange - 1
+				break
+	if enemyType == GlobalVariables.ENEMYTYPE.WARRIROENEMY:
+		print ("calculating player to attack attackto " + str(attackTo))
+		print("current player position " + str(Grid.world_to_map(Grid.mainPlayer.position)))
+	if !attackToSet:
+		attackTo = Vector2.ZERO
+		attackCell = Vector2.ZERO
+	
 func make_enemy_turn():
 	if !isDisabled:
 		if(lifePoints > 0):
@@ -360,8 +470,8 @@ func make_enemy_turn():
 			attackCount = 0
 			enemyTurnDone = false
 			matchEnemyTurn()
-
-
+			
+			
 func matchEnemyTurn():
 	calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION)
 	match enemyType:
@@ -393,9 +503,16 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 			enemyType = GlobalVariables.ENEMYTYPE.WARRIROENEMY
 			lifePoints = 1
 			attackDamage = 1 
-			diagonalAttack = true
 			attackType = GlobalVariables.ATTACKTYPE.SWORD
 			get_node("SpriteWarriorEnemy").set_visible(true)
+			attackRangeRight = 2
+			attackRangeLeft = 2
+			attackRangeUp = 2
+			attackRangeDown = 2
+			attackRangeUpLeft = 2
+			attackRangeUpRight = 2
+			attackRangeDownLeft = 2
+			attackRangeDownRight = 2
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.MAGEENEMY
 			mageMoveCount = mageEnemyCount
