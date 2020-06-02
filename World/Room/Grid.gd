@@ -791,8 +791,8 @@ func create_enemy_room(unlockedDoor):
 				newEnemy.connect("enemyAttacked", self, "_on_enemy_attacked")
 				newEnemy.connect("enemyDefeated", self, "_on_enemy_defeated")
 				newEnemy.connect("enemyExplosionDone", self, "_on_enemy_explosion_done")
-				newEnemy.calc_enemy_move_to(GlobalVariables.MOVEMENTCALCMODE.PREVIEW)
 				add_child(newEnemy)
+				newEnemy.calc_enemy_move_to(GlobalVariables.MOVEMENTCALCMODE.PREVIEW, unlockedDoor)
 				set_cellv(world_to_map(newEnemy.position), get_tileset().find_tile_by_name(match_Enum(newEnemy.type)))
 				unlockedDoor.enemiesInRoom.append(newEnemy)
 	#print(spawnCellArray)
@@ -827,19 +827,19 @@ func get_enemy_move_ninja_pattern(enemy, movementdirection, moveCellCount):
 				return Vector2(0,-moveCellCount)
 			return Vector2(0,moveCellCount)
 	
-func get_enemy_move_mage_pattern(enemy, movementdirection):
+func get_enemy_move_mage_pattern(enemy, movementdirection, rommToCalc):
 	#return corner of the room according to movementdirection
 	match movementdirection:
 		GlobalVariables.DIRECTION.MIDDLE:
-			return world_to_map(activeRoom.doorRoomLeftMostCorner)+ Vector2(int(activeRoom.roomSize.x/2), int(activeRoom.roomSize.y/2))
+			return world_to_map(rommToCalc.doorRoomLeftMostCorner)+ Vector2(int(rommToCalc.roomSize.x/2), int(rommToCalc.roomSize.y/2))
 		GlobalVariables.DIRECTION.RIGHT:
-			return world_to_map(activeRoom.doorRoomLeftMostCorner)+ Vector2(activeRoom.roomSize.x-2,1)
+			return world_to_map(rommToCalc.doorRoomLeftMostCorner)+ Vector2(rommToCalc.roomSize.x-2,1)
 		GlobalVariables.DIRECTION.DOWN:
-			return world_to_map(activeRoom.doorRoomLeftMostCorner)+ Vector2(activeRoom.roomSize.x-2,activeRoom.roomSize.y-2)
+			return world_to_map(rommToCalc.doorRoomLeftMostCorner)+ Vector2(rommToCalc.roomSize.x-2,rommToCalc.roomSize.y-2)
 		GlobalVariables.DIRECTION.LEFT:
-			return world_to_map(activeRoom.doorRoomLeftMostCorner)+ Vector2(1,activeRoom.roomSize.y-2)
+			return world_to_map(rommToCalc.doorRoomLeftMostCorner)+ Vector2(1,rommToCalc.roomSize.y-2)
 		GlobalVariables.DIRECTION.UP:
-			return world_to_map(activeRoom.doorRoomLeftMostCorner)+ Vector2(1,1)
+			return world_to_map(rommToCalc.doorRoomLeftMostCorner)+ Vector2(1,1)
 	return Vector2.ZERO
 			
 func _on_enemy_made_move_ready(currentEnemy):
@@ -870,12 +870,15 @@ func _on_enemy_made_move_ready(currentEnemy):
 				for projectile in playerEnemyProjectileArray:
 					projectile.calc_projectiles_move_to(GlobalVariables.MOVEMENTCALCMODE.TOMOVE)
 				var tempPlayerEnemyProjectiles = playerEnemyProjectileArray.duplicate()
-				for projectile in tempPlayerEnemyProjectiles:
-					projectile.move_projectile()
-				tempPlayerEnemyProjectiles.clear()
+				if GlobalVariables.moveAllProjectilesAtOnce:
+					for projectile in tempPlayerEnemyProjectiles:
+						projectile.move_projectile()
+					tempPlayerEnemyProjectiles.clear()
+				else:
+					playerEnemyProjectileArray[0].move_projectile()
 			tempProjectiles.clear()
-			
-		else:
+
+		elif !GlobalVariables.moveAllEnemiesAtOnce:
 			enemiesToMoveArray[0].make_enemy_turn()
 		
 func _on_Player_Made_Move():
@@ -933,16 +936,27 @@ func _on_Player_Made_Move():
 				enemiesToMoveArray.append(enemy)
 			if playerEnemyProjectileArray.empty():
 				currentActivePhase = GlobalVariables.CURRENTPHASE.ENEMY
-				enemiesToMoveArray[0].make_enemy_turn()
+				for enemy in enemiesToMoveArray:
+					enemy.calc_enemy_move_to(GlobalVariables.MOVEMENTCALCMODE.TOMOVE, activeRoom)
+				var tempEnemyArray = enemiesToMoveArray.duplicate()
+				if GlobalVariables.moveAllEnemiesAtOnce:
+					for enemy in tempEnemyArray:
+						enemy.make_enemy_turn()
+					tempEnemyArray.clear()
+				else:
+					enemiesToMoveArray[0].make_enemy_turn()
 				#emit_signal("playerTurnDoneSignal")
 			else:
 				currentActivePhase = GlobalVariables.CURRENTPHASE.PROJECTILE
 				for projectile in playerEnemyProjectileArray:
 					projectile.calc_projectiles_move_to(GlobalVariables.MOVEMENTCALCMODE.TOMOVE)
 				var tempPlayerEnemyProjectiles = playerEnemyProjectileArray.duplicate()
-				for projectile in tempPlayerEnemyProjectiles:
-					projectile.move_projectile()
-				tempPlayerEnemyProjectiles.clear()
+				if GlobalVariables.moveAllProjectilesAtOnce:
+					for projectile in tempPlayerEnemyProjectiles:
+						projectile.move_projectile()
+					tempPlayerEnemyProjectiles.clear()
+				else:
+					playerEnemyProjectileArray[0].move_projectile()
 			tempProjectiles.clear()
 			
 
@@ -997,10 +1011,22 @@ func _on_player_enemy_projectile_made_move(movingProjectile, type = null):
 		projectilesMadeMoveCounter = 0
 		if type == GlobalVariables.PROJECTILETYPE.ENEMY:
 			currentActivePhase = GlobalVariables.CURRENTPHASE.ENEMY
-			enemiesToMoveArray[0].make_enemy_turn()
+			#calculate enemies move to position 
+			for enemy in enemiesToMoveArray:
+				enemy.calc_enemy_move_to(GlobalVariables.MOVEMENTCALCMODE.TOMOVE, activeRoom)
+			var tempEnemyArray = enemiesToMoveArray.duplicate()
+			if GlobalVariables.moveAllEnemiesAtOnce:
+				for enemy in tempEnemyArray:
+					enemy.make_enemy_turn()
+			else:
+				enemiesToMoveArray[0].make_enemy_turn()
+			tempEnemyArray.clear()
 		elif type == GlobalVariables.PROJECTILETYPE.PLAYER:
 			currentActivePhase = GlobalVariables.CURRENTPHASE.PLAYER
 			emit_signal("enemyTurnDoneSignal")
+			
+	elif !GlobalVariables.moveAllProjectilesAtOnce:
+		playerEnemyProjectileArray[0].move_projectile()
 		
 	
 	

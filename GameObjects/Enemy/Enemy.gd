@@ -104,13 +104,13 @@ func toggleVisibility(makeInVisible):
 		spriteToToggle.set_visible(true)
 			
 
-func calc_enemy_move_to(calcMode):
+func calc_enemy_move_to(calcMode, activeRoom):
 	var cell_target = Vector2.ZERO
-	var movementdirection = Vector2.ZERO
+	var movementdirectionVector = Vector2.ZERO
 	match enemyType:
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
-			movementdirection = Grid.get_enemy_move_towards_player(self)
-			cell_target = Grid.world_to_map(position)+ movementdirection
+			movementdirectionVector = Grid.get_enemy_move_towards_player(self)
+			cell_target = Grid.world_to_map(position)+ movementdirectionVector
 
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			if mageMoveCount == 6:
@@ -133,8 +133,8 @@ func calc_enemy_move_to(calcMode):
 				5:
 					#moves to left top corner 
 					movementdirection = GlobalVariables.DIRECTION.UP
-			movementdirection = Grid.get_enemy_move_mage_pattern(self, movementdirection)
-			cell_target = Grid.world_to_map(position)+ movementdirection
+			movementdirectionVector = Grid.get_enemy_move_mage_pattern(self, movementdirection, activeRoom)
+			cell_target = Grid.world_to_map(position)+ movementdirectionVector
 					
 
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
@@ -150,29 +150,29 @@ func calc_enemy_move_to(calcMode):
 				moveCellCount = 2
 			elif moveCellCount == 2: 
 				moveCellCount = 1
-			movementdirection = Grid.get_enemy_move_ninja_pattern(self, movementdirection, moveCellCount)
-			cell_target = Grid.world_to_map(position)+ movementdirection
+			movementdirectionVector = Grid.get_enemy_move_ninja_pattern(self, movementdirection, moveCellCount)
+			cell_target = Grid.world_to_map(position)+ movementdirectionVector
 			
 
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			var upDownLeftRight = randi()%4+1
 			match upDownLeftRight:
 				1:
-					movementdirection = Vector2(1,0)
+					movementdirectionVector = Vector2(1,0)
 				2:
-					movementdirection = Vector2(-1,0)
+					movementdirectionVector = Vector2(-1,0)
 				3: 
-					movementdirection = Vector2(0,1)
+					movementdirectionVector = Vector2(0,1)
 				4:
-					movementdirection = Vector2(0,-1)
-			cell_target = Grid.world_to_map(position)+ movementdirection
+					movementdirectionVector = Vector2(0,-1)
+			cell_target = Grid.world_to_map(position)+ movementdirectionVector
 
 	if calcMode == GlobalVariables.MOVEMENTCALCMODE.PREVIEW:
 		var target_position = Grid.map_to_world(cell_target) + Grid.cell_size / GlobalVariables.isometricFactor
 		if target_position:
 			moveTo = target_position
 	elif calcMode == GlobalVariables.MOVEMENTCALCMODE.TOMOVE:
-		var target_position = Grid.request_move(self, movementdirection)
+		var target_position = Grid.request_move(self, movementdirectionVector)
 		if target_position:
 			moveTo = target_position
 		else:

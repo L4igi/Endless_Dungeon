@@ -97,6 +97,15 @@ func play_powerBlock_projectile_animation():
 	$AnimationPlayer.play("powerblock_shoot")
 
 func play_projectile_animation(onSpot=true, projectileAnimation="playerProjectileAttack"):
+	print(Grid.currentActivePhase)
+	var animationMode = 1
+	if Grid.activeRoom == null || Grid.activeRoom != null && Grid.activeRoom.roomCleared || Grid.currentActivePhase != GlobalVariables.CURRENTPHASE.PROJECTILE && Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.PLAYER || Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
+		animationMode = 1
+	elif Grid.activeRoom != null && Grid.activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
+		animationMode = 2
+	else:
+		animationMode = 3
+		
 	var animationToPlay = projectileAnimation
 	match projectileAnimation : 
 		"delete":
@@ -133,13 +142,16 @@ func play_projectile_animation(onSpot=true, projectileAnimation="playerProjectil
 		elif projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
 			print("playing shoot " + str(projectileAnimation))
 			$AnimationPlayer.play("shoot")
-	elif Grid.activeRoom == null || Grid.activeRoom != null && Grid.activeRoom.roomCleared || Grid.currentActivePhase != GlobalVariables.CURRENTPHASE.PROJECTILE:
+	elif animationMode == 1:
+		print("here")
 		Grid.projectilesInActiveRoom.erase(self)
 		self.queue_free()
-	elif Grid.activeRoom != null && Grid.activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
+	elif animationMode == 2:
+		print("there")
 		Grid.projectilesInActiveRoom.erase(self)
 		self.queue_free()
-	else:
+	elif animationMode == 3:
+		print("yeah")
 		emit_signal("playerEnemieProjectileMadeMove",self, projectileType)
 	
 func create_mini_projectile(projectile, mainPlayer, currentPhase):

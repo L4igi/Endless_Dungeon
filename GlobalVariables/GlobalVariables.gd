@@ -26,6 +26,10 @@ enum ITEMTYPE{POTION = 0, KEY = 1, WEAPON = 2, HEARTCONTAINER = 3, FLASKCONTAINE
 
 enum MOVEMENTCALCMODE {PREVIEW = 0, TOMOVE = 1}
 
+var moveAllEnemiesAtOnce = true
+
+var moveAllProjectilesAtOnce = true
+
 var tileOffset = Vector2(16,16)
 
 var tileSize = 32
