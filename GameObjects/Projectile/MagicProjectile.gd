@@ -7,12 +7,11 @@ export(CELL_TYPES) var type = CELL_TYPES.MAGICPROJECTILE
 
 var movementDirection 
 var attackDamage = 1
-var projectileType
+var projectileType = null
 var isMiniProjectile = false
 var tickAlreadyMoved = false
-var deleteProjectile = false
-
-var waitingForEventBeforeContinue = false
+var deleteProjectilePlayAnimation = null
+var moveTo = null
 
 signal projectileMadeMove (type)
 
@@ -20,33 +19,49 @@ signal playerEnemieProjectileMadeMove (projectile ,type, projectileArray)
 
 func _ready():
 	pass
-
-func move_projectile(type=null):
 	
-	if(type == "moveEnemyProjectiles" && projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || type =="movePlayerProjectiles" && projectileType == GlobalVariables.PROJECTILETYPE.PLAYER):
-		var target_position = Grid.request_move(self, movementDirection)
-		if(target_position):
-			$Tween.interpolate_property(self, "position", position, target_position , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
-			$Tween.start()
-			yield($Tween, "tween_completed")
-		if !waitingForEventBeforeContinue:
-			emit_signal("playerEnemieProjectileMadeMove",self, type)
-
-	elif (type == "movePowerProjectile" && projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK):
-		var target_position = Grid.request_move(self, movementDirection)
-		if(target_position):
-			$Tween.interpolate_property(self, "position", position, target_position , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
-			$Tween.start()
-			yield($Tween, "tween_completed")
-		emit_signal("projectileMadeMove",type)
+func calc_projectiles_move_to(calcMode):
+	if(projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || projectileType == GlobalVariables.PROJECTILETYPE.PLAYER):
+		var cell_target = Grid.world_to_map(position) + movementDirection
+		if calcMode == GlobalVariables.MOVEMENTCALCMODE.PREVIEW:
+			var target_position = Grid.map_to_world(cell_target) + Grid.cell_size / GlobalVariables.isometricFactor
+			if target_position:
+				moveTo = target_position
+		elif calcMode == GlobalVariables.MOVEMENTCALCMODE.TOMOVE:
+			var target_position = Grid.request_move(self, movementDirection)
+			if target_position:
+				moveTo = target_position
+			else:
+				moveTo = null
 		
-	elif(type == "tickingProjectile" &&  projectileType == GlobalVariables.PROJECTILETYPE.TICKERPROJECTILE):
+func move_projectile(type = null):
+	if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && type == null:
+		if moveTo :
+			$Tween.interpolate_property(self, "position", position, moveTo , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			$Tween.start()
+			yield($Tween, "tween_completed")
+			if deleteProjectilePlayAnimation == null:
+				emit_signal("playerEnemieProjectileMadeMove",self, projectileType)
+			else:
+				play_projectile_animation(false, deleteProjectilePlayAnimation)
+		else:
+			play_projectile_animation(false, deleteProjectilePlayAnimation)
+
+	elif projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK:
+		var target_position = Grid.request_move(self, movementDirection)
+		if(target_position):
+			$Tween.interpolate_property(self, "position", position, target_position , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			$Tween.start()
+			yield($Tween, "tween_completed")
+		emit_signal("projectileMadeMove",projectileType)
+		
+	elif projectileType == GlobalVariables.PROJECTILETYPE.TICKERPROJECTILE:
 		var target_position = position + movementDirection
 		movementDirection = movementDirection*-1
 		$Tween.interpolate_property(self, "position", position, target_position , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
 		$Tween.start()
 		yield($Tween, "tween_completed")
-		emit_signal("projectileMadeMove",type)
+		emit_signal("projectileMadeMove",projectileType)
 		
 	elif type == "allProjectiles":
 		var target_position = Grid.request_move(self, movementDirection)
@@ -55,7 +70,7 @@ func move_projectile(type=null):
 			$Tween.start()
 			yield($Tween, "tween_completed")
 			position = target_position
-			emit_signal("projectileMadeMove",type)
+			emit_signal("projectileMadeMove",projectileType)
 			
 	elif type == "clearedRoomProjectile":
 		var target_position = Grid.request_move(self, movementDirection)
@@ -66,9 +81,10 @@ func move_projectile(type=null):
 			position = target_position
 			move_projectile("clearedRoomProjectile")
 		else:
-			emit_signal("projectileMadeMove",type)
+			play_projectile_animation(false, deleteProjectilePlayAnimation)
+			emit_signal("projectileMadeMove",projectileType)
 	else:
-		emit_signal("projectileMadeMove",type)
+		emit_signal("projectileMadeMove",projectileType)
 
 func play_player_projectile_animation():
 	$AnimationPlayer.play("shoot")
@@ -80,27 +96,39 @@ func play_enemy_projectile_animation():
 func play_powerBlock_projectile_animation():
 	$AnimationPlayer.play("powerblock_shoot")
 
-func play_playerProjectile_attack_animation(onSpot=true):
+func play_projectile_animation(onSpot=true, projectileAnimation="playerProjectileAttack"):
+	var animationToPlay = projectileAnimation
+	match projectileAnimation : 
+		"delete":
+			if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
+				animationToPlay = "EnemyProjectileDelete"
+			elif projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
+				animationToPlay = "PlayerProjectileDelete"
+		"attack":
+			if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
+				animationToPlay = "enemyProjectileAttack"
+			elif projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
+				animationToPlay = "playerProjectileAttack"
+		"merge":
+			if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
+				animationToPlay = "enemy_shoot"
+			elif projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
+				isMiniProjectile = false
+				attackDamage = 1.0
+				animationToPlay = "shoot"
+				
 	set_process(false)
-	$AnimationPlayer.play("playerProjectileAttack")
+	$AnimationPlayer.play(animationToPlay)
 	if !onSpot:
 		$Tween.interpolate_property($Sprite, "position", Vector2(), movementDirection*GlobalVariables.tileSize, $AnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
 		$Tween.start()
 	yield($AnimationPlayer, "animation_finished")
 	set_process(true)
-	if !waitingForEventBeforeContinue:
+	if Grid.activeRoom == null || Grid.activeRoom != null && Grid.activeRoom.roomCleared || Grid.currentActivePhase != GlobalVariables.CURRENTPHASE.PROJECTILE:
+		Grid.projectilesInActiveRoom.erase(self)
 		self.queue_free()
-	
-func play_enemyProjectile_attack_animation(onSpot=true):
-	print("Playing projectile animation")
-	set_process(false)
-	$AnimationPlayer.play("enemyProjectileAttack")
-	if !onSpot:
-		$Tween.interpolate_property($Sprite, "position", Vector2(), movementDirection*GlobalVariables.tileSize, $AnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
-		$Tween.start()
-	yield($AnimationPlayer, "animation_finished")
-	set_process(true)
-	self.queue_free()
+	else:
+		emit_signal("playerEnemieProjectileMadeMove",self, projectileType)
 	
 func create_mini_projectile(projectile, mainPlayer, currentPhase):
 	if currentPhase == GlobalVariables.CURRENTPHASE.PLAYER:
@@ -121,10 +149,6 @@ func create_mini_projectile(projectile, mainPlayer, currentPhase):
 			yield($Tween, "tween_completed")
 		mainPlayer.disablePlayerInput = false
 			
-func makeNormalProjectile():
-	isMiniProjectile = false
-	attackDamage = 1.0
-	$AnimationPlayer.play("shoot")
 
 func create_ticking_projectile(currentRoomLeftMostCorner):
 	projectileType = GlobalVariables.PROJECTILETYPE.TICKERPROJECTILE
