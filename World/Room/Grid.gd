@@ -792,7 +792,8 @@ func create_enemy_room(unlockedDoor):
 				newEnemy.connect("enemyDefeated", self, "_on_enemy_defeated")
 				newEnemy.connect("enemyExplosionDone", self, "_on_enemy_explosion_done")
 				add_child(newEnemy)
-				newEnemy.calc_enemy_move_to(GlobalVariables.MOVEMENTCALCMODE.PREVIEW, unlockedDoor)
+				newEnemy.calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW, unlockedDoor)
+				newEnemy.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
 				set_cellv(world_to_map(newEnemy.position), get_tileset().find_tile_by_name(match_Enum(newEnemy.type)))
 				unlockedDoor.enemiesInRoom.append(newEnemy)
 	#print(spawnCellArray)
@@ -857,7 +858,7 @@ func _on_enemy_made_move_ready(currentEnemy):
 			#calculate enemy projectiles move to position 
 			for projectile in tempProjectiles:
 				if projectile.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
-					projectile.calc_projectiles_move_to(GlobalVariables.MOVEMENTCALCMODE.PREVIEW)
+					projectile.calc_projectiles_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
 			#move all player Projectiles 
 			for projectile in tempProjectiles:
 				if projectile.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
@@ -868,7 +869,7 @@ func _on_enemy_made_move_ready(currentEnemy):
 			else:
 				currentActivePhase = GlobalVariables.CURRENTPHASE.PROJECTILE
 				for projectile in playerEnemyProjectileArray:
-					projectile.calc_projectiles_move_to(GlobalVariables.MOVEMENTCALCMODE.TOMOVE)
+					projectile.calc_projectiles_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION)
 				var tempPlayerEnemyProjectiles = playerEnemyProjectileArray.duplicate()
 				if GlobalVariables.moveAllProjectilesAtOnce:
 					for projectile in tempPlayerEnemyProjectiles:
@@ -927,7 +928,7 @@ func _on_Player_Made_Move():
 			#calculate move to position of player projectiles
 			for projectile in tempProjectiles:
 				if projectile.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
-					projectile.calc_projectiles_move_to(GlobalVariables.MOVEMENTCALCMODE.PREVIEW)
+					projectile.calc_projectiles_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
 			#move enemy Projectiles after player turn done
 			for projectile in tempProjectiles:
 				if projectile.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
@@ -937,7 +938,7 @@ func _on_Player_Made_Move():
 			if playerEnemyProjectileArray.empty():
 				currentActivePhase = GlobalVariables.CURRENTPHASE.ENEMY
 				for enemy in enemiesToMoveArray:
-					enemy.calc_enemy_move_to(GlobalVariables.MOVEMENTCALCMODE.TOMOVE, activeRoom)
+					enemy.calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, activeRoom)
 				var tempEnemyArray = enemiesToMoveArray.duplicate()
 				if GlobalVariables.moveAllEnemiesAtOnce:
 					for enemy in tempEnemyArray:
@@ -949,7 +950,7 @@ func _on_Player_Made_Move():
 			else:
 				currentActivePhase = GlobalVariables.CURRENTPHASE.PROJECTILE
 				for projectile in playerEnemyProjectileArray:
-					projectile.calc_projectiles_move_to(GlobalVariables.MOVEMENTCALCMODE.TOMOVE)
+					projectile.calc_projectiles_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION)
 				var tempPlayerEnemyProjectiles = playerEnemyProjectileArray.duplicate()
 				if GlobalVariables.moveAllProjectilesAtOnce:
 					for projectile in tempPlayerEnemyProjectiles:
@@ -1013,7 +1014,7 @@ func _on_player_enemy_projectile_made_move(movingProjectile, type = null):
 			currentActivePhase = GlobalVariables.CURRENTPHASE.ENEMY
 			#calculate enemies move to position 
 			for enemy in enemiesToMoveArray:
-				enemy.calc_enemy_move_to(GlobalVariables.MOVEMENTCALCMODE.TOMOVE, activeRoom)
+				enemy.calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, activeRoom)
 			var tempEnemyArray = enemiesToMoveArray.duplicate()
 			if GlobalVariables.moveAllEnemiesAtOnce:
 				for enemy in tempEnemyArray:
@@ -1187,8 +1188,8 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 		newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.PLAYER
 		newMagicProjectile.get_node("Sprite").set_frame(17)
 		newMagicProjectile.position = player.position + map_to_world(attack_direction*2)
-		newMagicProjectile.play_projectile_animation(true, "playerProjectileAttack")
 		add_child(newMagicProjectile)
+		newMagicProjectile.play_projectile_animation(true, "playerProjectileAttack")
 		attackedEnemy.inflictDamage(attackDamage, attackType, world_to_map(player.position) + attack_direction*2, mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
 	elif (get_cellv(world_to_map(player.position) + attack_direction*2) == TILETYPES.FLOOR && attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		print("Magic was used to attack")

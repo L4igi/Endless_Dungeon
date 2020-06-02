@@ -61,6 +61,8 @@ var hitByProjectile = null
 
 var moveTo = null
 
+var attackTo = null
+
 func _ready():
 	pass
 	
@@ -167,11 +169,11 @@ func calc_enemy_move_to(calcMode, activeRoom):
 					movementdirectionVector = Vector2(0,-1)
 			cell_target = Grid.world_to_map(position)+ movementdirectionVector
 
-	if calcMode == GlobalVariables.MOVEMENTCALCMODE.PREVIEW:
+	if calcMode == GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW:
 		var target_position = Grid.map_to_world(cell_target) + Grid.cell_size / GlobalVariables.isometricFactor
 		if target_position:
 			moveTo = target_position
-	elif calcMode == GlobalVariables.MOVEMENTCALCMODE.TOMOVE:
+	elif calcMode == GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION:
 		var target_position = Grid.request_move(self, movementdirectionVector)
 		if target_position:
 			moveTo = target_position
@@ -250,21 +252,33 @@ func enemyMovement():
 	else:
 		emit_signal("enemyMadeMove", self)
 
+func calc_enemy_attack_to(calcMode):
+	match enemyType:
+		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
+			attackTo = Grid.enableEnemyAttack(self, attackType, horizontalVerticalAttack, diagonalAttack)
+		GlobalVariables.ENEMYTYPE.MAGEENEMY:
+			attackTo = Grid.enableEnemyAttack(self, attackType, horizontalVerticalAttack, diagonalAttack)
+		GlobalVariables.ENEMYTYPE.NINJAENEMY:
+			attackTo = Grid.enableEnemyAttack(self, attackType, horizontalVerticalAttack, diagonalAttack)
+		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
+			attackTo = Grid.enableEnemyAttack(self, attackType, horizontalVerticalAttack, diagonalAttack)
+			
+	if calcMode == GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW:
+		pass
 			
 func enemyAttack(): 
 	match enemyType:
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
-			var attackDirection = Grid.enableEnemyAttack(self, attackType, horizontalVerticalAttack, diagonalAttack)
-			if(attackDirection != Vector2.ZERO):
+			if attackTo != Vector2.ZERO:
 				set_process(false)
 				#play defeat animation 
 				$WarriorAnimationPlayer.play("attack", -1, 3.0)
-				$Tween.interpolate_property($SpriteWarriorEnemy, "position", attackDirection*GlobalVariables.tileSize, Vector2(), $WarriorAnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+				$Tween.interpolate_property($SpriteWarriorEnemy, "position", attackTo*GlobalVariables.tileSize, Vector2(), $WarriorAnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
 				$Tween.start()
 				yield($WarriorAnimationPlayer, "animation_finished")
 				$WarriorAnimationPlayer.play("idle")
 				set_process(true)
-				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackDirection, attackType,  attackDamage)
+				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackTo, attackType,  attackDamage)
 			attackCount += 1
 			if attackCount + movementCount < maxTurnActions:
 				enemyMovement()
@@ -275,17 +289,15 @@ func enemyAttack():
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			if mageOnOff == 1:
 				mageOnOff = 0
-				var attackDirection = Grid.enableEnemyAttack(self, attackType, horizontalVerticalAttack, diagonalAttack)
-				#print("attackDirection  " + str(attackDirection))
-				if attackDirection != Vector2.ZERO:
+				if attackTo != Vector2.ZERO:
 					set_process(false)
 					$MageAnimationPlayer.play("attack", -1, 3.0)
-					$Tween.interpolate_property($Sprite, "position", attackDirection*GlobalVariables.tileSize, Vector2(), $MageAnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+					$Tween.interpolate_property($Sprite, "position", attackTo*GlobalVariables.tileSize, Vector2(), $MageAnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
 					$Tween.start()
 					yield($MageAnimationPlayer, "animation_finished")
 					$MageAnimationPlayer.play("idle")
 					set_process(true)
-					emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackDirection, attackType, attackDamage)
+					emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackTo, attackType, attackDamage)
 				attackCount += 1
 				if attackCount + movementCount < maxTurnActions:
 					enemyMovement()
@@ -300,25 +312,24 @@ func enemyAttack():
 					emit_signal("enemyMadeMove", self)
 		
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
-			var attackDirection = Grid.enableEnemyAttack(self, attackType, horizontalVerticalAttack, diagonalAttack)
-			if attackDirection.x == 1 || attackDirection.y == 1:
+			if attackTo.x == 1 || attackTo.y == 1:
 				attackDamage = 2
 			else:
 				attackDamage = 1
-			if attackDirection != Vector2.ZERO:
+			if attackTo != Vector2.ZERO:
 				set_process(false)
 				#play defeat animation 
 				$NinjaAnimationPlayer.play("attack", -1, 4.5)
-				$Tween.interpolate_property($SpriteNinjaEnemy, "position", Vector2(), attackDirection*GlobalVariables.tileSize, $NinjaAnimationPlayer.current_animation_length/4.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+				$Tween.interpolate_property($SpriteNinjaEnemy, "position", Vector2(), attackTo*GlobalVariables.tileSize, $NinjaAnimationPlayer.current_animation_length/4.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
 				$Tween.start()
 				yield($NinjaAnimationPlayer, "animation_finished")
 				$NinjaAnimationPlayer.play("attackBack", -1, 4.5)
-				$Tween.interpolate_property($SpriteNinjaEnemy, "position", attackDirection*GlobalVariables.tileSize, Vector2(), $NinjaAnimationPlayer.current_animation_length/4.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+				$Tween.interpolate_property($SpriteNinjaEnemy, "position", attackTo*GlobalVariables.tileSize, Vector2(), $NinjaAnimationPlayer.current_animation_length/4.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
 				$Tween.start()
 				yield($NinjaAnimationPlayer, "animation_finished")
 				$NinjaAnimationPlayer.play("idle")
 				set_process(true)
-				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackDirection, attackType, attackDamage)
+				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackTo, attackType, attackDamage)
 			attackCount += 1
 			if attackCount + movementCount < maxTurnActions:
 				enemyMovement()
@@ -326,17 +337,16 @@ func enemyAttack():
 				emit_signal("enemyMadeMove", self)
 			
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
-			var attackDirection = Grid.enableEnemyAttack(self, attackType, horizontalVerticalAttack, diagonalAttack)
-			if attackDirection != Vector2.ZERO:
+			if attackTo != Vector2.ZERO:
 				set_process(false)
 				#play defeat animation 
 				$AnimationPlayer.play("attack", -1, 3.0)
-				$Tween.interpolate_property($Sprite, "position", attackDirection*32, Vector2(), $AnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+				$Tween.interpolate_property($Sprite, "position", attackTo*GlobalVariables.tileSize, Vector2(), $AnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
 				$Tween.start()
 				yield($AnimationPlayer, "animation_finished")
 				$AnimationPlayer.play("idle")
 				set_process(true)
-				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackDirection, attackType, attackDamage)
+				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackTo, attackType, attackDamage)
 				attackCount += 1
 			if attackCount + movementCount < maxTurnActions:
 				enemyMovement()
@@ -353,6 +363,7 @@ func make_enemy_turn():
 
 
 func matchEnemyTurn():
+	calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION)
 	match enemyType:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			barrierenemy_type_actions()

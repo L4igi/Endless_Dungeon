@@ -23,11 +23,11 @@ func _ready():
 func calc_projectiles_move_to(calcMode):
 	if(projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || projectileType == GlobalVariables.PROJECTILETYPE.PLAYER):
 		var cell_target = Grid.world_to_map(position) + movementDirection
-		if calcMode == GlobalVariables.MOVEMENTCALCMODE.PREVIEW:
+		if calcMode == GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW:
 			var target_position = Grid.map_to_world(cell_target) + Grid.cell_size / GlobalVariables.isometricFactor
 			if target_position:
 				moveTo = target_position
-		elif calcMode == GlobalVariables.MOVEMENTCALCMODE.TOMOVE:
+		elif calcMode == GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION:
 			var target_position = Grid.request_move(self, movementDirection)
 			if target_position:
 				moveTo = target_position
@@ -143,15 +143,12 @@ func play_projectile_animation(onSpot=true, projectileAnimation="playerProjectil
 			print("playing shoot " + str(projectileAnimation))
 			$AnimationPlayer.play("shoot")
 	elif animationMode == 1:
-		print("here")
 		Grid.projectilesInActiveRoom.erase(self)
 		self.queue_free()
 	elif animationMode == 2:
-		print("there")
 		Grid.projectilesInActiveRoom.erase(self)
 		self.queue_free()
 	elif animationMode == 3:
-		print("yeah")
 		emit_signal("playerEnemieProjectileMadeMove",self, projectileType)
 	
 func create_mini_projectile(projectile, mainPlayer, currentPhase):
