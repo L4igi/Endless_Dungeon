@@ -79,6 +79,8 @@ var mirrorDirectionsArray = []
 
 var attackRangeNode = null
 
+var attackCellArray = []
+
 func _ready():
 	pass
 	
@@ -285,7 +287,7 @@ func enemyAttack():
 				yield($WarriorAnimationPlayer, "animation_finished")
 				$WarriorAnimationPlayer.play("idle")
 				set_process(true)
-				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackTo, attackType,  attackDamage)
+				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackTo, attackType,  attackDamage, attackCellArray)
 			attackCount += 1
 			if attackCount + movementCount < maxTurnActions:
 				enemyMovement()
@@ -294,29 +296,19 @@ func enemyAttack():
 
 		
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
-			if mageOnOff == 1:
-				mageOnOff = 0
-				if attackTo != Vector2.ZERO:
-					set_process(false)
-					$MageAnimationPlayer.play("attack", -1, 3.0)
-					$Tween.interpolate_property($Sprite, "position", attackTo*GlobalVariables.tileSize, Vector2(), $MageAnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
-					$Tween.start()
-					yield($MageAnimationPlayer, "animation_finished")
-					$MageAnimationPlayer.play("idle")
-					set_process(true)
-					emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackTo, attackType, attackDamage)
-				attackCount += 1
-				if attackCount + movementCount < maxTurnActions:
-					enemyMovement()
-				else:
-					emit_signal("enemyMadeMove", self)
+			set_process(false)
+			$MageAnimationPlayer.play("attack", -1, 3.0)
+			$Tween.interpolate_property($Sprite, "position", Vector2(), Vector2(), $MageAnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			$Tween.start()
+			yield($MageAnimationPlayer, "animation_finished")
+			$MageAnimationPlayer.play("idle")
+			set_process(true)
+			emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackTo, attackType, attackDamage, attackCellArray)
+			attackCount += 1
+			if attackCount + movementCount < maxTurnActions:
+				enemyMovement()
 			else:
-				mageOnOff = 1
-				attackCount += 1
-				if attackCount + movementCount < maxTurnActions:
-					enemyMovement()
-				else:
-					emit_signal("enemyMadeMove", self)
+				emit_signal("enemyMadeMove", self)
 		
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			if attackTo.x == 1 || attackTo.y == 1:
@@ -336,7 +328,7 @@ func enemyAttack():
 				yield($NinjaAnimationPlayer, "animation_finished")
 				$NinjaAnimationPlayer.play("idle")
 				set_process(true)
-				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackTo, attackType, attackDamage)
+				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackTo, attackType, attackDamage, attackCellArray)
 			attackCount += 1
 			if attackCount + movementCount < maxTurnActions:
 				enemyMovement()
@@ -353,7 +345,7 @@ func enemyAttack():
 				yield($AnimationPlayer, "animation_finished")
 				$AnimationPlayer.play("idle")
 				set_process(true)
-				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackTo, attackType, attackDamage)
+				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackTo, attackType, attackDamage, attackCellArray)
 				attackCount += 1
 			if attackCount + movementCount < maxTurnActions:
 				enemyMovement()
@@ -361,6 +353,8 @@ func enemyAttack():
 				emit_signal("enemyMadeMove", self)
 				
 func adjust_enemy_attack_range_enable_attack(calcMode):
+	if !attackCellArray.empty():
+		attackCellArray.clear()
 	var cellsToColor = []
 	if attackRangeNode != null:
 		attackRangeNode.queue_free()
@@ -370,7 +364,7 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 	var enemyMapPostion = Grid.world_to_map(position)
 	var attackToSet = false
 	var count = 0
-	print("mirrordirectionArray " + str(mirrorDirectionsArray))
+	#print("mirrordirectionArray " + str(mirrorDirectionsArray))
 	for direction in mirrorDirectionsArray:
 		for attackRange in attackRangeArray:
 			count +=1
@@ -414,6 +408,7 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 	if !attackToSet:
 		attackTo = Vector2.ZERO
 		attackCell = Vector2.ZERO
+	attackCellArray = cellsToColor.duplicate()
 	cellsToColor.clear()
 	
 func mirror_base_direction():
@@ -496,9 +491,22 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 				
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.MAGEENEMY
-			mageMoveCount = mageEnemyCount
 			attackType = GlobalVariables.ATTACKTYPE.MAGIC
 			get_node("SpriteMageEnemy").set_visible(true)
+			lifePoints = 1
+			attackDamage = 1 
+			var attackRange = 5
+			for count in attackRange:
+				attackRangeArray.append([])
+			attackRangeArray[0] = [0, 1, 2]
+			#attackRangeArray[1] = [0,2]
+			mirrorBaseDirection = true
+			attackRangeInitDirection = GlobalVariables.DIRECTION.RIGHT
+			mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN]
+			if mirrorBaseDirection:
+				mirror_base_direction()
+			if !mirrorDirectionsArray.has(attackRangeInitDirection):
+				mirrorDirectionsArray.append(attackRangeInitDirection)
 	return enemyType
 
 

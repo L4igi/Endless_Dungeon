@@ -97,7 +97,7 @@ func play_powerBlock_projectile_animation():
 	$AnimationPlayer.play("powerblock_shoot")
 
 func play_projectile_animation(onSpot=true, projectileAnimation="playerProjectileAttack"):
-	print(Grid.currentActivePhase)
+	#print(Grid.currentActivePhase)
 	var animationMode = 1
 	if Grid.activeRoom == null || Grid.activeRoom != null && Grid.activeRoom.roomCleared || Grid.currentActivePhase != GlobalVariables.CURRENTPHASE.PROJECTILE && Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.PLAYER || Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
 		animationMode = 1
