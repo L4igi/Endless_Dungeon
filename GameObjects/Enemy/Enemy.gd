@@ -427,8 +427,6 @@ func mirror_base_direction():
 					if value != 0:
 						attackRange.append(value*-1)
 				tempAttackRang.clear()
-	if !mirrorDirectionsArray.find(attackRangeInitDirection):
-		mirrorDirectionsArray.append(attackRangeInitDirection)
 						
 						
 func check_if_cell_valid_position(checkCell):
@@ -470,11 +468,13 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 			attackType = GlobalVariables.ATTACKTYPE.SWORD
 			get_node("Sprite").set_visible(true)
 			makeEnemyBarrier(currentGrid, unlockedDoor)
+			
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.NINJAENEMY
 			attackType = GlobalVariables.ATTACKTYPE.NINJA
 			get_node("SpriteNinjaEnemy").set_visible(true)
 			diagonalAttack = true
+			
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.WARRIROENEMY
 			lifePoints = 1
@@ -484,18 +484,23 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 			get_node("SpriteWarriorEnemy").set_visible(true)
 			for count in attackRange:
 				attackRangeArray.append([])
-			attackRangeArray[0] = [0,1,2]
-			attackRangeArray[1] = [0,2]
+			attackRangeArray[0] = [0, 1, 2]
+			#attackRangeArray[1] = [0,2]
+			mirrorBaseDirection = true
 			attackRangeInitDirection = GlobalVariables.DIRECTION.RIGHT
-			mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN, GlobalVariables.DIRECTION.RIGHT]
+			mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN]
 			if mirrorBaseDirection:
 				mirror_base_direction()
+			if !mirrorDirectionsArray.has(attackRangeInitDirection):
+				mirrorDirectionsArray.append(attackRangeInitDirection)
+				
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.MAGEENEMY
 			mageMoveCount = mageEnemyCount
 			attackType = GlobalVariables.ATTACKTYPE.MAGIC
 			get_node("SpriteMageEnemy").set_visible(true)
 	return enemyType
+
 
 func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, mainPlayer = null, CURRENTPHASE = null):
 	var barrierDefeatItem = null
