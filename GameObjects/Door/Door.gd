@@ -42,7 +42,6 @@ var roomCleared = false
 var createExit = false
 
 func _ready():
-	pass
 	var player = Grid.get_node("Player")
 	for child in player.get_children():
 		if child is Camera2D:

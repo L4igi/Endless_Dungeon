@@ -153,6 +153,7 @@ func set_enum_index(var enumName, var setTo):
 
 func _ready():
 	var newPlayer = Player.instance()
+	newPlayer.set_z_index(2)
 	newPlayer.position = Vector2(80,80)
 	newPlayer.set_name("Player")
 	add_child(newPlayer)
@@ -181,8 +182,11 @@ func _process(delta):
 			
 func get_cell_pawn(coordinates):
 	for node in get_children():
-		if world_to_map(node.position) == coordinates:
-			return(node)
+		if node is TextureRect:
+			return
+		else:
+			if world_to_map(node.position) == coordinates:
+				return(node)
 			
 			
 func request_move(pawn, direction):
@@ -635,6 +639,7 @@ func create_puzzle_room(unlockedDoor):
 			colorToUse = Color(randf(),randf(),randf(),1.0)
 		alreadyUsedColors.append(colorToUse)
 		var newPuzzlePiece = PuzzlePiece.instance()
+		newPuzzlePiece.set_z_index(3)
 		if !barrierPuzzlePieceAlreadySpawned:
 			newPuzzlePiece.makePuzzleBarrier(self, unlockedDoor)
 		newPuzzlePiece.color = colorToUse
@@ -681,6 +686,7 @@ func create_enemy_room(unlockedDoor):
 				alreadyinArray = false
 				spawnCellArray.append(spawnCell)
 				var newEnemy = Enemy.instance()
+				newEnemy.set_z_index(2)
 				#create enemy typ here (enemy. createEnemyType
 				newEnemy.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(spawnCellX, spawnCellY))
 				var generatedEnemyType = newEnemy.generateEnemy(mageEnemyCount, self, unlockedDoor)
@@ -745,6 +751,7 @@ func get_enemy_move_mage_pattern(enemy, movementdirection, rommToCalc):
 func _on_enemy_made_move_ready(currentEnemy):
 	if(activeRoom != null):
 		enemiesToMoveArray.erase(currentEnemy)
+		currentEnemy.adjust_enemy_attack_range_enable_attack(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
 		#print("Moving " + str(currentEnemy) + " enemies left to move " + str(enemiesToMoveArray.size()))
 		if enemiesToMoveArray.empty():
 			enemiesMadeMoveCounter = 0
@@ -1084,6 +1091,7 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 		print("Woosh Player Wand Attack hit")
 		var attackedEnemy = get_cell_pawn(world_to_map(player.position) + attack_direction*2)
 		var newMagicProjectile = MagicProjectile.instance()
+		newMagicProjectile.set_z_index(3)
 		newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.PLAYER
 		newMagicProjectile.get_node("Sprite").set_frame(17)
 		newMagicProjectile.position = player.position + map_to_world(attack_direction*2)
@@ -1093,6 +1101,7 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 	elif (get_cellv(world_to_map(player.position) + attack_direction*2) == TILETYPES.FLOOR && attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		print("Magic was used to attack")
 		var newMagicProjectile = MagicProjectile.instance()
+		newMagicProjectile.set_z_index(3)
 		newMagicProjectile.get_node("Sprite").set_frame(17)
 		newMagicProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
 		newMagicProjectile.connect("playerEnemieProjectileMadeMove", self, "_on_player_enemy_projectile_made_move")
@@ -1356,6 +1365,7 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage):
 		#spawn magic projectile
 		if(get_cellv(world_to_map(map_to_world(attackCell)+GlobalVariables.tileOffset))==TILETYPES.FLOOR):
 			var newMagicProjectile = MagicProjectile.instance()
+			newMagicProjectile.set_z_index(3)
 			newMagicProjectile.get_node("Sprite").set_frame(0)
 			newMagicProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
 			newMagicProjectile.connect("playerEnemieProjectileMadeMove", self, "_on_player_enemy_projectile_made_move")
@@ -1460,6 +1470,7 @@ func dropLootInActiveRoom():
 			#set type of item 
 	else:
 		var newItem = Item.instance()
+		newItem.set_z_index(1)
 		var newItemPosition = activeRoom.doorRoomLeftMostCorner + map_to_world(activeRoom.roomSize/2)
 		var itemPosMover = Vector2(0,1)
 		while(get_cellv(world_to_map(newItemPosition)) == TILETYPES.PLAYER || get_cellv(world_to_map(newItemPosition)) == TILETYPES.PUZZLEPIECE):
@@ -1485,6 +1496,7 @@ func dropLootInActiveRoom():
 
 func generate_keyValue_item(keyValue, modulation, type, barrierRoom):
 	var newItem = Item.instance()
+	newItem.set_z_index(1)
 	newItem.keyValue = keyValue
 	newItem.modulation = modulation
 	newItem.get_node("Sprite").set_modulate(newItem.modulation)
@@ -1816,6 +1828,7 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 		while horizontalAddcount < roomSizeHorizontal:
 			var spawn_pos = leftmostCorner + Vector2(horizontalAddcount*GlobalVariables.tileSize,verticalAddcount*GlobalVariables.tileSize)
 			var newWallPiece = Wall.instance()
+			newWallPiece.set_z_index(2)
 			if spawn_pos == leftmostCorner:
 				newWallPiece.set_Texture("corner", 0)
 			elif spawn_pos == leftmostCorner + Vector2((roomSizeHorizontal-1)*GlobalVariables.tileSize,0):
@@ -1913,6 +1926,7 @@ func create_doors(roomLeftMostCorner, startingRoom=false, roomSizeHorizontal = 1
 		doorCount-=1
 	for element in doorLocationArray:
 		var newDoor = Door.instance()
+		newDoor.set_z_index(5)
 		var alternateSpawnLocation = false
 		if(randi()%2+1 == 1):
 			alternateSpawnLocation = true

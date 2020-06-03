@@ -85,6 +85,8 @@ var attackRangeDownLeft = 0
 
 var attackRangeDownRight = 0
 
+var attackRangeNode = null
+
 func _ready():
 	pass
 	
@@ -367,6 +369,11 @@ func enemyAttack():
 				emit_signal("enemyMadeMove", self)
 				
 func adjust_enemy_attack_range_enable_attack(calcMode):
+	var cellsToColor = []
+	if attackRangeNode != null:
+		attackRangeNode.queue_free()
+	attackRangeNode = Node2D.new()
+	Grid.add_child(attackRangeNode)
 	var enemyMapPostion = Grid.world_to_map(position)
 	var attackToSet = false
 	if attackRangeUp > 0: 
@@ -381,9 +388,8 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 			elif checkCellValue != Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue != Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue != Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
 				var dangerField = TextureRect.new()
 				dangerField.set_texture(dangerFieldTexture)
-				dangerField._set_position(Vector2(0, -attackRange)*GlobalVariables.tileSize-GlobalVariables.tileOffset)
-				dangerField.set_draw_behind_parent(true)
-				add_child(dangerField)
+				dangerField._set_position(checkCell*GlobalVariables.tileSize)
+				attackRangeNode.add_child(dangerField)
 			else:
 				attackRangeUp = attackRange - 1
 				break
