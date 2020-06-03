@@ -5,6 +5,8 @@ onready var Grid = get_parent()
 enum CELL_TYPES{PLAYER=0, WALL=1, ENEMY=2, PUZZLEPIECE=3, ITEM=4, DOOR=5, UNLOCKEDDOOR=6, MAGICPROJECTILE=7, BLOCK=8}
 export(CELL_TYPES) var type = CELL_TYPES.ENEMY
 
+var dangerFieldTexture = preload("res://GameObjects/Enemy/EnemyAttackRange.png")
+
 var maxTurnActions = 2
 
 var movementCount = 0
@@ -376,7 +378,13 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 				attackTo = Vector2(0, -attackRange)
 				attackCell = checkCell
 				attackToSet = true
-			elif checkCellValue == GlobalVariables.CELL_TYPES.WALL || checkCellValue == GlobalVariables.CELL_TYPES.DOOR || checkCellValue == GlobalVariables.CELL_TYPES.UNLOCKEDDOOR:
+			elif checkCellValue != Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue != Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue != Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
+				var dangerField = TextureRect.new()
+				dangerField.set_texture(dangerFieldTexture)
+				dangerField._set_position(Vector2(0, -attackRange)*GlobalVariables.tileSize-GlobalVariables.tileOffset)
+				dangerField.set_draw_behind_parent(true)
+				add_child(dangerField)
+			else:
 				attackRangeUp = attackRange - 1
 				break
 	if attackRangeDown > 0: 
@@ -387,7 +395,9 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 				attackTo = Vector2(0, attackRange)
 				attackCell = checkCell
 				attackToSet = true
-			elif checkCellValue == GlobalVariables.CELL_TYPES.WALL || checkCellValue == GlobalVariables.CELL_TYPES.DOOR || checkCellValue == GlobalVariables.CELL_TYPES.UNLOCKEDDOOR:
+			elif checkCellValue != Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue != Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue != Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
+				pass
+			else:
 				attackRangeDown = attackRange - 1
 				break
 	if attackRangeRight > 0: 
@@ -398,7 +408,9 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 				attackTo = Vector2(attackRange,0)
 				attackCell = checkCell
 				attackToSet = true
-			elif checkCellValue == GlobalVariables.CELL_TYPES.WALL || checkCellValue == GlobalVariables.CELL_TYPES.DOOR || checkCellValue == GlobalVariables.CELL_TYPES.UNLOCKEDDOOR:
+			elif checkCellValue != Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue != Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue != Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
+				pass
+			else:
 				attackRangeRight = attackRange - 1
 				break
 	if attackRangeLeft > 0: 
@@ -409,7 +421,9 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 				attackTo = Vector2(-attackRange,0)
 				attackCell = checkCell
 				attackToSet = true
-			elif checkCellValue == GlobalVariables.CELL_TYPES.WALL || checkCellValue == GlobalVariables.CELL_TYPES.DOOR || checkCellValue == GlobalVariables.CELL_TYPES.UNLOCKEDDOOR:
+			elif checkCellValue != Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue != Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue != Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
+				pass
+			else:
 				attackRangeLeft = attackRange - 1
 				break
 	if attackRangeUpLeft > 0: 
@@ -420,7 +434,9 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 				attackTo = Vector2(-attackRange, -attackRange)
 				attackCell = checkCell
 				attackToSet = true
-			elif checkCellValue == GlobalVariables.CELL_TYPES.WALL || checkCellValue == GlobalVariables.CELL_TYPES.DOOR || checkCellValue == GlobalVariables.CELL_TYPES.UNLOCKEDDOOR:
+			elif checkCellValue != Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue != Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue != Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
+				pass
+			else:
 				attackRangeUpLeft = attackRange - 1
 				break
 	if attackRangeUpRight > 0: 
@@ -431,7 +447,9 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 				attackTo = Vector2(attackRange, -attackRange)
 				attackCell = checkCell
 				attackToSet = true
-			elif checkCellValue == GlobalVariables.CELL_TYPES.WALL || checkCellValue == GlobalVariables.CELL_TYPES.DOOR || checkCellValue == GlobalVariables.CELL_TYPES.UNLOCKEDDOOR:
+			elif checkCellValue != Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue != Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue != Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
+				pass
+			else:
 				attackRangeUpRight = attackRange - 1
 				break
 	if attackRangeDownLeft > 0: 
@@ -442,7 +460,9 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 				attackTo = Vector2(-attackRange, attackRange)
 				attackCell = checkCell
 				attackToSet = true
-			elif checkCellValue == GlobalVariables.CELL_TYPES.WALL || checkCellValue == GlobalVariables.CELL_TYPES.DOOR || checkCellValue == GlobalVariables.CELL_TYPES.UNLOCKEDDOOR:
+			elif checkCellValue != Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue != Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue != Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
+				pass
+			else:
 				attackRangeDownLeft = attackRange - 1
 				break
 	if attackRangeDownRight > 0: 
@@ -453,7 +473,9 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 				attackTo = Vector2(attackRange, attackRange)
 				attackCell = checkCell
 				attackToSet = true
-			elif checkCellValue == GlobalVariables.CELL_TYPES.WALL || checkCellValue == GlobalVariables.CELL_TYPES.DOOR || checkCellValue == GlobalVariables.CELL_TYPES.UNLOCKEDDOOR:
+			elif checkCellValue != Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue != Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue != Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
+				pass
+			else:
 				attackRangeDownRight = attackRange - 1
 				break
 	if enemyType == GlobalVariables.ENEMYTYPE.WARRIROENEMY:
