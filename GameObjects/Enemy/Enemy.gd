@@ -370,54 +370,42 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 	var enemyMapPostion = Grid.world_to_map(position)
 	var attackToSet = false
 	var count = 0
-	for attackRange in attackRangeArray:
-		count +=1
-		if !attackRange.empty():
-			for values in attackRange:
-				var directionVector = Vector2.ZERO
-				match attackRangeInitDirection:
-					GlobalVariables.DIRECTION.RIGHT:
-						directionVector = Vector2(count, values)
-					GlobalVariables.DIRECTION.LEFT:
-						directionVector = Vector2(-count, values)
-					GlobalVariables.DIRECTION.DOWN:
-						directionVector = Vector2(values,count)
-					GlobalVariables.DIRECTION.UP:
-						directionVector = Vector2(values,-count)
-				var checkCell = enemyMapPostion + directionVector
-				#print(str(enemyMapPostion) +"-" +str(directionVector) +"="+ str(checkCell))
-				if check_if_cell_valid_position(checkCell):
-					#print("valid")
-					var checkCellValue = Grid.get_cellv(checkCell)
-					if checkCellValue == Grid.get_tileset().find_tile_by_name("PLAYER"):
-						attackTo = directionVector
-						attackCell = checkCell
-						attackToSet = true
-					if checkCellValue == Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue == Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue == Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
-						break
-					else:
-						cellsToColor.append(checkCell)
-
+	print("mirrordirectionArray " + str(mirrorDirectionsArray))
 	for direction in mirrorDirectionsArray:
-		var mirrorCells = []
-		match attackRangeInitDirection:
-			GlobalVariables.DIRECTION.RIGHT:
-				match direction:
-					GlobalVariables.DIRECTION.RIGHT:
-						cellsToColor
-					GlobalVariables.DIRECTION.LEFT:
-						cellsToColor
-					GlobalVariables.DIRECTION.DOWN:
-						cellsToColor
-					GlobalVariables.DIRECTION.UP:
-						cellsToColor
-
+		for attackRange in attackRangeArray:
+			count +=1
+			if !attackRange.empty():
+				for values in attackRange:
+					var directionVector = Vector2.ZERO
+					match direction:
+						GlobalVariables.DIRECTION.RIGHT:
+							directionVector = Vector2(count, values)
+						GlobalVariables.DIRECTION.LEFT:
+							directionVector = Vector2(-count, values)
+						GlobalVariables.DIRECTION.DOWN:
+							directionVector = Vector2(values,count)
+						GlobalVariables.DIRECTION.UP:
+							directionVector = Vector2(values,-count)
+					var checkCell = enemyMapPostion + directionVector
+					#print(str(enemyMapPostion) +"-" +str(directionVector) +"="+ str(checkCell))
+					if check_if_cell_valid_position(checkCell):
+						#print("valid")
+						var checkCellValue = Grid.get_cellv(checkCell)
+						if checkCellValue == Grid.get_tileset().find_tile_by_name("PLAYER"):
+							attackTo = directionVector
+							attackCell = checkCell
+							attackToSet = true
+						if checkCellValue == Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue == Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue == Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
+							break
+						else:
+							cellsToColor.append(checkCell)
+		count = 0
 	#print ("cellstocolor size " + str(cellsToColor.size()))
 	for cell in cellsToColor:
 		var alreadyColored = false
-#		for child in attackRangeNode.get_children():
-#			if child.get_position() == cell*GlobalVariables.tileSize:
-#				alreadyColored = true
+		for child in attackRangeNode.get_children():
+			if child.get_position() == cell*GlobalVariables.tileSize:
+				alreadyColored = true
 		if !alreadyColored:
 			var dangerField = TextureRect.new()
 			dangerField.set_texture(dangerFieldTexture)
@@ -428,7 +416,7 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 		attackCell = Vector2.ZERO
 	cellsToColor.clear()
 	
-func mirrorBaseDirection():
+func mirror_base_direction():
 	#if mirror base is true append oppsit direction to base direction 
 	var tempattackRangeArray = attackRangeArray.duplicate()
 	for attackRange in tempattackRangeArray:
@@ -439,6 +427,9 @@ func mirrorBaseDirection():
 					if value != 0:
 						attackRange.append(value*-1)
 				tempAttackRang.clear()
+	if !mirrorDirectionsArray.find(attackRangeInitDirection):
+		mirrorDirectionsArray.append(attackRangeInitDirection)
+						
 						
 func check_if_cell_valid_position(checkCell):
 	if checkCell.x >= (Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(1,1)).x && checkCell.x <= (Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Grid.activeRoom.roomSize-Vector2(2,2)).x && checkCell.y >= (Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(1,1)).y && checkCell.y <= (Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Grid.activeRoom.roomSize-Vector2(2,2)).y:
@@ -496,10 +487,9 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 			attackRangeArray[0] = [0,1,2]
 			attackRangeArray[1] = [0,2]
 			attackRangeInitDirection = GlobalVariables.DIRECTION.RIGHT
+			mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN, GlobalVariables.DIRECTION.RIGHT]
 			if mirrorBaseDirection:
-				mirrorBaseDirection()
-			mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT]
-			mirrorDirectionsArray.erase(attackRangeInitDirection)
+				mirror_base_direction()
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.MAGEENEMY
 			mageMoveCount = mageEnemyCount
