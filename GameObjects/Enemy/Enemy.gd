@@ -85,6 +85,14 @@ var attackRangeDownLeft = 0
 
 var attackRangeDownRight = 0
 
+var fillUp = []
+
+var fillDown = []
+
+var fillLeft = [] 
+
+var fillRight = []
+
 var attackRangeNode = null
 
 func _ready():
@@ -378,21 +386,17 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 	var attackToSet = false
 	if attackRangeUp > 0: 
 		for attackRange in range (1,attackRangeUp+1):
-			print(attackRange)
 			var checkCell = enemyMapPostion + Vector2(0, -attackRange)
 			var checkCellValue = Grid.get_cellv(checkCell)
 			if checkCellValue == Grid.get_tileset().find_tile_by_name("PLAYER"):
 				attackTo = Vector2(0, -attackRange)
 				attackCell = checkCell
 				attackToSet = true
-			elif checkCellValue != Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue != Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue != Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
-				var dangerField = TextureRect.new()
-				dangerField.set_texture(dangerFieldTexture)
-				dangerField._set_position(checkCell*GlobalVariables.tileSize)
-				attackRangeNode.add_child(dangerField)
-			else:
-				attackRangeUp = attackRange - 1
+			if checkCellValue == Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue == Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue == Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
+				#attackRangeUp = attackRange - 1
 				break
+			else:
+				cellsToColor.append(checkCell)
 	if attackRangeDown > 0: 
 		for attackRange in range (1, attackRangeDown+1):
 			var checkCell = enemyMapPostion + Vector2(0, attackRange)
@@ -401,11 +405,11 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 				attackTo = Vector2(0, attackRange)
 				attackCell = checkCell
 				attackToSet = true
-			elif checkCellValue != Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue != Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue != Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
-				pass
-			else:
-				attackRangeDown = attackRange - 1
+			if checkCellValue == Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue == Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue == Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
+				#attackRangeDown = attackRange - 1
 				break
+			else:
+				cellsToColor.append(checkCell)
 	if attackRangeRight > 0: 
 		for attackRange in range (1,attackRangeRight+1):
 			var checkCell = enemyMapPostion + Vector2(attackRange,0)
@@ -414,11 +418,11 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 				attackTo = Vector2(attackRange,0)
 				attackCell = checkCell
 				attackToSet = true
-			elif checkCellValue != Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue != Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue != Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
-				pass
-			else:
-				attackRangeRight = attackRange - 1
+			if checkCellValue == Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue == Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue == Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
+				#attackRangeRight = attackRange - 1
 				break
+			else:
+				cellsToColor.append(checkCell)
 	if attackRangeLeft > 0: 
 		for attackRange in range (1,attackRangeLeft+1):
 			var checkCell = enemyMapPostion + Vector2(-attackRange,0)
@@ -427,11 +431,11 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 				attackTo = Vector2(-attackRange,0)
 				attackCell = checkCell
 				attackToSet = true
-			elif checkCellValue != Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue != Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue != Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
-				pass
-			else:
-				attackRangeLeft = attackRange - 1
+			if checkCellValue == Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue == Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue == Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
+				#attackRangeLeft = attackRange - 1
 				break
+			else:
+				cellsToColor.append(checkCell)
 	if attackRangeUpLeft > 0: 
 		for attackRange in range (1,attackRangeUpLeft+1):
 			var checkCell = enemyMapPostion + Vector2(-attackRange, -attackRange)
@@ -440,11 +444,11 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 				attackTo = Vector2(-attackRange, -attackRange)
 				attackCell = checkCell
 				attackToSet = true
-			elif checkCellValue != Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue != Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue != Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
-				pass
-			else:
-				attackRangeUpLeft = attackRange - 1
+			if checkCellValue == Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue == Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue == Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
+				#attackRangeUpLeft = attackRange - 1
 				break
+			else:
+				cellsToColor.append(checkCell)
 	if attackRangeUpRight > 0: 
 		for attackRange in range (1,attackRangeUpRight+1):
 			var checkCell = enemyMapPostion + Vector2(attackRange, -attackRange)
@@ -453,11 +457,11 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 				attackTo = Vector2(attackRange, -attackRange)
 				attackCell = checkCell
 				attackToSet = true
-			elif checkCellValue != Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue != Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue != Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
-				pass
-			else:
-				attackRangeUpRight = attackRange - 1
+			if checkCellValue == Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue == Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue == Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
+				#attackRangeUpRight = attackRange - 1
 				break
+			else:
+				cellsToColor.append(checkCell)
 	if attackRangeDownLeft > 0: 
 		for attackRange in range (1,attackRangeDownLeft+1):
 			var checkCell = enemyMapPostion + Vector2(-attackRange, attackRange)
@@ -466,11 +470,11 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 				attackTo = Vector2(-attackRange, attackRange)
 				attackCell = checkCell
 				attackToSet = true
-			elif checkCellValue != Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue != Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue != Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
-				pass
-			else:
-				attackRangeDownLeft = attackRange - 1
+			if checkCellValue == Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue == Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue == Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
+				#attackRangeDownLeft = attackRange - 1
 				break
+			else:
+				cellsToColor.append(checkCell)
 	if attackRangeDownRight > 0: 
 		for attackRange in range (1,attackRangeDownRight+1):
 			var checkCell = enemyMapPostion + Vector2(attackRange, attackRange)
@@ -479,14 +483,17 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 				attackTo = Vector2(attackRange, attackRange)
 				attackCell = checkCell
 				attackToSet = true
-			elif checkCellValue != Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue != Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue != Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
-				pass
-			else:
-				attackRangeDownRight = attackRange - 1
+			if checkCellValue == Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue == Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue == Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
+				#attackRangeDownRight = attackRange - 1
 				break
-	if enemyType == GlobalVariables.ENEMYTYPE.WARRIROENEMY:
-		print ("calculating player to attack attackto " + str(attackTo))
-		print("current player position " + str(Grid.world_to_map(Grid.mainPlayer.position)))
+			else:
+				cellsToColor.append(checkCell)
+		
+	for cell in cellsToColor:
+		var dangerField = TextureRect.new()
+		dangerField.set_texture(dangerFieldTexture)
+		dangerField._set_position(cell*GlobalVariables.tileSize)
+		attackRangeNode.add_child(dangerField)
 	if !attackToSet:
 		attackTo = Vector2.ZERO
 		attackCell = Vector2.ZERO
@@ -533,14 +540,14 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 			attackDamage = 1 
 			attackType = GlobalVariables.ATTACKTYPE.SWORD
 			get_node("SpriteWarriorEnemy").set_visible(true)
-			attackRangeRight = 2
-			attackRangeLeft = 2
-			attackRangeUp = 2
-			attackRangeDown = 2
-			attackRangeUpLeft = 2
-			attackRangeUpRight = 2
-			attackRangeDownLeft = 2
-			attackRangeDownRight = 2
+			attackRangeRight = 1
+			attackRangeLeft = 1
+			attackRangeUp = 1
+			attackRangeDown = 3
+			attackRangeUpLeft = 3
+			attackRangeUpRight = 3
+			attackRangeDownLeft = 3
+			attackRangeDownRight = 3
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.MAGEENEMY
 			mageMoveCount = mageEnemyCount
@@ -640,6 +647,8 @@ func play_taken_damage_animation(inflictattackType, mainPlayer, CURRENTPHASE):
 		
 
 func play_defeat_animation(mainPlayer, CURRENTPHASE):
+	if attackRangeNode != null:
+		attackRangeNode.queue_free()
 	Grid.set_cellv(Grid.world_to_map(self.position), Grid.get_tileset().find_tile_by_name("FLOOR")) 
 	if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER:
 		mainPlayer.waitingForEventBeforeContinue = true
