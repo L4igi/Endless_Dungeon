@@ -757,7 +757,7 @@ func get_enemy_move_mage_pattern(enemy, movementdirection, rommToCalc):
 func _on_enemy_made_move_ready(currentEnemy):
 	if(activeRoom != null):
 		enemiesToMoveArray.erase(currentEnemy)
-		currentEnemy.adjust_enemy_attack_range_enable_attack(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
+		currentEnemy.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
 		#print("Moving " + str(currentEnemy) + " enemies left to move " + str(enemiesToMoveArray.size()))
 		if enemiesToMoveArray.empty():
 			enemiesMadeMoveCounter = 0

@@ -387,8 +387,8 @@ func end_player_turn():
 	attackCount = 1
 	
 #update enemy attack after each Player move/attack
-func update_enemy_move_attack():
-	if Grid.activeRoom != null: 
-		if !Grid.activeRoom.enemiesInRoom.empty():
-			for enemy in Grid.activeRoom.enemiesInRoom:
-				enemy.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
+#func update_enemy_move_attack():
+#	if Grid.activeRoom != null: 
+#		if !Grid.activeRoom.enemiesInRoom.empty():
+#			for enemy in Grid.activeRoom.enemiesInRoom:
+#				enemy.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)

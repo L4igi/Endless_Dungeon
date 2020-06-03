@@ -276,7 +276,7 @@ func enemyAttack():
 	match enemyType:
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
 			if attackTo != Vector2.ZERO:
-				#print("attack to " + str(attackTo))
+				print("attack to " + str(attackTo))
 				set_process(false)
 				#play defeat animation 
 				$WarriorAnimationPlayer.play("attack", -1, 3.0)
@@ -385,7 +385,9 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 					GlobalVariables.DIRECTION.UP:
 						directionVector = Vector2(values,-count)
 				var checkCell = enemyMapPostion + directionVector
+				#print(str(enemyMapPostion) +"-" +str(directionVector) +"="+ str(checkCell))
 				if check_if_cell_valid_position(checkCell):
+					#print("valid")
 					var checkCellValue = Grid.get_cellv(checkCell)
 					if checkCellValue == Grid.get_tileset().find_tile_by_name("PLAYER"):
 						attackTo = directionVector
@@ -395,24 +397,27 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 						break
 					else:
 						cellsToColor.append(checkCell)
-	
+
 	for direction in mirrorDirectionsArray:
-		match direction:
+		var mirrorCells = []
+		match attackRangeInitDirection:
 			GlobalVariables.DIRECTION.RIGHT:
-				directionVector = Vector2(count, values)
-			GlobalVariables.DIRECTION.LEFT:
-				directionVector = Vector2(-count, values)
-			GlobalVariables.DIRECTION.DOWN:
-				directionVector = Vector2(values,count)
-			GlobalVariables.DIRECTION.UP:
-				directionVector = Vector2(values,-count)
+				match direction:
+					GlobalVariables.DIRECTION.RIGHT:
+						cellsToColor
+					GlobalVariables.DIRECTION.LEFT:
+						cellsToColor
+					GlobalVariables.DIRECTION.DOWN:
+						cellsToColor
+					GlobalVariables.DIRECTION.UP:
+						cellsToColor
 
 	#print ("cellstocolor size " + str(cellsToColor.size()))
 	for cell in cellsToColor:
 		var alreadyColored = false
-		for child in attackRangeNode:
-			if child.get_position == cell*GlobalVariables.tileSize:
-				alreadyColored = true
+#		for child in attackRangeNode.get_children():
+#			if child.get_position() == cell*GlobalVariables.tileSize:
+#				alreadyColored = true
 		if !alreadyColored:
 			var dangerField = TextureRect.new()
 			dangerField.set_texture(dangerFieldTexture)
@@ -436,18 +441,16 @@ func mirrorBaseDirection():
 				tempAttackRang.clear()
 						
 func check_if_cell_valid_position(checkCell):
-	print ("checkcell " + str(checkCell))
-	print("min size " + str(Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(1,1)))
-	print ("max size " + str(Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Grid.activeRoom.roomSize-Vector2(2,2)))
-	if checkCell >= Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(1,1) && checkCell <= Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Grid.activeRoom.roomSize-Vector2(2,2):
-		print("in range")
+	if checkCell.x >= (Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(1,1)).x && checkCell.x <= (Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Grid.activeRoom.roomSize-Vector2(2,2)).x && checkCell.y >= (Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(1,1)).y && checkCell.y <= (Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Grid.activeRoom.roomSize-Vector2(2,2)).y:
+		#print("in range")
 		return true
-	print("not in range")
+	#print("not in range")
 	return false
 	
 func make_enemy_turn():
 	if !isDisabled:
 		if(lifePoints > 0):
+			calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION)
 			movementCount = 0
 			attackCount = 0
 			enemyTurnDone = false
@@ -455,7 +458,7 @@ func make_enemy_turn():
 			
 			
 func matchEnemyTurn():
-	calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION)
+	#calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION)
 	match enemyType:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			barrierenemy_type_actions()
