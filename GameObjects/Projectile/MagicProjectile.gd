@@ -6,7 +6,7 @@ enum CELL_TYPES{PLAYER=0, WALL=1, ENEMY=2, PUZZLEPIECE=3, ITEM=4, DOOR=5, UNLOCK
 export(CELL_TYPES) var type = CELL_TYPES.MAGICPROJECTILE
 
 var movementDirection 
-var attackDamage = 1
+var attackDamage = 4
 var projectileType = null
 var isMiniProjectile = false
 var tickAlreadyMoved = false

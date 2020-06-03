@@ -456,7 +456,7 @@ func matchEnemyTurn():
 func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = randi()%4
+	var enemieToGenerate = 2
 	match enemieToGenerate:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
@@ -473,7 +473,7 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.WARRIROENEMY
 			lifePoints = 1
-			attackDamage = 1 
+			attackDamage = 3
 			attackType = GlobalVariables.ATTACKTYPE.SWORD
 			var attackRange = 5
 			get_node("SpriteWarriorEnemy").set_visible(true)

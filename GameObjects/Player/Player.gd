@@ -320,8 +320,11 @@ func inflict_damage_playerDefeated(attackDamage, attackType):
 	lifePoints -= attackDamage
 	guiElements.change_health(attackDamage)
 	if lifePoints <= 0:
-		playerDefeated = true
-		#emit_signal("onPlayerDefeated", self)
+		print ("in player defeated")
+		if Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.PLAYER:
+			emit_signal("onPlayerDefeated", self)
+		else:
+			playerDefeated = true
 		return true
 	var animationToPlay = str("take_damage_physical")
 	if attackType == GlobalVariables.ATTACKTYPE.MAGIC:

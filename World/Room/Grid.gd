@@ -881,7 +881,7 @@ func _on_Player_Made_Move():
 					
 				if GlobalVariables.moveAllProjectilesAtOnce:
 					for projectile in tempPlayerEnemyProjectiles:
-						print("Projectile moving " + str(projectile.position))
+						#print("Projectile moving " + str(projectile.position))
 						projectile.move_projectile()
 					tempPlayerEnemyProjectiles.clear()
 				else:
@@ -1397,8 +1397,8 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage, attackCellA
 			newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.ENEMY
 			newMagicProjectile.get_node("Sprite").set_frame(0)
 			newMagicProjectile.position = map_to_world(attackCell)+GlobalVariables.tileOffset
-			newMagicProjectile.play_projectile_animation(true, "enemyProjectileAttack")
 			add_child(newMagicProjectile)
+			newMagicProjectile.play_projectile_animation(true, "enemyProjectileAttack")
 		attackedPlayer.inflict_damage_playerDefeated(attackDamage, attackType)
 	if (attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		#spawn magic projectile

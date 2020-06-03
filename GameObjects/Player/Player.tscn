@@ -239,7 +239,6 @@ script = ExtResource( 2 )
 [node name="Sprite" type="Sprite" parent="."]
 texture = ExtResource( 1 )
 hframes = 213
-frame = 38
 __meta__ = {
 "_edit_lock_": true
 }
