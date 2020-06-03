@@ -535,7 +535,9 @@ func update_pawn_position(pawn, cell_start, cell_target):
 						for element in activeRoom.enemiesInRoom:
 							print("Enemies in Room count " + str(activeRoom.enemiesInRoom.size()))
 							element.isDisabled = true
-							
+							if element.attackRangeNode != null:
+								element.attackRangeNode.queue_free()
+								element.attackRangeNode = null
 					#remove rojectiles in old room
 				activeRoom = oldCellTargetNode
 				if activeRoom != null:
@@ -544,6 +546,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					for element in activeRoom.enemiesInRoom:
 						element.isDisabled = false
 						element.enemyTurnDone=true
+						element.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
 				else:
 					pawn.inRoomType = null
 					#print ("Player in Room " + str(pawn.inRoomType))
@@ -559,6 +562,9 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					if !activeRoom.enemiesInRoom.empty():
 						for element in activeRoom.enemiesInRoom:
 							element.isDisabled = true
+							if element.attackRangeNode != null:
+								element.attackRangeNode.queue_free()
+								element.attackRangeNode = null
 							#element.toggleVisibility(true)
 					#remove rojectiles in old room
 				activeRoom=oldCellTargetNode.get_room_by_movement_direction(direction)
@@ -567,7 +573,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					#print ("Player in Room " + str(pawn.inRoomType))
 					for element in activeRoom.enemiesInRoom:
 						element.isDisabled = false
-						#element.toggleVisibility(false)
+						element.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
 				else:
 					pawn.inRoomType = null
 					#print ("Player in Room " + str(pawn.inRoomType))
