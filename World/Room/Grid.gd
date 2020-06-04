@@ -261,7 +261,7 @@ func request_move(pawn, direction):
 					pawn.enemyQueueAttackType = GlobalVariables.ATTACKTYPE.MAGIC
 					return update_pawn_position(pawn, cell_start, cell_target)
 			TILETYPES.BLOCK:
-				return pawn.position
+				return 
 					
 				
 #	if(pawn.type == TILETYPES.ENEMY):
@@ -455,9 +455,12 @@ func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile
 		#magicProjectile1.movementDirection *=-1
 	#player enemy projectile interaction
 	if magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
-		var magicprojectil1temppos = magicProjectile1.position
-		magicProjectile1.position = magicProjectile2.position
-		magicProjectile2.position = magicprojectil1temppos
+#		var magicprojectil1temppos = magicProjectile1.position
+#		magicProjectile1.position = magicProjectile2.position
+#		magicProjectile2.position = magicprojectil1temppos
+		print("IN ENEMY PLAYER PROJECTILE INTERACTION")
+		magicProjectile1.play_projectile_animation(true,"delete")
+		magicProjectile2.play_projectile_animation(true,"delete")
 		return true
 
 	#player player projectile interaction

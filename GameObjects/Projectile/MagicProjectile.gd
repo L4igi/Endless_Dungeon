@@ -152,11 +152,19 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack"):
 		Grid.projectilesInActiveRoom.erase(self)
 		if Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
 			Grid.mainPlayer.waitingForEventBeforeContinue = false
+		if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.PLAYER:
+			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
+		if projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
+			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
 		self.queue_free()
 	elif animationMode == 2:
 		Grid.projectilesInActiveRoom.erase(self)
+		#Grid.set_cellv(Grid.world_to_map(position)+movementDirection,Grid.get_tileset().find_tile_by_name("FLOOR"))
 		self.queue_free()
 	elif animationMode == 3:
+		Grid.projectilesInActiveRoom.erase(self)
+		Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
+		self.queue_free()
 		emit_signal("playerEnemieProjectileMadeMove",self, projectileType)
 	
 func create_mini_projectile(projectile, mainPlayer, currentPhase):
