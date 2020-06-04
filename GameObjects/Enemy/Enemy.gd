@@ -213,6 +213,7 @@ func enemyMovement():
 					animationToPlay = "walk_down"
 #			if moveTo && !enemyDefeated:
 			if moveTo:
+				#print("moving to " + str(Grid.world_to_map(moveTo)))
 				set_process(false)
 				#play defeat animation 
 				$WarriorAnimationPlayer.play(animationToPlay, -1, 3.0)
@@ -262,6 +263,7 @@ func enemyMovement():
 
 	if waitingForEventBeforeContinue != null:
 		if lifePoints <= 0:
+			print("Play defeat animation")
 			play_defeat_animation(Grid.mainPlayer, waitingForEventBeforeContinue)
 		else:
 			play_taken_damage_animation(inflictattackType,Grid.mainPlayer, waitingForEventBeforeContinue)
@@ -404,6 +406,7 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 			var dangerField = TextureRect.new()
 			dangerField.set_texture(dangerFieldTexture)
 			dangerField._set_position(cell*GlobalVariables.tileSize)
+			dangerField.set_visible(false)
 			attackRangeNode.add_child(dangerField)
 	if !attackToSet:
 		attackTo = Vector2.ZERO
@@ -433,12 +436,11 @@ func check_if_cell_valid_position(checkCell):
 	
 func make_enemy_turn():
 	if !isDisabled:
-		if(lifePoints > 0):
-			calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION)
-			movementCount = 0
-			attackCount = 0
-			enemyTurnDone = false
-			matchEnemyTurn()
+		calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION)
+		movementCount = 0
+		attackCount = 0
+		enemyTurnDone = false
+		matchEnemyTurn()
 			
 			
 func matchEnemyTurn():
@@ -461,14 +463,47 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
 			attackType = GlobalVariables.ATTACKTYPE.SWORD
+			lifePoints = 1
+			attackDamage = 2
+			var attackRange = 5
 			get_node("Sprite").set_visible(true)
+			for count in attackRange:
+				attackRangeArray.append([])
+			attackRangeArray[0] = [0]
+			attackRangeArray[1] = [0, 1]
+			mirrorBaseDirection = true
+			attackRangeInitDirection = GlobalVariables.DIRECTION.RIGHT
+			mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN]
+			if mirrorBaseDirection:
+				mirror_base_direction()
+			if !mirrorDirectionsArray.has(attackRangeInitDirection):
+				mirrorDirectionsArray.append(attackRangeInitDirection)
+			
+			
+			
 			makeEnemyBarrier(currentGrid, unlockedDoor)
 			
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.NINJAENEMY
 			attackType = GlobalVariables.ATTACKTYPE.NINJA
+			lifePoints = 1
+			attackDamage = 2
+			var attackRange = 5
 			get_node("SpriteNinjaEnemy").set_visible(true)
-			diagonalAttack = true
+			for count in attackRange:
+				attackRangeArray.append([])
+			attackRangeArray[0] = [0, 1]
+			attackRangeArray[1] = [0, 2]
+			attackRangeArray[2] = [0, 3]
+			attackRangeArray[3] = [0, 4]
+			attackRangeArray[4] = [0, 5]
+			mirrorBaseDirection = true
+			attackRangeInitDirection = GlobalVariables.DIRECTION.RIGHT
+			mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN]
+			if mirrorBaseDirection:
+				mirror_base_direction()
+			if !mirrorDirectionsArray.has(attackRangeInitDirection):
+				mirrorDirectionsArray.append(attackRangeInitDirection)
 			
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.WARRIROENEMY
@@ -530,6 +565,7 @@ func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, m
 	if !self.isBarrier:
 		lifePoints -= inflictattackDamage
 	if lifePoints <= 0:
+		enemyDefeated = true
 		if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER || CURRENTPHASE == GlobalVariables.CURRENTPHASE.BLOCK || CURRENTPHASE == GlobalVariables.CURRENTPHASE.PROJECTILE:
 			play_defeat_animation(mainPlayer, CURRENTPHASE)
 		elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMY:
@@ -607,7 +643,6 @@ func play_defeat_animation(mainPlayer, CURRENTPHASE):
 	Grid.set_cellv(Grid.world_to_map(self.position), Grid.get_tileset().find_tile_by_name("FLOOR")) 
 	if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER:
 		mainPlayer.waitingForEventBeforeContinue = true
-
 	elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.BLOCK:
 		mainPlayer.waitingForEventBeforeContinue = true
 	
