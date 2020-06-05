@@ -33,6 +33,7 @@ func calc_projectiles_move_to(calcMode):
 				moveTo = target_position
 			else:
 				moveTo = null
+				deleteProjectilePlayAnimation="delete"
 		
 func move_projectile(type = null):
 	if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && type == null:
@@ -96,7 +97,7 @@ func play_enemy_projectile_animation():
 func play_powerBlock_projectile_animation():
 	$AnimationPlayer.play("powerblock_shoot")
 
-func play_projectile_animation(onSpot=true, projectileAnimation="attack"):
+func play_projectile_animation(onSpot=true, projectileAnimation="attack", projectileInteraction = false):
 	#print(Grid.currentActivePhase)
 	#print("ProjectileAnimation " + str(projectileAnimation))
 	var animationMode = 1
@@ -148,22 +149,26 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack"):
 		elif projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
 			print("playing shoot " + str(projectileAnimation))
 			$AnimationPlayer.play("shoot")
+	#player enemy phase
 	elif animationMode == 1:
 		Grid.projectilesInActiveRoom.erase(self)
-		if Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
-			Grid.mainPlayer.waitingForEventBeforeContinue = false
 		if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.PLAYER:
 			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
 		if projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
 			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
 		self.queue_free()
+		if Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
+			Grid.mainPlayer.waitingForEventBeforeContinue = false
+	#puzzle room interactions
 	elif animationMode == 2:
 		Grid.projectilesInActiveRoom.erase(self)
 		#Grid.set_cellv(Grid.world_to_map(position)+movementDirection,Grid.get_tileset().find_tile_by_name("FLOOR"))
 		self.queue_free()
+	#projectile phase
 	elif animationMode == 3:
 		Grid.projectilesInActiveRoom.erase(self)
-		Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
+		if projectileInteraction:
+			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
 		self.queue_free()
 		emit_signal("playerEnemieProjectileMadeMove",self, projectileType)
 	

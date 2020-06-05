@@ -99,7 +99,7 @@ func ninjaenemy_type_actions():
 
 func mageenemy_type_actions():
 	if !isDisabled:
-		enemyMovement()
+		enemyAttack()
 
 
 func warriorenemy_type_actions():
@@ -133,27 +133,28 @@ func calc_enemy_move_to(calcMode, activeRoom):
 			cell_target = Grid.world_to_map(position)+ movementdirectionVector
 
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
-			if mageMoveCount == 6:
-				mageMoveCount = 0
-			match mageMoveCount:
-				0:
-					movementdirection = GlobalVariables.DIRECTION.MIDDLE
-				1:
-					#moves to right top corner 
-					movementdirection = GlobalVariables.DIRECTION.RIGHT
-				2:
-					#moves to right down corner 
-					movementdirection = GlobalVariables.DIRECTION.DOWN
-				3:
-					#moves to middle of the field
-					movementdirection = GlobalVariables.DIRECTION.MIDDLE
-				4:
-					#moves to left down corner 
-					movementdirection = GlobalVariables.DIRECTION.LEFT
-				5:
-					#moves to left top corner 
-					movementdirection = GlobalVariables.DIRECTION.UP
-			movementdirectionVector = Grid.get_enemy_move_mage_pattern(self, movementdirection, activeRoom)
+#			if mageMoveCount == 6:
+#				mageMoveCount = 0
+#			match mageMoveCount:
+#				0:
+#					movementdirection = GlobalVariables.DIRECTION.MIDDLE
+#				1:
+#					#moves to right top corner 
+#					movementdirection = GlobalVariables.DIRECTION.RIGHT
+#				2:
+#					#moves to right down corner 
+#					movementdirection = GlobalVariables.DIRECTION.DOWN
+#				3:
+#					#moves to middle of the field
+#					movementdirection = GlobalVariables.DIRECTION.MIDDLE
+#				4:
+#					#moves to left down corner 
+#					movementdirection = GlobalVariables.DIRECTION.LEFT
+#				5:
+#					#moves to left top corner 
+#					movementdirection = GlobalVariables.DIRECTION.UP
+#			movementdirectionVector = Grid.get_enemy_move_mage_pattern(self, movementdirection, activeRoom)
+			movementdirectionVector = Grid.get_enemy_move_towards_player(self)
 			cell_target = Grid.world_to_map(position)+ movementdirectionVector
 					
 
@@ -234,7 +235,8 @@ func enemyMovement():
 				yield($MageAnimationPlayer, "animation_finished")
 				$MageAnimationPlayer.play("idle")
 				set_process(true)
-			movementCount += 1
+				movementCount += 1
+				print(Grid.world_to_map(moveTo))
 			mageMoveCount+=1
 			
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
@@ -533,7 +535,7 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 			var attackRange = 5
 			for count in attackRange:
 				attackRangeArray.append([])
-			attackRangeArray[0] = [0, 1, 2]
+			attackRangeArray[0] = [0]
 			#attackRangeArray[1] = [0,2]
 			mirrorBaseDirection = true
 			attackRangeInitDirection = GlobalVariables.DIRECTION.RIGHT

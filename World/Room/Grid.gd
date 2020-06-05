@@ -270,11 +270,11 @@ func request_move(pawn, direction):
 		if get_cellv(cell_target+direction) == TILETYPES.DOOR || get_cellv(cell_target+direction) == TILETYPES.UNLOCKEDDOOR:
 			return pawn.position 
 
-		if pawn.enemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY:
-			#set mageenmy goal directly 
-			cell_target = direction
-			cell_target_type = get_cellv(cell_target)
-		#print("MOVED enemy in room")
+#		if pawn.enemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY:
+#			#set mageenmy goal directly 
+#			cell_target = direction
+#			cell_target_type = get_cellv(cell_target)
+#		#print("MOVED enemy in room")
 		match cell_target_type:
 			TILETYPES.EMPTY:
 				return update_pawn_position(pawn, cell_start, cell_target)
@@ -313,10 +313,7 @@ func request_move(pawn, direction):
 					else:
 						return update_pawn_position(pawn, cell_start, cell_target)
 				else:
-					projectilesInActiveRoom.erase(tempMagicProjectile)
-					set_cellv(world_to_map(tempMagicProjectile.position),get_tileset().find_tile_by_name("FLOOR"))
-					tempMagicProjectile.queue_free()
-					return update_pawn_position(pawn, cell_start, cell_target)
+					pawn.play_projectile_animation(true,"delete")
 			TILETYPES.BLOCK:
 				return pawn.position
 			_:
@@ -459,8 +456,8 @@ func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile
 #		magicProjectile1.position = magicProjectile2.position
 #		magicProjectile2.position = magicprojectil1temppos
 		print("IN ENEMY PLAYER PROJECTILE INTERACTION")
-		magicProjectile1.play_projectile_animation(true,"delete")
-		magicProjectile2.play_projectile_animation(true,"delete")
+		magicProjectile1.play_projectile_animation(true,"delete", true)
+		magicProjectile2.play_projectile_animation(true,"delete", true)
 		return true
 
 	#player player projectile interaction
@@ -873,9 +870,9 @@ func _on_Player_Made_Move():
 		else:
 			var tempProjectiles = projectilesInActiveRoom.duplicate()
 			#calculate move to position of player projectiles
-			for projectile in tempProjectiles:
-				if projectile.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
-					projectile.calc_projectiles_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
+#			for projectile in tempProjectiles:
+#				if projectile.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
+#					projectile.calc_projectiles_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
 			#move enemy Projectiles after player turn done
 			for projectile in tempProjectiles:
 				if projectile.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
@@ -900,16 +897,12 @@ func _on_Player_Made_Move():
 				var movementDirection = playerEnemyProjectileArray[0].movementDirection
 				if movementDirection.x == 0 && movementDirection.y == 1:
 					playerEnemyProjectileArray.sort_custom(sortProjectilesByMovementDirection, "sort_ascendingY")
-					print("HERE1")
 				elif movementDirection.x == 0 && movementDirection.y == -1:
 					playerEnemyProjectileArray.sort_custom(sortProjectilesByMovementDirection, "sort_decendingY")
-					print("HERE2")
 				elif movementDirection.x == -1 && movementDirection.y == 0:
 					playerEnemyProjectileArray.sort_custom(sortProjectilesByMovementDirection, "sort_descendingX")
-					print("HERE3")
 				elif movementDirection.x == 1 && movementDirection.y == 0:
 					playerEnemyProjectileArray.sort_custom(sortProjectilesByMovementDirection, "sort_ascendingX")
-					print("HERE4")
 				
 				for projectile in playerEnemyProjectileArray:
 					projectile.calc_projectiles_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION)
