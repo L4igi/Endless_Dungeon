@@ -12,6 +12,7 @@ var isMiniProjectile = false
 var tickAlreadyMoved = false
 var deleteProjectilePlayAnimation = null
 var moveTo = null
+var requestedMoveCount = 0
 
 signal projectileMadeMove (type)
 
@@ -20,19 +21,29 @@ signal playerEnemieProjectileMadeMove (projectile ,type, projectileArray)
 func _ready():
 	pass
 	
-func calc_projectiles_move_to(calcMode):
+func calc_projectiles_move_to(calcMode, count):
 	if(projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || projectileType == GlobalVariables.PROJECTILETYPE.PLAYER):
 		var cell_target = Grid.world_to_map(position) + movementDirection
 		if calcMode == GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW:
 			var target_position = Grid.map_to_world(cell_target) + Grid.cell_size / GlobalVariables.isometricFactor
 			if target_position:
 				moveTo = target_position
+			count+=1
+			if count >= Grid.playerEnemyProjectileArray.size():
+				return
+			else:
+				Grid.playerEnemyProjectileArray[count].calc_projectiles_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW, count)
 		elif calcMode == GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION:
 			var target_position = Grid.request_move(self, movementDirection)
 			if target_position && deleteProjectilePlayAnimation==null:
 				moveTo = target_position
 			else:
 				moveTo = null
+			count+=1
+			if count >= Grid.playerEnemyProjectileArray.size():
+				return
+			else:
+				Grid.playerEnemyProjectileArray[count].calc_projectiles_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, count)
 		
 func move_projectile(type = null):
 	if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && type == null:
