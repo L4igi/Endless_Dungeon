@@ -194,6 +194,7 @@ func calc_enemy_move_to(calcMode, activeRoom):
 			moveTo = target_position
 	elif calcMode == GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION:
 		var target_position = Grid.request_move(self, movementdirectionVector)
+		print("target position "+ str(target_position))
 		if target_position:
 			moveTo = target_position
 		else:
@@ -236,7 +237,6 @@ func enemyMovement():
 				$MageAnimationPlayer.play("idle")
 				set_process(true)
 				movementCount += 1
-				print(Grid.world_to_map(moveTo))
 			mageMoveCount+=1
 			
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
@@ -300,16 +300,18 @@ func enemyAttack():
 
 		
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
+			print("Doing attack mage")
 			set_process(false)
 			$MageAnimationPlayer.play("attack", -1, 3.0)
-			$Tween.interpolate_property($Sprite, "position", Vector2(), Vector2(), $MageAnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
-			$Tween.start()
+#			$Tween.interpolate_property($Sprite, "position", Vector2(), Vector2(), $MageAnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+#			$Tween.start()
+			emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackTo, attackType, attackDamage, attackCellArray)
 			yield($MageAnimationPlayer, "animation_finished")
 			$MageAnimationPlayer.play("idle")
 			set_process(true)
-			emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackTo, attackType, attackDamage, attackCellArray)
 			attackCount += 1
 			if attackCount + movementCount < maxTurnActions:
+				calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, Grid.activeRoom)
 				enemyMovement()
 			else:
 				emit_signal("enemyMadeMove", self)
@@ -568,12 +570,12 @@ func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, m
 		lifePoints -= inflictattackDamage
 	if lifePoints <= 0:
 		enemyDefeated = true
-		if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER || CURRENTPHASE == GlobalVariables.CURRENTPHASE.BLOCK || CURRENTPHASE == GlobalVariables.CURRENTPHASE.PROJECTILE:
+		if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER || CURRENTPHASE == GlobalVariables.CURRENTPHASE.BLOCK || CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE || CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
 			play_defeat_animation(mainPlayer, CURRENTPHASE)
 		elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMY:
 			waitingForEventBeforeContinue = CURRENTPHASE
 	else:
-		if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER || CURRENTPHASE == GlobalVariables.CURRENTPHASE.BLOCK || CURRENTPHASE == GlobalVariables.CURRENTPHASE.PROJECTILE:
+		if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER || CURRENTPHASE == GlobalVariables.CURRENTPHASE.BLOCK || CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE || CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
 			play_taken_damage_animation(inflictattackDamage, mainPlayer, CURRENTPHASE)
 		elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMY:
 				waitingForEventBeforeContinue = CURRENTPHASE
@@ -632,7 +634,7 @@ func play_taken_damage_animation(inflictattackType, mainPlayer, CURRENTPHASE):
 		else:
 			emit_signal("enemyMadeMove", self)
 			
-	elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.PROJECTILE:
+	elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE || CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
 		hitByProjectile = null
 		if hitByProjectile!=null:
 			hitByProjectile.emit_signal("playerEnemieProjectileMadeMove",hitByProjectile,"movePlayerProjectiles")
@@ -681,7 +683,7 @@ func play_defeat_animation(mainPlayer, CURRENTPHASE):
 	elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMY:
 		emit_signal("enemyDefeated", self, CURRENTPHASE)
 		
-	elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.PROJECTILE:
+	elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE || CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
 		emit_signal("enemyDefeated", self, CURRENTPHASE, hitByProjectile)
 		
 func makeEnemyBarrier(currentGrid, unlockedDoor):

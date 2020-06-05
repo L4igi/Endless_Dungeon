@@ -29,11 +29,10 @@ func calc_projectiles_move_to(calcMode):
 				moveTo = target_position
 		elif calcMode == GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION:
 			var target_position = Grid.request_move(self, movementDirection)
-			if target_position:
+			if target_position && deleteProjectilePlayAnimation==null:
 				moveTo = target_position
 			else:
 				moveTo = null
-				deleteProjectilePlayAnimation="delete"
 		
 func move_projectile(type = null):
 	if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && type == null:
@@ -46,7 +45,7 @@ func move_projectile(type = null):
 			else:
 				play_projectile_animation(false, deleteProjectilePlayAnimation)
 		else:
-			play_projectile_animation(false, deleteProjectilePlayAnimation)
+			play_projectile_animation(false, "delete")
 
 	elif projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK:
 		var target_position = Grid.request_move(self, movementDirection)
@@ -98,10 +97,9 @@ func play_powerBlock_projectile_animation():
 	$AnimationPlayer.play("powerblock_shoot")
 
 func play_projectile_animation(onSpot=true, projectileAnimation="attack", projectileInteraction = false):
-	#print(Grid.currentActivePhase)
 	#print("ProjectileAnimation " + str(projectileAnimation))
 	var animationMode = 1
-	if Grid.activeRoom == null || Grid.activeRoom != null && Grid.activeRoom.roomCleared || Grid.currentActivePhase != GlobalVariables.CURRENTPHASE.PROJECTILE && Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.PLAYER || Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
+	if Grid.activeRoom == null || Grid.activeRoom != null && Grid.activeRoom.roomCleared || Grid.currentActivePhase != GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE && Grid.currentActivePhase != GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE && Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.PLAYER || Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
 		animationMode = 1
 		if Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
 			Grid.mainPlayer.waitingForEventBeforeContinue = true
@@ -112,7 +110,7 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack", projec
 	else:
 		animationMode = 3
 		#print("Phase3")
-		
+	
 	var animationToPlay = projectileAnimation
 	match projectileAnimation : 
 		"delete":
@@ -154,8 +152,8 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack", projec
 		Grid.projectilesInActiveRoom.erase(self)
 		if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.PLAYER:
 			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
-		if projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
-			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
+#		if projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
+#			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
 		self.queue_free()
 		if Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
 			Grid.mainPlayer.waitingForEventBeforeContinue = false
@@ -169,8 +167,10 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack", projec
 		Grid.projectilesInActiveRoom.erase(self)
 		if projectileInteraction:
 			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
+			Grid.on_projectiles_interactions_done(self)
+		else:
+			emit_signal("playerEnemieProjectileMadeMove",self, projectileType)
 		self.queue_free()
-		emit_signal("playerEnemieProjectileMadeMove",self, projectileType)
 	
 func create_mini_projectile(projectile, mainPlayer, currentPhase):
 	if currentPhase == GlobalVariables.CURRENTPHASE.PLAYER:
