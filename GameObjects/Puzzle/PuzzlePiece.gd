@@ -24,6 +24,7 @@ signal puzzlePieceActivated
 func _ready():
 	baseModulation = get_node("Sprite").get_self_modulate()
 	Grid.connect("puzzleBarrierDisableSignal", self, "_on_puzzlepiece_barrier_disable")
+
 	
 func playColor():
 	set_process(false)
@@ -33,8 +34,8 @@ func playColor():
 	else:
 		get_node("Sprite").set_self_modulate(color)
 		$AnimationPlayer.play("playColor", -1, 1.1)
-	$Tween.interpolate_property(self, "position", position, position , $AnimationPlayer.current_animation_length*1.1, Tween.TRANS_LINEAR, Tween.EASE_IN)
-	$Tween.start()
+#	$Tween.interpolate_property(self, "position", position, position , $AnimationPlayer.current_animation_length*1.1, Tween.TRANS_LINEAR, Tween.EASE_IN)
+#	$Tween.start()
 	yield($AnimationPlayer, "animation_finished")
 	if !isBarrier:
 		$AnimationPlayer.play("Idle")
