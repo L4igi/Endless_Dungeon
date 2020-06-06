@@ -79,10 +79,15 @@ var mirrorDirectionsArray = []
 
 var attackRangeNode = null
 
+var dangerFieldsVisible=false
+
+var individualDangerFieldVisible = false
+
 var attackCellArray = []
 
 func _ready():
-	pass
+	var player = Grid.get_node("Player")
+	player.connect("toggleDangerArea", self, "on_toggle_danger_area")
 	
 
 func _process(delta): 
@@ -122,6 +127,36 @@ func toggleVisibility(makeInVisible):
 		spriteToToggle.set_visible(false)
 	else:
 		spriteToToggle.set_visible(true)
+			
+func on_toggle_danger_area(player, enemyToToggleArea, toggleAll=false):
+	print("enemyToToggleArea " + str(enemyToToggleArea))
+	if lifePoints>0:
+		if !isDisabled && toggleAll:
+			if dangerFieldsVisible:
+				for child in attackRangeNode.get_children():
+						child.set_visible(false)
+						dangerFieldsVisible = false
+						individualDangerFieldVisible = false
+			else:
+				for child in attackRangeNode.get_children():
+						child.set_visible(true)
+						dangerFieldsVisible = true
+						individualDangerFieldVisible = true
+		elif !isDisabled && enemyToToggleArea != null:
+			if dangerFieldsVisible:
+				if self != Grid.activeRoom.enemiesInRoom[enemyToToggleArea]:
+					for child in attackRangeNode.get_children():
+						child.set_visible(false)
+						individualDangerFieldVisible = false
+				else:
+					for child in attackRangeNode.get_children():
+						child.set_visible(true)
+						individualDangerFieldVisible = true
+		elif !isDisabled && enemyToToggleArea == null:
+			if dangerFieldsVisible:
+				for child in attackRangeNode.get_children():
+					child.set_visible(true)
+					individualDangerFieldVisible = true
 			
 
 func calc_enemy_move_to(calcMode, activeRoom):
@@ -410,7 +445,8 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 			var dangerField = TextureRect.new()
 			dangerField.set_texture(dangerFieldTexture)
 			dangerField._set_position(cell*GlobalVariables.tileSize)
-			dangerField.set_visible(false)
+			if !individualDangerFieldVisible:
+				dangerField.set_visible(false)
 			attackRangeNode.add_child(dangerField)
 	if !attackToSet:
 		attackTo = Vector2.ZERO
@@ -462,7 +498,7 @@ func matchEnemyTurn():
 func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = 1
+	var enemieToGenerate = randi()%4
 	match enemieToGenerate:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
@@ -538,7 +574,7 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 			for count in attackRange:
 				attackRangeArray.append([])
 			attackRangeArray[0] = [0]
-			#attackRangeArray[1] = [0,2]
+			attackRangeArray[1] = [0,2]
 			mirrorBaseDirection = true
 			attackRangeInitDirection = GlobalVariables.DIRECTION.RIGHT
 			mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN]

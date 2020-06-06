@@ -20,7 +20,7 @@ var playerPassedDoor = Vector2.ZERO
 
 var movementCount = 0
 
-var maxTurnActions = 30
+var maxTurnActions = 5
 var attackCount = 0
 
 var attackDamage = 0.5
@@ -75,6 +75,12 @@ var enemyQueueAttackType = null
 
 var inInventory = false
 
+var toggledDangerArea = false
+
+var enemyToToggleArea = null
+
+signal toggleDangerArea (player, enemyToToggleArea, toggleAll)
+
 signal puzzleBlockInteractionSignal (player, puzzleBlockDirection)
 
 func _ready():
@@ -100,6 +106,7 @@ func _process(delta):
 			movedThroughDoorDirection=Vector2.ZERO
 			return 
 			
+		toggle_enemy_danger_areas()
 		get_use_nonkey_items()
 		var  attackMode = get_attack_mode()
 		if attackMode:
@@ -315,7 +322,39 @@ func get_use_nonkey_items():
 				else:
 					lifePoints += 5 
 					guiElements.change_health(-5)
-			
+
+func toggle_enemy_danger_areas():
+	if Input.is_action_just_pressed("toggle_danger_area_next") and Input.is_action_just_pressed("toggle_danger_area_previous") || Input.is_action_pressed("toggle_danger_area_next") and Input.is_action_just_pressed("toggle_danger_area_previous") ||Input.is_action_pressed("toggle_danger_area_previous") and Input.is_action_just_pressed("toggle_danger_area_next"):
+		print("pressed both at once")
+		if toggledDangerArea:
+			toggledDangerArea = false
+		else: 
+			toggledDangerArea = true
+		enemyToToggleArea = null
+		emit_signal("toggleDangerArea", self, enemyToToggleArea, true)
+	elif Input.is_action_just_pressed("toggle_danger_area_previous") && toggledDangerArea:
+		if Grid.activeRoom !=null:
+			if enemyToToggleArea == null:
+				enemyToToggleArea = Grid.activeRoom.enemiesInRoom.size()-1
+				emit_signal("toggleDangerArea", self, enemyToToggleArea)
+			elif enemyToToggleArea <= 0:
+				enemyToToggleArea = null
+				emit_signal("toggleDangerArea", self, enemyToToggleArea)
+			else:
+				enemyToToggleArea -= 1
+				emit_signal("toggleDangerArea", self, enemyToToggleArea)
+	elif Input.is_action_just_pressed("toggle_danger_area_next") && toggledDangerArea:
+		if Grid.activeRoom !=null:
+			if enemyToToggleArea == null:
+				enemyToToggleArea = 0
+				emit_signal("toggleDangerArea", self, enemyToToggleArea)
+			elif enemyToToggleArea >= Grid.activeRoom.enemiesInRoom.size()-1:
+				enemyToToggleArea = null
+				emit_signal("toggleDangerArea", self, enemyToToggleArea)
+			else:
+				enemyToToggleArea += 1
+				emit_signal("toggleDangerArea", self, enemyToToggleArea)
+		
 func inflict_damage_playerDefeated(attackDamage, attackType):
 	disablePlayerInput = true
 	lifePoints -= attackDamage
@@ -326,6 +365,10 @@ func inflict_damage_playerDefeated(attackDamage, attackType):
 			emit_signal("onPlayerDefeated", self)
 		else:
 			playerDefeated = true
+			if toggledDangerArea:
+				toggledDangerArea = false
+			else:
+				toggledDangerArea = true
 		return true
 	var animationToPlay = str("take_damage_physical")
 	if attackType == GlobalVariables.ATTACKTYPE.MAGIC:

@@ -1097,7 +1097,7 @@ func _on_projectiles_made_move(projectile=null):
 		puzzleProjectilesToMove.erase(projectile)
 		if projectile.deleteProjectilePlayAnimation != null:
 			projectile.queue_free()
-		print("Projectiles made move " + str(projectilesMadeMoveCounter) + " projectiles in puzzleProjectilesToMove " + str(puzzleProjectilesToMove.size())) 
+		#print("Projectiles made move " + str(projectilesMadeMoveCounter) + " projectiles in puzzleProjectilesToMove " + str(puzzleProjectilesToMove.size())) 
 
 	if puzzleProjectilesToMove.empty():
 		if activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
@@ -1434,7 +1434,6 @@ func on_powerBlock_spawn_magic(powerBlock, signalSpawnMagic):
 					blockHit.shootDelay = 0
 				else:
 					blockHit.shootDelay = 0
-			newMagicProjectile.queue_free()
 		elif get_cellv(world_to_map(newMagicProjectile.position)+newMagicProjectile.movementDirection) == get_tileset().find_tile_by_name("PUZZLEPIECE"):
 			projectilesInActiveRoom.append(newMagicProjectile)
 			var activatedPuzzlePiece = get_cell_pawn(world_to_map(newMagicProjectile.position)+newMagicProjectile.movementDirection)
