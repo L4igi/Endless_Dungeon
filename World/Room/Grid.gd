@@ -917,13 +917,13 @@ func _on_Player_Made_Move():
 				enemiesToMoveArray.append(enemy)
 			if playerEnemyProjectileArray.empty():
 				currentActivePhase = GlobalVariables.CURRENTPHASE.ENEMY
-				var mageEnemyInRoom = false
-				for enemy in enemiesToMoveArray:
-					if enemy.enemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY:
-						mageEnemyInRoom = true
-				if !mageEnemyInRoom:
-					for enemy in enemiesToMoveArray:
-							enemy.calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, activeRoom)
+#				var mageEnemyInRoom = false
+#				for enemy in enemiesToMoveArray:
+#					if enemy.enemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY:
+#						mageEnemyInRoom = true
+#				if !mageEnemyInRoom:
+#					for enemy in enemiesToMoveArray:
+#							enemy.calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, activeRoom)
 				var tempEnemyArray = enemiesToMoveArray.duplicate()
 				if GlobalVariables.moveAllEnemiesAtOnce:
 					for enemy in tempEnemyArray:
@@ -1035,13 +1035,13 @@ func on_projectiles_interactions_done(movingProjectile):
 		if currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
 			currentActivePhase = GlobalVariables.CURRENTPHASE.ENEMY
 			#calculate enemies move to position 
-			var mageEnemyInRoom = false
-			for enemy in enemiesToMoveArray:
-				if enemy.enemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY:
-					mageEnemyInRoom = true
-			if !mageEnemyInRoom:
-				for enemy in enemiesToMoveArray:
-						enemy.calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, activeRoom)
+#			var mageEnemyInRoom = false
+#			for enemy in enemiesToMoveArray:
+#				if enemy.enemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY:
+#					mageEnemyInRoom = true
+#			if !mageEnemyInRoom:
+#				for enemy in enemiesToMoveArray:
+#						enemy.calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, activeRoom)
 			var tempEnemyArray = enemiesToMoveArray.duplicate()
 			if GlobalVariables.moveAllEnemiesAtOnce:
 				for enemy in tempEnemyArray:

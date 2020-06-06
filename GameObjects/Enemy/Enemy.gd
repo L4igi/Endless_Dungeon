@@ -259,7 +259,7 @@ func enemyMovement():
 				yield($WarriorAnimationPlayer, "animation_finished")
 				$WarriorAnimationPlayer.play("idle")
 				set_process(true)
-				movementCount += 1
+			movementCount += 1
 		
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			if moveTo:
@@ -271,7 +271,7 @@ func enemyMovement():
 				yield($MageAnimationPlayer, "animation_finished")
 				$MageAnimationPlayer.play("idle")
 				set_process(true)
-				movementCount += 1
+			movementCount += 1
 			mageMoveCount+=1
 			
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
@@ -284,7 +284,7 @@ func enemyMovement():
 				yield($NinjaAnimationPlayer, "animation_finished")
 				$NinjaAnimationPlayer.play("idle")
 				set_process(true)
-				movementCount += 1
+			movementCount += 1
 				
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			if moveTo:
@@ -296,7 +296,7 @@ func enemyMovement():
 				yield($AnimationPlayer, "animation_finished")
 				$AnimationPlayer.play("idle")
 				set_process(true)
-				movementCount += 1
+			movementCount += 1
 
 	if waitingForEventBeforeContinue != null:
 		if lifePoints <= 0:
@@ -329,6 +329,7 @@ func enemyAttack():
 				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackTo, attackType,  attackDamage, attackCellArray)
 			attackCount += 1
 			if attackCount + movementCount < maxTurnActions:
+				calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, Grid.activeRoom)
 				enemyMovement()
 			else:
 				emit_signal("enemyMadeMove", self)
@@ -372,6 +373,7 @@ func enemyAttack():
 				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackTo, attackType, attackDamage, attackCellArray)
 			attackCount += 1
 			if attackCount + movementCount < maxTurnActions:
+				calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, Grid.activeRoom)
 				enemyMovement()
 			else:
 				emit_signal("enemyMadeMove", self)
@@ -387,8 +389,9 @@ func enemyAttack():
 				$AnimationPlayer.play("idle")
 				set_process(true)
 				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackTo, attackType, attackDamage, attackCellArray)
-				attackCount += 1
+			attackCount += 1
 			if attackCount + movementCount < maxTurnActions:
+				calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, Grid.activeRoom)
 				enemyMovement()
 			else:
 				emit_signal("enemyMadeMove", self)
