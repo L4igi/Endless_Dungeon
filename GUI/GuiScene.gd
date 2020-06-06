@@ -19,25 +19,40 @@ onready var HealthBarEmpty = $PlayerStats/HealthBarEmpty
 onready var PotionBarEmpty = $PlayerStats/PotionBarEmpty
 onready var PotionBarFill = $PlayerStats/PotionBarFill
 onready var PlayerStats = $PlayerStats
+onready var currentTurnActionsText = $TurnStats/CurrentTurnActions
+onready var maxTurnActionsText = $TurnStats/MaxTurnsActions
+onready var TurnStats = $TurnStats
 
 var hearts = 10
 var maxHearts = 10
 var healthRectSize = 16
+var currentTurnActionCount = 0
 
 var potions = 0
 var maxPotions = 3
 var potionRectSize = 32
 
 func _ready():
-	PlayerStats.rect_size.x = maxHearts*2+2
+	PlayerStats.rect_size.x = maxHearts*4-6
 	HealthBarEmpty.rect_size.x = (maxHearts)*healthRectSize
 	HealthBarFill.rect_size.x = (hearts)*healthRectSize
 	PotionBarEmpty.rect_size.x = maxPotions*potionRectSize
 	PotionBarFill.rect_size.x = potions*potionRectSize
+	currentTurnActionsText.set_text(str(0))
 
 func _process(delta):
 	pass
 		
+func set_maxturn_actions(maxTurnActions):
+		maxTurnActionsText.set_text(str(maxTurnActions))
+		
+func update_current_turns(reset = false):
+	if reset:
+		currentTurnActionCount = 0
+	else:
+		currentTurnActionCount += 1
+	currentTurnActionsText.set_text(str(currentTurnActionCount))
+	
 func change_health(attackDamage):
 	#print("current Healthbar value " + str($TextureRect/HealthBar.value))
 	HealthBarFill.rect_size.x -= attackDamage * healthRectSize

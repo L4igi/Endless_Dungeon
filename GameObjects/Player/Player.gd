@@ -20,7 +20,7 @@ var playerPassedDoor = Vector2.ZERO
 
 var movementCount = 0
 
-var maxTurnActions = 5
+var maxTurnActions = 10
 var attackCount = 0
 
 var attackDamage = 0.5
@@ -85,8 +85,9 @@ signal puzzleBlockInteractionSignal (player, puzzleBlockDirection)
 
 func _ready():
 	guiElements = GUI.instance()
-	guiElements.set_health(lifePoints)
 	add_child(guiElements)
+	guiElements.set_health(lifePoints)
+	guiElements.set_maxturn_actions(maxTurnActions)
 	
 	inventoryElements = Inventory.instance()
 	inventoryElements.currentPlayerPosition = self.position
@@ -103,6 +104,7 @@ func _process(delta):
 	if !disablePlayerInput && !inInventory:
 		if movedThroughDoorDirection!=Vector2.ZERO:
 			player_passed_door()
+			guiElements.update_current_turns(true)
 			movedThroughDoorDirection=Vector2.ZERO
 			return 
 			
@@ -162,6 +164,7 @@ func player_movement(movementDirection):
 			set_process(true)
 #			update_enemy_move_attack()
 			movementCount += 1
+			guiElements.update_current_turns()
 			
 			#print("Moved in Player " + str(attackCount) + " movementCount " +str(movementCount))
 			if !playerPassingDoor && !playerTurnDone && (attackCount + movementCount) == maxTurnActions:
@@ -201,6 +204,7 @@ func player_attack(attackDirection):
 		
 		emit_signal("playerAttacked", self, attackDirection, attackDamage, attackType)
 		attackCount += 1
+		guiElements.update_current_turns()
 		
 		#print("Attacked in Player " + str(attackCount) + " movementCount " +str(movementCount))
 		if !waitingForEventBeforeContinue && !playerTurnDone && (attackCount + movementCount) == maxTurnActions:
@@ -423,6 +427,7 @@ func remove_key_item_from_inventory(item):
 func _on_enemy_turn_done_signal():
 	movementCount = 0
 	attackCount = 0
+	guiElements.update_current_turns(true)
 	playerTurnDone = false
 	disablePlayerInput = false
 	waitingForEventBeforeContinue = false
@@ -430,8 +435,6 @@ func _on_enemy_turn_done_signal():
 func end_player_turn():
 	disablePlayerInput=true
 	playerTurnDone=true
-	movementCount = 1
-	attackCount = 1
 	
 #update enemy attack after each Player move/attack
 #func update_enemy_move_attack():

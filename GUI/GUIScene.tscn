@@ -1,5 +1,6 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=9 format=2]
 
+[ext_resource path="res://GUI/pixelFont.tres" type="DynamicFont" id=1]
 [ext_resource path="res://GUI/GUIScene.gd" type="Script" id=5]
 [ext_resource path="res://GUI/label_HP_bg.png" type="Texture" id=6]
 [ext_resource path="res://GUI/Sword.png" type="Texture" id=7]
@@ -12,12 +13,14 @@
 script = ExtResource( 5 )
 
 [node name="AttackMode" type="TextureRect" parent="."]
-margin_left = 131.0
-margin_top = 135.0
-margin_right = 251.92
-margin_bottom = 182.05
-rect_scale = Vector2( 0.15, 0.3 )
+margin_left = 133.558
+margin_top = 133.83
+margin_right = 149.558
+margin_bottom = 149.83
+size_flags_horizontal = 3
+size_flags_vertical = 3
 texture = ExtResource( 6 )
+expand = true
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -25,20 +28,19 @@ __meta__ = {
 [node name="Attacks" type="TextureRect" parent="AttackMode"]
 anchor_top = 0.5
 anchor_bottom = 0.5
-margin_left = 20.3067
-margin_top = -27.0199
-margin_right = 60.3067
-margin_bottom = 15.3091
-rect_scale = Vector2( 2.682, 1.472 )
+margin_top = -8.0
+margin_right = 16.0
+margin_bottom = 8.0
 texture = ExtResource( 7 )
-stretch_mode = 3
+expand = true
+stretch_mode = 6
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="PlayerStats" type="TextureRect" parent="."]
-margin_right = 21.0
-margin_bottom = 10.0
+margin_right = 40.0
+margin_bottom = 16.0
 texture = ExtResource( 6 )
 expand = true
 __meta__ = {
@@ -48,10 +50,11 @@ __meta__ = {
 [node name="HealthBarEmpty" type="TextureRect" parent="PlayerStats"]
 margin_left = 1.0
 margin_top = 1.0
-margin_right = 193.0
-margin_bottom = 33.0
-rect_scale = Vector2( 0.125, 0.125 )
+margin_right = 194.0
+margin_bottom = 34.0
+rect_scale = Vector2( 0.2, 0.2 )
 texture = ExtResource( 8 )
+expand = true
 stretch_mode = 2
 __meta__ = {
 "_edit_use_anchors_": false
@@ -62,7 +65,7 @@ margin_left = 1.0
 margin_top = 1.0
 margin_right = 194.0
 margin_bottom = 34.0
-rect_scale = Vector2( 0.125, 0.125 )
+rect_scale = Vector2( 0.2, 0.2 )
 texture = ExtResource( 9 )
 expand = true
 stretch_mode = 2
@@ -71,11 +74,11 @@ __meta__ = {
 }
 
 [node name="PotionBarEmpty" type="TextureRect" parent="PlayerStats"]
-margin_left = 4.5
-margin_top = 4.5
-margin_right = 36.5
-margin_bottom = 36.5
-rect_scale = Vector2( 0.125, 0.125 )
+margin_left = 4.25
+margin_top = 8.0
+margin_right = 36.25
+margin_bottom = 40.0
+rect_scale = Vector2( 0.2, 0.2 )
 texture = ExtResource( 11 )
 stretch_mode = 2
 __meta__ = {
@@ -83,14 +86,57 @@ __meta__ = {
 }
 
 [node name="PotionBarFill" type="TextureRect" parent="PlayerStats"]
-margin_left = 4.5
-margin_top = 4.5
-margin_right = 36.5
-margin_bottom = 36.5
-rect_scale = Vector2( 0.125, 0.125 )
+margin_left = 4.25
+margin_top = 8.0
+margin_right = 36.25
+margin_bottom = 40.0
+rect_scale = Vector2( 0.2, 0.2 )
 texture = ExtResource( 10 )
 expand = true
 stretch_mode = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TurnStats" type="TextureRect" parent="."]
+margin_top = 134.0
+margin_right = 24.0
+margin_bottom = 150.0
+texture = ExtResource( 6 )
+expand = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CurrentTurnActions" type="Label" parent="TurnStats"]
+margin_left = 2.08767
+margin_top = 0.115982
+margin_right = 11.0877
+margin_bottom = 14.116
+rect_scale = Vector2( 0.7, 0.7 )
+custom_fonts/font = ExtResource( 1 )
+text = "2"
+
+[node name="Seperator" type="Label" parent="TurnStats"]
+margin_left = 10.8119
+margin_top = 3.07214
+margin_right = 19.8119
+margin_bottom = 17.0721
+rect_scale = Vector2( 0.7, 0.7 )
+custom_fonts/font = ExtResource( 1 )
+text = "/"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="MaxTurnsActions" type="Label" parent="TurnStats"]
+margin_left = 13.57
+margin_top = 5.56712
+margin_right = 28.57
+margin_bottom = 20.5671
+rect_scale = Vector2( 0.7, 0.8 )
+custom_fonts/font = ExtResource( 1 )
+text = "6"
 __meta__ = {
 "_edit_use_anchors_": false
 }
