@@ -604,8 +604,8 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					#disable elements in room just left
 					if !activeRoom.enemiesInRoom.empty():
 						for element in activeRoom.enemiesInRoom:
-							print("Enemies in Room count " + str(activeRoom.enemiesInRoom.size()))
 							element.isDisabled = true
+							element.turn_off_danger_fields_on_exit_room()
 							if element.attackRangeNode != null:
 								element.attackRangeNode.queue_free()
 								element.attackRangeNode = null
@@ -633,6 +633,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					if !activeRoom.enemiesInRoom.empty():
 						for element in activeRoom.enemiesInRoom:
 							element.isDisabled = true
+							element.turn_off_danger_fields_on_exit_room()
 							if element.attackRangeNode != null:
 								element.attackRangeNode.queue_free()
 								element.attackRangeNode = null
@@ -763,6 +764,7 @@ func create_enemy_room(unlockedDoor):
 				alreadyinArray = false
 				spawnCellArray.append(spawnCell)
 				var newEnemy = Enemy.instance()
+				add_child(newEnemy)
 				newEnemy.set_z_index(2)
 				#create enemy typ here (enemy. createEnemyType
 				newEnemy.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(spawnCellX, spawnCellY))
@@ -773,7 +775,6 @@ func create_enemy_room(unlockedDoor):
 				newEnemy.connect("enemyAttacked", self, "_on_enemy_attacked")
 				newEnemy.connect("enemyDefeated", self, "_on_enemy_defeated")
 				newEnemy.connect("enemyExplosionDone", self, "_on_enemy_explosion_done")
-				add_child(newEnemy)
 				newEnemy.calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW, unlockedDoor)
 				#newEnemy.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
 				set_cellv(world_to_map(newEnemy.position), get_tileset().find_tile_by_name(match_Enum(newEnemy.type)))
@@ -1167,16 +1168,16 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 		return
 	#sword attacks
 	if(get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.ENEMY && attackType == GlobalVariables.ATTACKTYPE.SWORD):
-		print("Woosh Player Sword Attack hit " + str(attackDamage))
+		#print("Woosh Player Sword Attack hit " + str(attackDamage))
 		var attackedEnemy = get_cell_pawn(world_to_map(player.position) + attack_direction)
 		attackedEnemy.inflictDamage(attackDamage, attackType, world_to_map(player.position) + attack_direction, mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
 		
 				
-	elif(get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.FLOOR && attackType == GlobalVariables.ATTACKTYPE.SWORD):
-		match attackType:
-			GlobalVariables.ATTACKTYPE.SWORD:
-				print("Sword was used to attack")
-				print("ZZZ Attack missed")
+#	elif(get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.FLOOR && attackType == GlobalVariables.ATTACKTYPE.SWORD):
+#		match attackType:
+#			GlobalVariables.ATTACKTYPE.SWORD:
+#				print("Sword was used to attack")
+#				print("ZZZ Attack missed")
 	#wand attacks
 	#use wand on block in puzzle room 
 	if  activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.BLOCK && attackType == GlobalVariables.ATTACKTYPE.MAGIC:
@@ -1203,28 +1204,28 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 		#create ticking projectile for power block order+
 		if tickingProjectile == null:
 			var newTickingProjectile = MagicProjectile.instance()
+			add_child(newTickingProjectile)
 			newTickingProjectile.projectileType = GlobalVariables.PROJECTILETYPE.TICKERPROJECTILE
 			newTickingProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
 			newTickingProjectile.connect("playerEnemieProjectileMadeMove", self, "_on_player_enemy_projectile_made_move")
 			newTickingProjectile.connect("tickingProjectileMadeMove", self, "_on_ticking_projectile_made_move")
 			newTickingProjectile.create_ticking_projectile(activeRoom.doorRoomLeftMostCorner)
-			add_child(newTickingProjectile)
 			tickingProjectile = newTickingProjectile
 			newTickingProjectile.move_projectile(GlobalVariables.PROJECTILETYPE.TICKERPROJECTILE)
 		blockAttackedByMagic.spawnMagicFromBlock(true)
 	elif (get_cellv(world_to_map(player.position) + attack_direction*2) == TILETYPES.ENEMY && attackType == GlobalVariables.ATTACKTYPE.MAGIC):
-		print("Woosh Player Wand Attack hit")
+#		print("Woosh Player Wand Attack hit")
 		var attackedEnemy = get_cell_pawn(world_to_map(player.position) + attack_direction*2)
 		var newMagicProjectile = MagicProjectile.instance()
+		add_child(newMagicProjectile)
 		newMagicProjectile.set_z_index(5)
 		newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.PLAYER
 		newMagicProjectile.get_node("Sprite").set_frame(17)
 		newMagicProjectile.position = player.position + map_to_world(attack_direction*2)
-		add_child(newMagicProjectile)
 		newMagicProjectile.play_projectile_animation(true, "attack")
 		attackedEnemy.inflictDamage(attackDamage, attackType, world_to_map(player.position) + attack_direction*2, mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
 	elif (get_cellv(world_to_map(player.position) + attack_direction*2) == TILETYPES.FLOOR && attackType == GlobalVariables.ATTACKTYPE.MAGIC):
-		print("Magic was used to attack")
+#		print("Magic was used to attack")
 		var newMagicProjectile = MagicProjectile.instance()
 		newMagicProjectile.set_z_index(5)
 		newMagicProjectile.get_node("Sprite").set_frame(17)
@@ -1235,26 +1236,25 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 		newMagicProjectile.movementDirection = attack_direction
 		newMagicProjectile.attackDamage = attackDamage
 		newMagicProjectile.play_player_projectile_animation()
-		add_child(newMagicProjectile)
 		projectilesInActiveRoom.append(newMagicProjectile)
 		set_cellv(world_to_map(newMagicProjectile.position), get_tileset().find_tile_by_name("MAGICPROJECTILE"))
 		if activeRoom == null || activeRoom.roomCleared:
 			newMagicProjectile.move_projectile("clearedRoomProjectile")
 	elif (get_cellv(world_to_map(player.position) + attack_direction*2) == TILETYPES.MAGICPROJECTILE && attackType == GlobalVariables.ATTACKTYPE.MAGIC):
+		var newMagicProjectile = MagicProjectile.instance()
+		add_child(newMagicProjectile)
+		newMagicProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
+		newMagicProjectile.connect("playerEnemieProjectileMadeMove", self, "_on_player_enemy_projectile_made_move")
+		newMagicProjectile.position = player.position + map_to_world(attack_direction*2)
+		newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.PLAYER
+		newMagicProjectile.movementDirection = attack_direction
 		if get_cell_pawn(world_to_map(player.position) + attack_direction*2).projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
 			var projectileToErase = get_cell_pawn(world_to_map(player.position) + attack_direction*2)
 			projectilesInActiveRoom.erase(projectileToErase)
 			set_cellv(world_to_map(projectileToErase.position),get_tileset().find_tile_by_name("FLOOR")) 
+			newMagicProjectile.play_projectile_animation(true, "attack")
 			projectileToErase.queue_free()
 		else:
-			print("Player player projectile interaction")
-			var newMagicProjectile = MagicProjectile.instance()
-			newMagicProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
-			newMagicProjectile.connect("playerEnemieProjectileMadeMove", self, "_on_player_enemy_projectile_made_move")
-			newMagicProjectile.position = player.position + map_to_world(attack_direction*2)
-			newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.PLAYER
-			newMagicProjectile.movementDirection = attack_direction
-			add_child(newMagicProjectile)
 			projectilesInActiveRoom.append(newMagicProjectile)
 			newMagicProjectile.play_player_projectile_animation()
 			magicProjectileMagicProjectileInteraction(newMagicProjectile, get_cell_pawn(world_to_map(player.position) + attack_direction*2), GlobalVariables.CURRENTPHASE.PLAYER)
@@ -1529,6 +1529,7 @@ func _on_Player_Defeated(player):
 		#disable elements in room just left
 		for element in activeRoom.enemiesInRoom:
 			element.isDisabled = true
+			element.turn_off_danger_fields_on_exit_room()
 		for projectile in projectilesInActiveRoom:
 			set_cellv(world_to_map(projectile.position),get_tileset().find_tile_by_name("FLOOR")) 
 			projectile.queue_free()

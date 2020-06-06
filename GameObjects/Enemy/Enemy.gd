@@ -85,6 +85,8 @@ var individualDangerFieldVisible = false
 
 var attackCellArray = []
 
+onready var healthBar = $HealthBar
+
 func _ready():
 	var player = Grid.get_node("Player")
 	player.connect("toggleDangerArea", self, "on_toggle_danger_area")
@@ -128,8 +130,8 @@ func toggleVisibility(makeInVisible):
 	else:
 		spriteToToggle.set_visible(true)
 			
-func on_toggle_danger_area(player, enemyToToggleArea, toggleAll=false):
-	print("enemyToToggleArea " + str(enemyToToggleArea))
+func on_toggle_danger_area(enemyToToggleArea, toggleAll=false):
+	#print("enemyToToggleArea " + str(enemyToToggleArea))
 	if lifePoints>0:
 		if !isDisabled && toggleAll:
 			if dangerFieldsVisible:
@@ -158,7 +160,12 @@ func on_toggle_danger_area(player, enemyToToggleArea, toggleAll=false):
 					child.set_visible(true)
 					individualDangerFieldVisible = true
 			
-
+func turn_off_danger_fields_on_exit_room():
+	for child in attackRangeNode.get_children():
+		child.set_visible(false)
+		dangerFieldsVisible = false
+		individualDangerFieldVisible = false
+			
 func calc_enemy_move_to(calcMode, activeRoom):
 	var cell_target = Vector2.ZERO
 	var movementdirectionVector = Vector2.ZERO
@@ -585,6 +592,11 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 				mirror_base_direction()
 			if !mirrorDirectionsArray.has(attackRangeInitDirection):
 				mirrorDirectionsArray.append(attackRangeInitDirection)
+	
+	#set health bar stats 
+	healthBar.set_max(lifePoints*10)
+	healthBar.set_value(lifePoints*10)
+	healthBar.set_step(1)
 	return enemyType
 
 
@@ -607,6 +619,7 @@ func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, m
 
 	if !self.isBarrier:
 		lifePoints -= inflictattackDamage
+		healthBar.set_value(lifePoints*10)
 	if lifePoints <= 0:
 		enemyDefeated = true
 		if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER || CURRENTPHASE == GlobalVariables.CURRENTPHASE.BLOCK || CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE || CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
