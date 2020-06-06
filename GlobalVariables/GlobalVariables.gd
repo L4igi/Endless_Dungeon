@@ -1,6 +1,6 @@
 extends Node
 
-var roomDimensions = 6
+var roomDimensions = 10
 
 var maxNumberRooms = 15
 

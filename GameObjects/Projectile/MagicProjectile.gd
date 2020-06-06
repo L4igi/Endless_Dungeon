@@ -63,7 +63,7 @@ func move_projectile(type = null):
 	elif projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK:
 		var target_position = Grid.request_move(self, movementDirection)
 		if target_position:
-			$Tween.interpolate_property(self, "position", position, target_position , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			$Tween.interpolate_property(self, "position", position, target_position , 0.1, Tween.TRANS_LINEAR, Tween.EASE_IN)
 			$Tween.start()
 			yield($Tween, "tween_completed")
 			if deleteProjectilePlayAnimation == null:
@@ -77,11 +77,11 @@ func move_projectile(type = null):
 		var target_position = position + movementDirection
 		movementDirection = movementDirection*-1
 		tickAlreadyMoved = true
-		$Tween.interpolate_property(self, "position", position, target_position , 1.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
+		$Tween.interpolate_property(self, "position", position, target_position , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
 		$Tween.start()
 		yield($Tween, "tween_completed")
 		tickAlreadyMoved = false
-		print("Tick Tock")
+		#print("Tick Tock")
 		emit_signal("tickingProjectileMadeMove", self, projectileType)
 		
 	elif type == "allProjectiles":

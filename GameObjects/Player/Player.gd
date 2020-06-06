@@ -288,7 +288,8 @@ func get_attack_mode():
 		attackDamage = 0.5
 		#if used in puzzle room while magic is flying cancels out all magic
 		if attackType == GlobalVariables.ATTACKTYPE.MAGIC:
-			Grid.cancel_magic_in_puzzle_room()
+			if Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.PUZZLEPROJECTILE:
+				Grid.cancelMagicPuzzleRoom=true
 		puzzleBlockInteraction = false
 		return GlobalVariables.ATTACKTYPE.MAGIC
 		
