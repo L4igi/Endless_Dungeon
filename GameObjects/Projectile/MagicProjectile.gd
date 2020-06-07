@@ -183,6 +183,7 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack", projec
 	elif projectileAnimation == "mini":
 		print("In second mini")
 		var target_position = Grid.request_move(self, movementDirection)
+		Grid.set_cellv(Grid.world_to_map(position), Grid.get_tileset().find_tile_by_name("FLOOR"))
 		if target_position:
 			set_process(false)
 			$AnimationPlayer.play(animationToPlay)

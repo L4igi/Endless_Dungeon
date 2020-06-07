@@ -13,10 +13,10 @@
 script = ExtResource( 5 )
 
 [node name="AttackMode" type="TextureRect" parent="."]
-margin_left = 133.558
-margin_top = 133.83
-margin_right = 149.558
-margin_bottom = 149.83
+margin_left = 133.455
+margin_top = 133.392
+margin_right = 149.455
+margin_bottom = 149.392
 size_flags_horizontal = 3
 size_flags_vertical = 3
 texture = ExtResource( 6 )
@@ -99,9 +99,10 @@ __meta__ = {
 }
 
 [node name="TurnStats" type="TextureRect" parent="."]
-margin_top = 134.0
-margin_right = 29.0
-margin_bottom = 150.0
+margin_left = 0.579918
+margin_top = 133.42
+margin_right = 29.5799
+margin_bottom = 149.42
 texture = ExtResource( 6 )
 expand = true
 __meta__ = {
