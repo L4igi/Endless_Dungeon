@@ -1256,6 +1256,7 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 		else:
 			print("Player player projectile interaction")
 			var newMagicProjectile = MagicProjectile.instance()
+			newMagicProjectile.set_z_index(5)
 			newMagicProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
 			newMagicProjectile.connect("playerEnemieProjectileMadeMove", self, "_on_player_enemy_projectile_made_move")
 			newMagicProjectile.position = player.position + map_to_world(attack_direction*2)
@@ -1406,6 +1407,7 @@ func on_powerBlock_spawn_magic(powerBlock, signalSpawnMagic):
 	for direction in powerBlock.activeDirections:
 		#print("Spawning magic")
 		var newMagicProjectile = MagicProjectile.instance()
+		newMagicProjectile.set_z_index(5)
 		add_child(newMagicProjectile)
 		newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.POWERBLOCK
 		newMagicProjectile.play_powerBlock_projectile_animation()
@@ -1479,6 +1481,7 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage, attackCellA
 		var attackedPlayer = get_cell_pawn(attackCell)
 		if(attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 			var newMagicProjectile = MagicProjectile.instance()
+			newMagicProjectile.set_z_index(5)
 			newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.ENEMY
 			newMagicProjectile.get_node("Sprite").set_frame(0)
 			newMagicProjectile.position = map_to_world(attackCell)+GlobalVariables.tileOffset
@@ -1493,7 +1496,7 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage, attackCellA
 			#print("NewMagicProjectile Position " + str(attackCell))
 			if(get_cellv(attackCell)==TILETYPES.FLOOR):
 				var newMagicProjectile = MagicProjectile.instance()
-				newMagicProjectile.set_z_index(3)
+				newMagicProjectile.set_z_index(5)
 				newMagicProjectile.get_node("Sprite").set_frame(0)
 				newMagicProjectile.connect("projectileMadeMove", self, "_on_projectiles_made_move")
 				newMagicProjectile.connect("playerEnemieProjectileMadeMove", self, "_on_player_enemy_projectile_made_move")

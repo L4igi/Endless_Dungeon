@@ -236,7 +236,7 @@ func calc_enemy_move_to(calcMode, activeRoom):
 			moveTo = target_position
 	elif calcMode == GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION:
 		var target_position = Grid.request_move(self, movementdirectionVector)
-		print("target position "+ str(target_position))
+		#print("target position "+ str(target_position))
 		if target_position:
 			moveTo = target_position
 		else:
