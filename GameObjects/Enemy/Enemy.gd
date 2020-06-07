@@ -343,7 +343,7 @@ func enemyAttack():
 
 		
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
-			print("Doing attack mage")
+			#print("Doing attack mage")
 			set_process(false)
 			$MageAnimationPlayer.play("attack", -1, 3.0)
 #			$Tween.interpolate_property($Sprite, "position", Vector2(), Vector2(), $MageAnimationPlayer.current_animation_length/3.0, Tween.TRANS_LINEAR, Tween.EASE_IN)

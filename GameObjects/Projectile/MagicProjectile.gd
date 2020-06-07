@@ -21,7 +21,7 @@ signal playerEnemieProjectileMadeMove (projectile ,type, projectileArray)
 signal tickingProjectileMadeMove(projectile, type)
 
 func _ready():
-	print("ID " + str(self))
+	pass
 	
 func calc_projectiles_move_to(calcMode, count):
 	if(projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || projectileType == GlobalVariables.PROJECTILETYPE.PLAYER):
@@ -125,13 +125,13 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack", projec
 		animationMode = 1
 #		if Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
 		Grid.mainPlayer.waitingForEventBeforeContinue = true
-		print("Phase1")
+		#print("Phase1")
 	elif Grid.activeRoom != null && Grid.activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 		animationMode = 2
-		print("Phase2")
+		#print("Phase2")
 	else:
 		animationMode = 3
-		print("Phase3")
+		#print("Phase3")
 	
 	var animationToPlay = projectileAnimation
 	match projectileAnimation : 
@@ -156,7 +156,7 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack", projec
 				attackDamage = 1.0
 				animationToPlay = "playerPoweredUpProjectile"
 		"mini":
-			print("IN mini")
+			#print("IN mini")
 			if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
 				animationToPlay = "enemy_shoot"
 			elif projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
@@ -172,7 +172,7 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack", projec
 		yield($AnimationPlayer, "animation_finished")
 		set_process(true)
 	if projectileAnimation == "merge": 
-		print("in merge")
+		#print("in merge")
 		#play idle animation 
 		if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
 			$AnimationPlayer.play("enemy_shoot")
@@ -181,7 +181,7 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack", projec
 			$AnimationPlayer.play("shoot")
 	#player enemy phase
 	elif projectileAnimation == "mini":
-		print("In second mini")
+		#print("In second mini")
 		var target_position = Grid.request_move(self, movementDirection)
 		Grid.set_cellv(Grid.world_to_map(position), Grid.get_tileset().find_tile_by_name("FLOOR"))
 		if target_position:
@@ -200,7 +200,7 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack", projec
 			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
 #		if projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
 #			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
-		print("Projectile queueing free")
+		#print("Projectile queueing free")
 		self.queue_free()
 #		if Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
 		Grid.mainPlayer.waitingForEventBeforeContinue = false

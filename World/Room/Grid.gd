@@ -103,6 +103,8 @@ var tickingProjectile = null
 
 var cancelMagicPuzzleRoom = false
 
+var activePhaseBeforeBlock = null
+
 func match_Enum(var index):
 	match index:
 		0:
@@ -610,7 +612,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 				activeRoom = oldCellTargetNode
 				if activeRoom != null:
 					pawn.inRoomType = activeRoom.roomType
-					print (activeRoom.enemiesInRoom)
+					#print (activeRoom.enemiesInRoom)
 					for element in activeRoom.enemiesInRoom:
 						element.isDisabled = false
 						element.enemyTurnDone=true
@@ -687,7 +689,7 @@ func create_puzzle_room(unlockedDoor):
 	var spawnCellY
 	var spawnCell 
 	var barrierPuzzlePieceAlreadySpawned = false
-	print ("Puzzle l´pieces to spawn " + str(puzzlePiecesToSpwan))
+	#print ("Puzzle l´pieces to spawn " + str(puzzlePiecesToSpwan))
 	for puzzlePieces in puzzlePiecesToSpwan:
 		#print("generatig puzzle pieces")
 		calculateSpawnAgain = true
@@ -933,6 +935,7 @@ func _on_Player_Made_Move():
 						enemiesToMoveArray[0].make_enemy_turn()
 					#emit_signal("playerTurnDoneSignal")
 				else:
+					print("In here setting current phase")
 					currentActivePhase = GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE
 #					var movementDirection = playerEnemyProjectileArray[0].movementDirection
 #					if movementDirection.x == 0 && movementDirection.y == 1:
@@ -949,7 +952,7 @@ func _on_Player_Made_Move():
 						
 					if GlobalVariables.moveAllProjectilesAtOnce:
 						for projectile in tempPlayerEnemyProjectiles:
-							#print("Projectile moving " + str(projectile.position))
+							print("Projectile moving " + str(projectile.position))
 							projectile.move_projectile()
 						tempPlayerEnemyProjectiles.clear()
 					else:
@@ -1031,7 +1034,7 @@ func _on_player_enemy_projectile_made_move(movingProjectile, type = null):
 func on_projectiles_interactions_done(movingProjectile):
 	waitingForProjectileInteraction.erase(movingProjectile)
 	if waitingForProjectileInteraction.empty():
-		projectilesMadeMoveCounter = 0
+		print("currentactivePhase " +str(currentActivePhase))
 		if currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
 			currentActivePhase = GlobalVariables.CURRENTPHASE.ENEMY
 			#calculate enemies move to position 
@@ -1250,6 +1253,13 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 	elif (get_cellv(world_to_map(player.position) + attack_direction*2) == TILETYPES.MAGICPROJECTILE && attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		if get_cell_pawn(world_to_map(player.position) + attack_direction*2).projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
 			var projectileToErase = get_cell_pawn(world_to_map(player.position) + attack_direction*2)
+			var newMagicProjectile = MagicProjectile.instance()
+			newMagicProjectile.set_z_index(5)
+			newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.PLAYER
+			newMagicProjectile.get_node("Sprite").set_frame(17)
+			newMagicProjectile.position = player.position + map_to_world(attack_direction*2)
+			add_child(newMagicProjectile)
+			newMagicProjectile.play_projectile_animation(true, "attack")
 			projectilesInActiveRoom.erase(projectileToErase)
 			set_cellv(world_to_map(projectileToErase.position),get_tileset().find_tile_by_name("FLOOR")) 
 			projectileToErase.queue_free()
@@ -1357,6 +1367,7 @@ func on_puzzle_Block_interaction(player, puzzleBlockDirection):
 	activatedPuzzleBlock.interactPowerBlock(puzzleBlockDirection, activeRoom.roomType)
 	
 func on_Power_Block_explode(powerBlock):
+	activePhaseBeforeBlock = currentActivePhase
 	currentActivePhase = GlobalVariables.CURRENTPHASE.BLOCK
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(1,0)) == get_tileset().find_tile_by_name("ENEMY"):
 		enemiesHitByExplosion.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,0)))
@@ -1387,7 +1398,7 @@ func on_Power_Block_explode(powerBlock):
 	powerBlock.queue_free()
 	set_cellv(world_to_map(powerBlock.position), get_tileset().find_tile_by_name("FLOOR"))
 	if enemiesHitByExplosion.empty():
-		currentActivePhase = GlobalVariables.CURRENTPHASE.PLAYER
+		currentActivePhase = activePhaseBeforeBlock
 		mainPlayer.waitingForEventBeforeContinue = false
 	
 func _on_enemy_explosion_done(enemy):
@@ -1574,9 +1585,10 @@ func _on_enemy_defeated(enemy, CURRENTPHASE, hitProjectile = null):
 	else:
 		enemy.queue_free()
 	#set room to cleared if all enemies were defeated
-	if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER || CURRENTPHASE == GlobalVariables.CURRENTPHASE.BLOCK:
+	if CURRENTPHASE == GlobalVariables.CURRENTPHASE.BLOCK:
 		if enemiesHitByExplosion.empty():
-			currentActivePhase = GlobalVariables.CURRENTPHASE.PLAYER
+			currentActivePhase = activePhaseBeforeBlock
+			print("In here currentAcitvePhase " + str(activePhaseBeforeBlock))
 			mainPlayer.waitingForEventBeforeContinue = false
 
 	if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE || CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
