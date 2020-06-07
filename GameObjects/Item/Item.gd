@@ -45,3 +45,9 @@ func setTexture(textureType):
 		GlobalVariables.ITEMTYPE.EXIT:
 			get_node("Sprite").set_texture(exit)
 			itemType = GlobalVariables.ITEMTYPE.EXIT
+
+func on_item_pickUp(newPosition):
+	$AnimationPlayer.play("itemPickUp")
+	yield($AnimationPlayer, "animation_finished")
+	set_visible(false)
+	position = newPosition
