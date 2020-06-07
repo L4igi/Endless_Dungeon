@@ -118,13 +118,13 @@ func play_powerBlock_projectile_animation():
 	$AnimationPlayer.play("powerblock_shoot")
 
 func play_projectile_animation(onSpot=true, projectileAnimation="attack", projectileInteraction = false):
-	print("ProjectileAnimation " + str(projectileAnimation))
-	print("current active phase " + str(Grid.currentActivePhase))
+	#print("ProjectileAnimation " + str(projectileAnimation))
+	#print("current active phase " + str(Grid.currentActivePhase))
 	var animationMode = 1
 	if Grid.activeRoom == null || Grid.activeRoom != null && Grid.activeRoom.roomCleared || Grid.currentActivePhase != GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE && Grid.currentActivePhase != GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE && Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.PLAYER || Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
 		animationMode = 1
-		if Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
-			Grid.mainPlayer.waitingForEventBeforeContinue = true
+#		if Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
+		Grid.mainPlayer.waitingForEventBeforeContinue = true
 		print("Phase1")
 	elif Grid.activeRoom != null && Grid.activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 		animationMode = 2
@@ -136,6 +136,7 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack", projec
 	var animationToPlay = projectileAnimation
 	match projectileAnimation : 
 		"delete":
+			deleteProjectilePlayAnimation = "delete"
 			if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
 				animationToPlay = "EnemyProjectileDelete"
 			elif projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
@@ -154,35 +155,57 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack", projec
 				isMiniProjectile = false
 				attackDamage = 1.0
 				animationToPlay = "playerPoweredUpProjectile"
-				
-	set_process(false)
-	$AnimationPlayer.play(animationToPlay)
-	if !onSpot:
-		$Tween.interpolate_property($Sprite, "position", Vector2(), movementDirection*GlobalVariables.tileSize, $AnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
-		$Tween.start()
-	yield($AnimationPlayer, "animation_finished")
-	set_process(true)
+		"mini":
+			print("IN mini")
+			if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
+				animationToPlay = "enemy_shoot"
+			elif projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
+				animationToPlay = "to_mini_projectile"
+				isMiniProjectile = true
+				attackDamage = 0.5
+	if projectileAnimation != "mini":
+		set_process(false)
+		$AnimationPlayer.play(animationToPlay)
+		if !onSpot:
+			$Tween.interpolate_property($Sprite, "position", Vector2(), movementDirection*GlobalVariables.tileSize, $AnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			$Tween.start()
+		yield($AnimationPlayer, "animation_finished")
+		set_process(true)
 	if projectileAnimation == "merge": 
+		print("in merge")
 		#play idle animation 
 		if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
 			$AnimationPlayer.play("enemy_shoot")
 		elif projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
-			print("playing shoot " + str(projectileAnimation))
+			#print("playing shoot " + str(projectileAnimation))
 			$AnimationPlayer.play("shoot")
 	#player enemy phase
+	elif projectileAnimation == "mini":
+		print("In second mini")
+		var target_position = Grid.request_move(self, movementDirection)
+		if target_position:
+			set_process(false)
+			$AnimationPlayer.play(animationToPlay)
+			$Tween.interpolate_property(self, "position", position, target_position , $AnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
+			$Tween.start()
+			yield($Tween, "tween_completed")
+			if deleteProjectilePlayAnimation != "delete":
+				$AnimationPlayer.play("mini1shoot")
+			set_process(true)
+			Grid.mainPlayer.waitingForEventBeforeContinue = false
 	elif animationMode == 1:
 		Grid.projectilesInActiveRoom.erase(self)
 		if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.PLAYER:
 			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
 #		if projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
 #			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
+		print("Projectile queueing free")
 		self.queue_free()
-		if Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
-			Grid.mainPlayer.waitingForEventBeforeContinue = false
+#		if Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
+		Grid.mainPlayer.waitingForEventBeforeContinue = false
 	#puzzle room interactions
 	elif animationMode == 2:
 		Grid.projectilesInActiveRoom.erase(self)
-		print("here emitting signal")
 		emit_signal("projectileMadeMove", self)
 	#projectile phase
 	elif animationMode == 3:
@@ -194,24 +217,24 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack", projec
 			emit_signal("playerEnemieProjectileMadeMove",self, projectileType)
 		self.queue_free()
 	
-func create_mini_projectile(projectile, mainPlayer, currentPhase):
-	if currentPhase == GlobalVariables.CURRENTPHASE.PLAYER:
-		mainPlayer.waitingForEventBeforeContinue = true
-	isMiniProjectile = true
-	attackDamage = 0.5
-	if projectile == 1:
-		$AnimationPlayer.play("mini1shoot")
-	if projectile == 2:
-		$AnimationPlayer.play("mini2shoot")
-		
-	if currentPhase == GlobalVariables.CURRENTPHASE.PLAYER:
-		print ("IN mini projectile movement")
-		var target_position = Grid.request_move(self, movementDirection)
-		if target_position:
-			$Tween.interpolate_property(self, "position", position, target_position , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
-			$Tween.start()
-			yield($Tween, "tween_completed")
-		mainPlayer.waitingForEventBeforeContinue = false
+#func create_mini_projectile(projectile, mainPlayer, currentPhase):
+#	if currentPhase == GlobalVariables.CURRENTPHASE.PLAYER:
+#		mainPlayer.waitingForEventBeforeContinue = true
+#	isMiniProjectile = true
+#	attackDamage = 0.5
+#	if projectile == 1:
+#		$AnimationPlayer.play("mini1shoot")
+#	if projectile == 2:
+#		$AnimationPlayer.play("mini2shoot")
+#
+#	if currentPhase == GlobalVariables.CURRENTPHASE.PLAYER:
+#		#print ("IN mini projectile movement")
+#		var target_position = Grid.request_move(self, movementDirection)
+#		if target_position:
+#			$Tween.interpolate_property(self, "position", position, target_position , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+#			$Tween.start()
+#			yield($Tween, "tween_completed")
+#		mainPlayer.waitingForEventBeforeContinue = false
 			
 
 func create_ticking_projectile(currentRoomLeftMostCorner):

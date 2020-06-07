@@ -2,6 +2,8 @@ extends Node2D
 
 onready var Grid = get_parent()
 
+onready var pixelfont = preload("res://GUI/pixelFont.tres")
+
 enum CELL_TYPES{PLAYER=0, WALL=1, ENEMY=2, PUZZLEPIECE=3, ITEM=4, DOOR=5, UNLOCKEDDOOR=6, MAGICPROJECTILE=7, BLOCK=8}
 export(CELL_TYPES) var type = CELL_TYPES.PLAYER
 
@@ -88,10 +90,11 @@ func _ready():
 	add_child(guiElements)
 	guiElements.set_health(lifePoints)
 	guiElements.set_maxturn_actions(maxTurnActions)
+
 	
 	inventoryElements = Inventory.instance()
 	inventoryElements.currentPlayerPosition = self.position
-	add_child(inventoryElements)
+	guiElements.add_child(inventoryElements)
 	
 	mainCamera = PlayerCamera.instance()
 	mainCamera.make_current()
@@ -135,7 +138,7 @@ func _process(delta):
 
 #
 func player_movement(movementDirection):
-	if movementDirection:
+	if movementDirection && (attackCount + movementCount) < maxTurnActions:
 		var target_position = Grid.request_move(self, movementDirection)
 		if target_position:
 			set_process(false)
@@ -168,12 +171,12 @@ func player_movement(movementDirection):
 			guiElements.update_current_turns()
 			
 			#print("Moved in Player " + str(attackCount) + " movementCount " +str(movementCount))
-			if !playerPassingDoor && !playerTurnDone && (attackCount + movementCount) == maxTurnActions:
+			if !waitingForEventBeforeContinue && !playerPassingDoor && !playerTurnDone && (attackCount + movementCount) == maxTurnActions:
 				playerTurnDone=true
 				emit_signal("playerMadeMove")
 	
 func player_attack(attackDirection):
-	if attackDirection:
+	if attackDirection && (attackCount + movementCount) < maxTurnActions:
 		set_process(false)
 		#play attack animation 
 		var animationPlay = str("attack_right")

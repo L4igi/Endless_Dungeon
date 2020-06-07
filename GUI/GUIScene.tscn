@@ -100,7 +100,7 @@ __meta__ = {
 
 [node name="TurnStats" type="TextureRect" parent="."]
 margin_top = 134.0
-margin_right = 24.0
+margin_right = 29.0
 margin_bottom = 150.0
 texture = ExtResource( 6 )
 expand = true
@@ -109,19 +109,19 @@ __meta__ = {
 }
 
 [node name="CurrentTurnActions" type="Label" parent="TurnStats"]
-margin_left = 2.08767
-margin_top = 0.115982
-margin_right = 11.0877
-margin_bottom = 14.116
+margin_left = 2.66758
+margin_top = -2.08768
+margin_right = 11.6676
+margin_bottom = 15.9123
 rect_scale = Vector2( 0.7, 0.7 )
 custom_fonts/font = ExtResource( 1 )
 text = "2"
 
 [node name="Seperator" type="Label" parent="TurnStats"]
-margin_left = 10.8119
-margin_top = 3.07214
-margin_right = 19.8119
-margin_bottom = 17.0721
+margin_left = 13.7114
+margin_top = 1.21642
+margin_right = 22.7114
+margin_bottom = 19.2164
 rect_scale = Vector2( 0.7, 0.7 )
 custom_fonts/font = ExtResource( 1 )
 text = "/"
@@ -130,10 +130,10 @@ __meta__ = {
 }
 
 [node name="MaxTurnsActions" type="Label" parent="TurnStats"]
-margin_left = 13.57
-margin_top = 5.56712
-margin_right = 28.57
-margin_bottom = 20.5671
+margin_left = 16.7015
+margin_top = 2.89954
+margin_right = 31.7015
+margin_bottom = 20.8995
 rect_scale = Vector2( 0.7, 0.8 )
 custom_fonts/font = ExtResource( 1 )
 text = "6"
