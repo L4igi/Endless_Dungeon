@@ -123,8 +123,9 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack", projec
 	var animationMode = 1
 	if Grid.activeRoom == null || Grid.activeRoom != null && Grid.activeRoom.roomCleared || Grid.currentActivePhase != GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE && Grid.currentActivePhase != GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE && Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.PLAYER || Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
 		animationMode = 1
+		pass
 #		if Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
-		Grid.mainPlayer.waitingForEventBeforeContinue = true
+		#Grid.mainPlayer.waitingForEventBeforeContinue = true
 		#print("Phase1")
 	elif Grid.activeRoom != null && Grid.activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 		animationMode = 2
@@ -203,7 +204,7 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack", projec
 		#print("Projectile queueing free")
 		self.queue_free()
 #		if Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
-		Grid.mainPlayer.waitingForEventBeforeContinue = false
+		#Grid.mainPlayer.waitingForEventBeforeContinue = false
 	#puzzle room interactions
 	elif animationMode == 2:
 		Grid.projectilesInActiveRoom.erase(self)

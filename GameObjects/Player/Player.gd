@@ -161,6 +161,7 @@ func player_movement(movementDirection):
 			yield($AnimationPlayer, "animation_finished")
 			$AnimationPlayer.play("Idle")
 			if queueInflictDamage == true:
+				waitingForEventBeforeContinue = true
 				inflict_damage_playerDefeated(enemyQueueAttackDamage, enemyQueueAttackType)
 				queueInflictDamage = false
 				enemyQueueAttackDamage = 0
@@ -382,7 +383,9 @@ func inflict_damage_playerDefeated(attackDamage, attackType):
 	yield($AnimationPlayer, "animation_finished")
 	$AnimationPlayer.play("Idle")
 	set_process(true)
+	Grid.set_cellv(Grid.world_to_map(position), Grid.get_tileset().find_tile_by_name("PLAYER"))
 	disablePlayerInput = false
+	waitingForEventBeforeContinue = false
 	return false
 
 func add_nonkey_items(itemtype):
