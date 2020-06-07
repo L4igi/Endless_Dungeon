@@ -687,10 +687,7 @@ func play_taken_damage_animation(inflictattackType, mainPlayer, CURRENTPHASE):
 			emit_signal("enemyMadeMove", self)
 			
 	elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE || CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
-		hitByProjectile = null
-		if hitByProjectile!=null:
-			hitByProjectile.emit_signal("playerEnemieProjectileMadeMove",hitByProjectile,"movePlayerProjectiles")
-			hitByProjectile.queue_free()
+		Grid.on_enemy_interaction_done_player_projectile_phase(self)
 		
 
 func play_defeat_animation(mainPlayer, CURRENTPHASE):
@@ -737,6 +734,7 @@ func play_defeat_animation(mainPlayer, CURRENTPHASE):
 		
 	elif CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE || CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
 		emit_signal("enemyDefeated", self, CURRENTPHASE, hitByProjectile)
+		Grid.on_enemy_interaction_done_player_projectile_phase(self)
 		
 func makeEnemyBarrier(currentGrid, unlockedDoor):
 	randomize()

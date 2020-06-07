@@ -95,6 +95,8 @@ var currentActivePhase = GlobalVariables.CURRENTPHASE.PLAYER
 
 var waitingForProjectileInteraction = []
 
+var waitingForEnemyDefeatPlayerProjectilePhase = []
+
 var puzzleProjectilesToMove = []
 
 var tickingProjectile = null
@@ -344,6 +346,7 @@ func request_move(pawn, direction):
 					projectilesInActiveRoom.erase(pawn)
 					if currentActivePhase == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE:
 						pawn.deleteProjectilePlayAnimation = "attack"
+						waitingForEnemyDefeatPlayerProjectilePhase.append(tempEnemy)
 					else:
 						pawn.play_projectile_animation(false,"attack")
 					set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
@@ -1049,8 +1052,15 @@ func on_projectiles_interactions_done(movingProjectile):
 				enemiesToMoveArray[0].make_enemy_turn()
 			tempEnemyArray.clear()
 		elif currentActivePhase == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE:
-			currentActivePhase = GlobalVariables.CURRENTPHASE.PLAYER
-			emit_signal("enemyTurnDoneSignal")
+			if waitingForEnemyDefeatPlayerProjectilePhase.empty():
+				currentActivePhase = GlobalVariables.CURRENTPHASE.PLAYER
+				emit_signal("enemyTurnDoneSignal")
+				
+func on_enemy_interaction_done_player_projectile_phase(enemy):
+	waitingForEnemyDefeatPlayerProjectilePhase.erase(enemy)
+	if waitingForEnemyDefeatPlayerProjectilePhase.empty():
+		currentActivePhase = GlobalVariables.CURRENTPHASE.PLAYER
+		emit_signal("enemyTurnDoneSignal")
 	
 func _on_ticking_projectile_made_move(projectile, projectileType):
 	#print("CancelMagicPuzzelRoom status " + str(cancelMagicPuzzleRoom))
