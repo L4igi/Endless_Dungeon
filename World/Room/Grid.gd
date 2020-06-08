@@ -420,7 +420,11 @@ func request_move(pawn, direction):
 					if magicProjectileMagicProjectileInteraction(pawn, targetProjectile, currentActivePhase):
 						if  pawn.requestedMoveCount < 2 && currentActivePhase == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE || currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
 							pawn.requestedMoveCount+=1
-							playerEnemyProjectileArray.append(pawn)
+							if currentActivePhase == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE:
+								GlobalVariables.turnController.playerProjectilesToMove.append(pawn)
+							if currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
+								GlobalVariables.turnController.enemyProjectilesToMove.append(pawn)
+#							playerEnemyProjectileArray.append(pawn)
 							return 
 						else:
 							pawn.deleteProjectilePlayAnimation="delete"

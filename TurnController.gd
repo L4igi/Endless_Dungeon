@@ -118,7 +118,11 @@ func enemy_turn_done(enemy):
 			player_defeat()
 
 func player_projectiles_turn_done(projectile):
+	print("playerProjectilesToMove" +str(playerProjectilesToMove.size()))
 	playerProjectilesToMove.erase(projectile)
+	if projectile!=null:
+		for count in projectile.requestedMoveCount:
+			playerProjectilesToMove.erase(projectile)
 	currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE
 	if check_turn_done_conditions():
 		currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
@@ -129,6 +133,9 @@ func player_projectiles_turn_done(projectile):
 func enemy_projectiles_turn_done(projectile):
 	enemyProjectilesToMove.erase(projectile)
 	currentTurnWaiting = GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE
+	if projectile!=null:
+		for count in projectile.requestedMoveCount:
+			playerProjectilesToMove.erase(projectile)
 	if check_turn_done_conditions():
 		currentTurnWaiting = GlobalVariables.CURRENTPHASE.ENEMY
 		print("confirming turn done " + str(projectile))
