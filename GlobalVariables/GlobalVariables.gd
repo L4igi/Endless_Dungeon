@@ -6,7 +6,7 @@ var maxNumberRooms = 15
 
 enum BARRIERTYPE {DOOR = 0, ENEMY = 1, PUZZLE = 2}
 
-enum CURRENTPHASE {PLAYER = 0, ENEMY = 1, PLAYERPROJECTILE = 2, ENEMYPROJECTILE=3 , BLOCK = 4, PUZZLEPROJECTILE=5}
+enum CURRENTPHASE {PLAYER = 0, ENEMY = 1, PLAYERPROJECTILE = 2, ENEMYPROJECTILE=3 , BLOCK = 4, PUZZLEPROJECTILE=5, PLAYERDEFEAT=6}
 
 enum ENEMYTYPE{BARRIERENEMY=0, MAGEENEMY=1, WARRIROENEMY=2, NINJAENEMY=3}
 
@@ -35,4 +35,6 @@ var tileOffset = Vector2(16,16)
 var tileSize = 32
 
 var isometricFactor = 2
+
+var turnController = preload("res://TurnController.gd").new()
 

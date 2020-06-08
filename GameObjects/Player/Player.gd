@@ -122,19 +122,15 @@ func _process(delta):
 			get_movement_direction()
 			var attackDirection = get_attack_direction()
 			player_interact_puzzle_block(attackDirection)
-
-		if !playerTurnDone && ! waitingForEventBeforeContinue && !puzzleBlockInteraction && !playerPassingDoor:
-			var movementDirection = get_free_movement_direction()
-			if inClearedRoom || inRoomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
-				movementDirection = get_free_movement_direction()
-			var attackDirection = get_attack_direction()
-			
-			player_movement(movementDirection)
-			player_attack(attackDirection)
-			
-			if (attackCount + movementCount) == maxTurnActions:
-				playerTurnDone=true
-				emit_signal("playerMadeMove")
+		
+		if !playerTurnDone:
+			var checkNextAction = GlobalVariables.turnController.player_next_action()
+		
+			if checkNextAction && !puzzleBlockInteraction && !playerPassingDoor:
+				var movementDirection = get_free_movement_direction()
+				var attackDirection = get_attack_direction()
+				player_movement(movementDirection)
+				player_attack(attackDirection)
 
 #
 func player_movement(movementDirection):
@@ -161,7 +157,6 @@ func player_movement(movementDirection):
 			yield($AnimationPlayer, "animation_finished")
 			$AnimationPlayer.play("Idle")
 			if queueInflictDamage == true:
-				waitingForEventBeforeContinue = true
 				inflict_damage_playerDefeated(enemyQueueAttackDamage, enemyQueueAttackType)
 				queueInflictDamage = false
 				enemyQueueAttackDamage = 0
@@ -171,10 +166,9 @@ func player_movement(movementDirection):
 			movementCount += 1
 			guiElements.update_current_turns()
 			
-			#print("Moved in Player " + str(attackCount) + " movementCount " +str(movementCount))
-			if !waitingForEventBeforeContinue && !playerPassingDoor && !playerTurnDone && (attackCount + movementCount) == maxTurnActions:
-				playerTurnDone=true
-				emit_signal("playerMadeMove")
+	if attackCount + movementCount == maxTurnActions && !playerTurnDone:
+		playerTurnDone = true
+		emit_signal("playerMadeMove")
 	
 func player_attack(attackDirection):
 	if attackDirection && (attackCount + movementCount) < maxTurnActions:
@@ -211,10 +205,9 @@ func player_attack(attackDirection):
 		attackCount += 1
 		guiElements.update_current_turns()
 		
-		#print("Attacked in Player " + str(attackCount) + " movementCount " +str(movementCount))
-		if !waitingForEventBeforeContinue && !playerTurnDone && (attackCount + movementCount) == maxTurnActions:
-			playerTurnDone=true
-			emit_signal("playerMadeMove")
+	if attackCount + movementCount == maxTurnActions && !playerTurnDone:
+		playerTurnDone = true
+		emit_signal("playerMadeMove")
 	
 func player_passed_door():
 	var targetPosition = Grid.request_move(self,movedThroughDoorDirection)
@@ -249,6 +242,7 @@ func player_passed_door():
 			attackCount = 0
 			playerTurnDone = false
 			disablePlayerInput = false
+			
 	
 func player_interact_puzzle_block(puzzleBlockDirection):
 	if puzzleBlockDirection:
@@ -361,32 +355,33 @@ func toggle_enemy_danger_areas():
 			emit_signal("toggleDangerArea", enemyToToggleArea)
 		
 func inflict_damage_playerDefeated(attackDamage, attackType):
-	disablePlayerInput = true
+	GlobalVariables.turnController.playerTakeDamage.append(self)
 	lifePoints -= attackDamage
-	guiElements.change_health(attackDamage)
-	if lifePoints <= 0:
+	if lifePoints > 0:
+		guiElements.change_health(attackDamage)
+		var animationToPlay = str("take_damage_physical")
+		if attackType == GlobalVariables.ATTACKTYPE.MAGIC:
+			animationToPlay = str("take_damage_magic")
+		set_process(false)
+		print("Playing hit animation")
+		$AnimationPlayer.play(animationToPlay, -1)
+		$Tween.interpolate_property($Sprite, "position", Vector2(), Vector2() , $AnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
+		$Tween.start()
+		yield($AnimationPlayer, "animation_finished")
+		$AnimationPlayer.play("Idle")
+		set_process(true)
+		Grid.set_cellv(Grid.world_to_map(position), Grid.get_tileset().find_tile_by_name("PLAYER"))
+		disablePlayerInput = false
+		waitingForEventBeforeContinue = false
+		GlobalVariables.turnController.on_player_taken_damage(self)
+	else:
 		print ("in player defeated")
-		if Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.PLAYER:
-			emit_signal("onPlayerDefeated", self)
-		else:
-			playerDefeated = true
-			toggledDangerArea = false
-		return true
-	var animationToPlay = str("take_damage_physical")
-	if attackType == GlobalVariables.ATTACKTYPE.MAGIC:
-		animationToPlay = str("take_damage_magic")
-	set_process(false)
-	print("Playing hit animation")
-	$AnimationPlayer.play(animationToPlay, -1)
-	$Tween.interpolate_property($Sprite, "position", Vector2(), Vector2() , $AnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
-	$Tween.start()
-	yield($AnimationPlayer, "animation_finished")
-	$AnimationPlayer.play("Idle")
-	set_process(true)
-	Grid.set_cellv(Grid.world_to_map(position), Grid.get_tileset().find_tile_by_name("PLAYER"))
-	disablePlayerInput = false
-	waitingForEventBeforeContinue = false
-	return false
+		toggledDangerArea = false
+		set_process(false)
+		$AnimationPlayer.play("defeat", -1, 2.0)
+		yield($AnimationPlayer, "animation_finished")
+		set_process(true)
+		GlobalVariables.turnController.player_defeat()
 
 func add_nonkey_items(itemtype):
 	match itemtype:
@@ -430,12 +425,13 @@ func _on_enemy_turn_done_signal():
 	guiElements.update_current_turns(true)
 	playerTurnDone = false
 	disablePlayerInput = false
-	waitingForEventBeforeContinue = false
 
 func end_player_turn():
 	disablePlayerInput=true
 	playerTurnDone=true
 	
+func get_actions_left():
+	return maxTurnActions-movementCount-attackCount
 #update enemy attack after each Player move/attack
 #func update_enemy_move_attack():
 #	if Grid.activeRoom != null: 
