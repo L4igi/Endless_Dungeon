@@ -85,6 +85,12 @@ var individualDangerFieldVisible = false
 
 var attackCellArray = []
 
+var queueInflictDamage = false
+
+var playerQueueAttackDamage = 0
+
+var playerQueueAttackType = null
+
 onready var healthBar = $HealthBar
 
 func _ready():
@@ -305,13 +311,16 @@ func enemyMovement():
 				set_process(true)
 			movementCount += 1
 
-	if waitingForEventBeforeContinue != null:
+	if queueInflictDamage:
 		if lifePoints <= 0:
 			print("Play defeat animation")
-			play_defeat_animation(Grid.mainPlayer, waitingForEventBeforeContinue)
+			play_defeat_animation(Grid.mainPlayer, Grid.currentActivePhase)
 		else:
-			play_taken_damage_animation(inflictattackType,Grid.mainPlayer, waitingForEventBeforeContinue)
-	elif attackCount + movementCount < maxTurnActions:
+			play_taken_damage_animation(playerQueueAttackType,Grid.mainPlayer, Grid.currentActivePhase)
+		queueInflictDamage = false
+		queueInflictDamage = 0
+		playerQueueAttackType = null
+	if attackCount + movementCount < maxTurnActions:
 		enemyAttack()
 	else:
 		emit_signal("enemyMadeMove", self)
@@ -508,7 +517,7 @@ func matchEnemyTurn():
 func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = 1
+	var enemieToGenerate = randi()%4
 	match enemieToGenerate:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
@@ -625,10 +634,17 @@ func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, m
 		enemyDefeated = true
 		if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER || CURRENTPHASE == GlobalVariables.CURRENTPHASE.BLOCK || CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE || CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
 			play_defeat_animation(mainPlayer, CURRENTPHASE)
+		else:
+			queueInflictDamage = true
+			playerQueueAttackType =  inflictattackType
+			playerQueueAttackDamage = attackDamage
+			playerQueueAttackType = attackType
 	else:
 		if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER || CURRENTPHASE == GlobalVariables.CURRENTPHASE.BLOCK || CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE || CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
 			play_taken_damage_animation(inflictattackDamage, mainPlayer, CURRENTPHASE)
-	
+		else:
+			queueInflictDamage = true
+			playerQueueAttackType =  inflictattackType
 	
 func play_taken_damage_animation(inflictattackType, mainPlayer, CURRENTPHASE):
 	var animationToPlay = str("take_damage_physical")
@@ -662,7 +678,6 @@ func play_taken_damage_animation(inflictattackType, mainPlayer, CURRENTPHASE):
 			yield($WarriorAnimationPlayer, "animation_finished")
 			$WarriorAnimationPlayer.play("idle")
 			set_process(true)
-			
 	GlobalVariables.turnController.on_enemy_taken_damage(self)
 
 func play_defeat_animation(mainPlayer, CURRENTPHASE):
