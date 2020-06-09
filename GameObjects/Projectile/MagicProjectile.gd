@@ -212,11 +212,11 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack",project
 			print("mini done " + str(self))
 			GlobalVariables.turnController.on_projectile_interaction(self, false)
 	elif animationMode == 1:
-		GlobalVariables.turnController.on_projectile_interaction(self, true)
 		Grid.projectilesInActiveRoom.erase(self)
 		if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYER:
 			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
-		print("delete phase 1 done")
+		GlobalVariables.turnController.on_projectile_interaction(self, true)
+		#print("delete phase 1 done")
 	#puzzle room interactions
 	elif animationMode == 2:
 		Grid.projectilesInActiveRoom.erase(self)

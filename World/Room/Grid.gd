@@ -1110,8 +1110,8 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 		add_child(newMagicProjectile)
 		projectilesInActiveRoom.append(newMagicProjectile)
 		set_cellv(world_to_map(newMagicProjectile.position), get_tileset().find_tile_by_name("MAGICPROJECTILE"))
-		if activeRoom == null || activeRoom.roomCleared:
-			newMagicProjectile.move_projectile("clearedRoomProjectile")
+#		if activeRoom == null || activeRoom.roomCleared:
+#			newMagicProjectile.move_projectile("clearedRoomProjectile")
 	elif (get_cellv(world_to_map(player.position) + attack_direction*2) == TILETYPES.MAGICPROJECTILE && attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		if get_cell_pawn(world_to_map(player.position) + attack_direction*2).projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
 			var projectileToErase = get_cell_pawn(world_to_map(player.position) + attack_direction*2)

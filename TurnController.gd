@@ -44,6 +44,7 @@ func check_turn_done_conditions():
 				if enemiesToMove.empty():
 					return true
 			GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE:
+				print("playerProjectilesToMove " + str(playerProjectilesToMove))
 				if playerProjectilesToMove.empty():
 					return true
 			GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
@@ -125,14 +126,16 @@ func enemy_turn_done(enemy):
 			player_defeat()
 
 func player_projectiles_turn_done(projectile):
-	#print("playerProjectilesToMove" +str(playerProjectilesToMove.size()))
 	playerProjectilesToMove.erase(projectile)
+	print("PROJECTILE " + str(projectile))
+	print("playerProjectilesToMove " + str(playerProjectilesToMove))
 	if projectile!=null:
 		for count in projectile.requestedMoveCount:
 			playerProjectilesToMove.erase(projectile)
 #	currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE
 	if check_turn_done_conditions():
 		if !playerDefeatStop:
+			print("HERE SENDING")
 			currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
 			Grid.on_player_projectile_turn_done_request_confirmed()
 		else:
@@ -161,11 +164,6 @@ func stop_power_projectiles():
 	powerBlockInterActionDone = true
 	Grid.mainPlayer.checkNextAction = true
 	currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
-	print("playerTakeDamage " + str(playerTakeDamage.size()))
-	print("enemyTakeDamage " + str(enemyTakeDamage.size()))
-	print("projectileSpawned " + str(projectileSpawned.size()))
-	print("projectileInteraction " + str(projectileInteraction.size()))
-	print("currentTurnWaiting " + str(currentTurnWaiting))
 	check_turn_progress()
 	
 func puzzle_pattern_turn_done(puzzlePiece):
@@ -200,7 +198,9 @@ func on_projectile_interaction(projectile, deleting = false):
 	print("in here after projectile interaction " + str(projectileInteraction))
 	projectileInteraction.erase(projectile)
 	print("to delete projectileInteraction " + str(projectile))
+	print("in here after projectile interaction deleted" + str(projectileInteraction))
 	if deleting:
+		playerProjectilesToMove.erase(projectile)
 		Grid.projectilesInActiveRoom.erase(projectile)
 		projectile.queue_free()
 	#print("projectile currentTurnWaiting " + str(currentTurnWaiting))
