@@ -127,7 +127,7 @@ func _process(delta):
 			player_interact_puzzle_block(attackDirection)
 		
 		if checkNextAction:
-			if checkNextAction && !puzzleBlockInteraction && !playerPassingDoor:
+			if !puzzleBlockInteraction && !playerPassingDoor && !playerDefeated:
 				var movementDirection = get_free_movement_direction()
 				var attackDirection = get_attack_direction()
 				player_movement(movementDirection)
@@ -431,6 +431,7 @@ func do_on_player_defeated():
 	guiElements.update_current_turns(true)
 	GlobalVariables.turnController.currentTurnWaiting= GlobalVariables.CURRENTPHASE.PLAYER
 	checkNextAction = true
+	playerDefeated = false
 	
 func end_player_turn():
 	disablePlayerInput=true

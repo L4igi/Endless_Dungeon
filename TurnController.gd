@@ -96,12 +96,14 @@ func player_turn_done(player):
 		check_turn_progress()
 	
 func player_defeat():
+	
 	if playerDefeatStop:
 		playerDefeatStop = false
 	else:
 		playerDefeatStop = true
 	print("ON PLAYER DEFEATED IN TURNCONTROLLER")
 	Grid.mainPlayer.checkNextAction = false
+	Grid.mainPlayer.playerDefeated = true
 	if currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYER:
 		currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYERDEFEAT
 	playerTakeDamage.clear()
