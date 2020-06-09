@@ -13,6 +13,7 @@ var tickAlreadyMoved = false
 var deleteProjectilePlayAnimation = null
 var moveTo = null
 var requestedMoveCount = 0
+var hitObstacleOnDelete = false
 
 signal projectileMadeMove (projectile)
 
@@ -124,7 +125,7 @@ func play_enemy_projectile_animation():
 func play_powerBlock_projectile_animation():
 	$AnimationPlayer.play("powerblock_shoot")
 
-func play_projectile_animation(onSpot=true, projectileAnimation="attack"):
+func play_projectile_animation(onSpot=true, projectileAnimation="attack",projectileInteraction = false):
 	if !GlobalVariables.turnController.projectileInteraction.has(self):
 		GlobalVariables.turnController.projectileInteraction.append(self)
 	print("ProjectileAnimation " + str(projectileAnimation) + ( " current node ") + str(self))
@@ -223,8 +224,8 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack"):
 	#projectile phase
 	elif animationMode == 3:
 		Grid.projectilesInActiveRoom.erase(self)
-#		if projectileInteraction:
-		Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
+		if !hitObstacleOnDelete:
+			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
 #		else
 		GlobalVariables.turnController.on_projectile_interaction(self, true)
 		emit_signal("playerEnemieProjectileMadeMove",self)

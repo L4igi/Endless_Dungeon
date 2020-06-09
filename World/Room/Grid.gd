@@ -384,6 +384,7 @@ func request_move(pawn, direction):
 			TILETYPES.WALL:
 				projectilesInActiveRoom.erase(pawn)
 				pawn.deleteProjectilePlayAnimation = "delete"
+				pawn.hitObstacleOnDelete = true
 				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
 				if activeRoom!= null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && pawn.projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK:
 					pawn.deleteProjectilePlayAnimation = "delete"
@@ -397,6 +398,7 @@ func request_move(pawn, direction):
 			TILETYPES.DOOR:
 				projectilesInActiveRoom.erase(pawn)
 				pawn.deleteProjectilePlayAnimation = "delete"
+				pawn.hitObstacleOnDelete = true
 				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
 				if activeRoom!= null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && pawn.projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK:
 					pawn.deleteProjectilePlayAnimation = "delete"
@@ -409,6 +411,7 @@ func request_move(pawn, direction):
 			TILETYPES.UNLOCKEDDOOR:
 				projectilesInActiveRoom.erase(pawn)
 				pawn.deleteProjectilePlayAnimation = "delete"
+				pawn.hitObstacleOnDelete = true
 				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
 				if activeRoom!= null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && pawn.projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK:
 					pawn.deleteProjectilePlayAnimation = "delete"
@@ -451,6 +454,7 @@ func request_move(pawn, direction):
 				print("IN ON BLOCK INTERACTION")
 				projectilesInActiveRoom.erase(pawn)
 				pawn.deleteProjectilePlayAnimation = "delete"
+				pawn.hitObstacleOnDelete = true
 				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
 				if activeRoom!= null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && pawn.projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK:
 #					get_cell_pawn(cell_target).spawnMagicFromBlock()
@@ -467,6 +471,7 @@ func request_move(pawn, direction):
 			TILETYPES.PUZZLEPIECE:
 				projectilesInActiveRoom.erase(pawn)
 				pawn.deleteProjectilePlayAnimation = "delete"
+				pawn.hitObstacleOnDelete = true
 				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
 				if pawn.projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK:
 					var activatedPuzzlePiece = get_cell_pawn(cell_target)
@@ -501,12 +506,12 @@ func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile
 		#magicProjectile1.movementDirection *=-1
 	#player enemy projectile interaction
 	if magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
-#		var magicprojectil1temppos = magicProjectile1.position
-#		magicProjectile1.position = magicProjectile2.position
-#		magicProjectile2.position = magicprojectil1temppos
-#		print("IN ENEMY PLAYER PROJECTILE INTERACTION")
-		magicProjectile1.play_projectile_animation(true,"delete")
-		magicProjectile2.play_projectile_animation(true,"delete")
+		if GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYER:
+			magicProjectile1.play_projectile_animation(false,"delete")
+			magicProjectile2.play_projectile_animation(true,"delete")
+		else:
+			magicProjectile1.play_projectile_animation(true,"delete")
+			magicProjectile2.play_projectile_animation(true,"delete")
 		return false
 
 	#player player projectile interaction
