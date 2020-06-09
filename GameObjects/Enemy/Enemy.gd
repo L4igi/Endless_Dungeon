@@ -632,7 +632,7 @@ func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, m
 		healthBar.set_value(lifePoints*10)
 	if lifePoints <= 0:
 		enemyDefeated = true
-		if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER || CURRENTPHASE == GlobalVariables.CURRENTPHASE.BLOCK || CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE || CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
+		if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER || CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE || CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
 			play_defeat_animation(mainPlayer, CURRENTPHASE)
 		else:
 			queueInflictDamage = true
@@ -640,7 +640,7 @@ func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, m
 			playerQueueAttackDamage = attackDamage
 			playerQueueAttackType = attackType
 	else:
-		if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER || CURRENTPHASE == GlobalVariables.CURRENTPHASE.BLOCK || CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE || CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
+		if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER || CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE || CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
 			play_taken_damage_animation(inflictattackDamage, mainPlayer)
 		else:
 			queueInflictDamage = true

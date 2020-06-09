@@ -92,20 +92,23 @@ func unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance):
 
 	Grid.create_doors(doorRoomLeftMostCorner, false, roomSize.x, roomSize.y, roomSizeMultiplier, doorLocationDirection)
 
-	var randRoomType = 20
+	var randRoomType = 60
 #		randRoomType = 90
 #	else:
 #		randRoomType = 90
 	if(randRoomType < enemyRoomChance):
 		#print("create enemy room " + str(randRoomType))
 		roomType = ROOM_TYPE.ENEMYROOM
+		GlobalVariables.turnController.inRoomType = ROOM_TYPE.ENEMYROOM
 		Grid.create_enemy_room(self)
 	elif(randRoomType > enemyRoomChance && randRoomType < (enemyRoomChance+puzzleRoomChance)):
 		#print("creating puzzle room " + str(randRoomType))
 		roomType = ROOM_TYPE.PUZZLEROOM
+		GlobalVariables.turnController.inRoomType = ROOM_TYPE.PUZZLEROOM
 		Grid.create_puzzle_room(self)
 	elif(randRoomType > (enemyRoomChance+puzzleRoomChance)):
 		#print("creating empty/Treasure room " + str(randRoomType))
+		GlobalVariables.turnController.inRoomType = ROOM_TYPE.EMPTYTREASUREROOM
 		roomType = ROOM_TYPE.EMPTYTREASUREROOM
 		#set room to cleared because its empty room
 

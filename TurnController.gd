@@ -11,8 +11,10 @@ var playersToMove = []
 var enemiesToMove = []
 var playerProjectilesToMove = []
 var enemyProjectilesToMove = []
+var puzzlePiecesToPattern = []
 var playerDefeatStop = false
 var playerMovedDoor = false
+var inRoomType = null
 
 func _ready():
 	pass
@@ -26,11 +28,10 @@ func check_turn_done_conditions():
 #	print("projectileSpawned " + str(projectileSpawned.size()))
 #	print("projectileInteraction " + str(projectileInteraction.size()))
 #	print("currentTurnWaiting " + str(currentTurnWaiting))
-	if playerTakeDamage.empty() && enemyTakeDamage.empty() && projectileSpawned.empty() && projectileInteraction.empty() && blocksExploding.empty():
+	if playerTakeDamage.empty() && enemyTakeDamage.empty() && projectileSpawned.empty() && projectileInteraction.empty() && blocksExploding.empty() && puzzlePiecesToPattern.empty():
 		match currentTurnWaiting:
 			GlobalVariables.CURRENTPHASE.PLAYER:
 				if Grid.mainPlayer.get_actions_left() == 0 && !playerMovedDoor:
-					print("returns true")
 					return true
 				else:
 					if playerMovedDoor:
@@ -49,6 +50,9 @@ func check_turn_done_conditions():
 					return true
 			GlobalVariables.CURRENTPHASE.PLAYERDEFEAT:
 				if enemyProjectilesToMove.empty() && enemiesToMove.empty() && playerProjectilesToMove.empty():
+					return true
+			GlobalVariables.CURRENTPHASE.PUZZLEPIECES:
+				if puzzlePiecesToPattern.empty():
 					return true
 			_:
 				return true
@@ -76,11 +80,14 @@ func check_turn_progress():
 				return true
 	
 func player_turn_done(player):
-#	currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
 	if check_turn_done_conditions():
 		playersToMove.erase(player)
-		currentTurnWaiting = GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE
-		Grid.on_player_turn_done_confirmed()
+		if inRoomType == GlobalVariables.ROOM_TYPE.ENEMYROOM:
+			currentTurnWaiting = GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE
+			Grid.on_player_turn_done_confirmed_enemy_room()
+		elif inRoomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
+			currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
+			Grid.on_player_turn_done_confirmed_puzzle_room()
 	else:
 		check_turn_progress()
 	
@@ -138,7 +145,11 @@ func enemy_projectiles_turn_done(projectile):
 		Grid.on_enemy_projectile_turn_done_request_confirmed()
 #	else:
 #		check_turn_progress()
-	
+
+func puzzle_pattern_turn_done(puzzlePiece):
+	puzzlePiecesToPattern.erase(puzzlePiece)
+	check_turn_progress()
+		
 func on_block_exploding(powerBlock):
 	blocksExploding.erase(powerBlock)
 	print(str(powerBlock))

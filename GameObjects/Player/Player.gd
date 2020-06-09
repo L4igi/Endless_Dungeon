@@ -22,7 +22,7 @@ var playerPassedDoor = Vector2.ZERO
 
 var movementCount = 0
 
-var maxTurnActions = 30
+var maxTurnActions = 8
 var attackCount = 0
 
 var attackDamage = 0.5
@@ -227,8 +227,9 @@ func player_passed_door():
 #		update_enemy_move_attack()
 		if Grid.activeRoom != null && Grid.activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 			guiElements.change_hand_on_room(GlobalVariables.ROOM_TYPE.PUZZLEROOM)
-			emit_signal("playerMadeMove")
-			GlobalVariables.turnController.player_turn_done(self)
+			disablePlayerInput = false
+#			emit_signal("playerMadeMove")
+			#GlobalVariables.turnController.player_turn_done(self)
 		else:
 			#GlobalVariables.turnController.player_turn_done(self)
 			guiElements.change_hand_on_room(GlobalVariables.ROOM_TYPE.ENEMYROOM)
@@ -420,6 +421,7 @@ func _on_enemy_turn_done_signal():
 
 func do_on_player_defeated():
 	position = Vector2(80,80)
+	Grid.activeRoom = null
 	inClearedRoom = true
 	lifePoints = 10
 	guiElements.set_health(10)

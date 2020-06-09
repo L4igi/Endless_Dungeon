@@ -73,8 +73,6 @@ var magicProjectileLoopLevel = 0
 
 var puzzlePiecesAnimationDoneCounter = 0
 
-var roomJustEntered = false
-
 var puzzleAnimationPlaying = false
 
 var activatedPuzzlePieces = []
@@ -162,6 +160,7 @@ func _ready():
 	GlobalVariables.turnController.set_Grid_to_use(self)
 	#todo replace with cleared room later on 
 	GlobalVariables.turnController.currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
+	GlobalVariables.turnController.inRoomType = GlobalVariables.ROOM_TYPE.ENEMYROOM
 	var newPlayer = Player.instance()
 	newPlayer.set_z_index(2)
 	newPlayer.position = Vector2(80,80)
@@ -247,12 +246,10 @@ func request_move(pawn, direction):
 						mainPlayer.remove_key_item_from_inventory(requestDoorUnlockResult)
 					#see if any other rooms are compleatly blocked by walls 
 					object_pawn.unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance)
-					roomJustEntered = true
 					numberRoomsBeenTo += 1
 					GlobalVariables.turnController.playerMovedDoor = true
 					return update_pawn_position(pawn, cell_start, cell_target)
 			TILETYPES.UNLOCKEDDOOR:
-				roomJustEntered = true
 				GlobalVariables.turnController.playerMovedDoor = true
 				return update_pawn_position(pawn, cell_start, cell_target)
 			TILETYPES.MAGICPROJECTILE:
@@ -620,6 +617,10 @@ func update_pawn_position(pawn, cell_start, cell_target):
 						element.isDisabled = false
 						element.enemyTurnDone=true
 						element.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
+					if GlobalVariables.turnController.inRoomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
+						GlobalVariables.turnController.puzzlePiecesToPattern += activeRoom.puzzlePiecesInRoom
+						print(GlobalVariables.turnController.puzzlePiecesToPattern.size())
+						play_puzzlepiece_pattern()
 				else:
 					pawn.inRoomType = null
 					#print ("Player in Room " + str(pawn.inRoomType))
@@ -648,6 +649,10 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					for element in activeRoom.enemiesInRoom:
 						element.isDisabled = false
 						element.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
+					if GlobalVariables.turnController.inRoomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
+						GlobalVariables.turnController.puzzlePiecesToPattern += activeRoom.puzzlePiecesInRoom
+						print(GlobalVariables.turnController.puzzlePiecesToPattern.size())
+						play_puzzlepiece_pattern()
 				else:
 					pawn.inRoomType = null
 					#print ("Player in Room " + str(pawn.inRoomType))
@@ -692,7 +697,7 @@ func create_puzzle_room(unlockedDoor):
 	var spawnCellY
 	var spawnCell 
 	var barrierPuzzlePieceAlreadySpawned = false
-	print ("Puzzle l´pieces to spawn " + str(puzzlePiecesToSpwan))
+	print ("Puzzlelepieces to spawn " + str(puzzlePiecesToSpwan))
 	for puzzlePieces in puzzlePiecesToSpwan:
 		#print("generatig puzzle pieces")
 		calculateSpawnAgain = true
@@ -726,10 +731,13 @@ func create_puzzle_room(unlockedDoor):
 		newPuzzlePiece.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(spawnCellX, spawnCellY))
 		add_child(newPuzzlePiece)
 		newPuzzlePiece.connect("puzzlePieceActivated", self, "_on_puzzle_piece_activated")
-		newPuzzlePiece.connect("puzzlePlayedAnimation", self, "_on_puzzlepiece_played_animation")
+		newPuzzlePiece.connect("puzzlePlayedAnimation", GlobalVariables.turnController, "puzzle_pattern_turn_done")
 		set_cellv(world_to_map(newPuzzlePiece.position), get_tileset().find_tile_by_name("PUZZLEPIECE"))
 		unlockedDoor.puzzlePiecesInRoom.append(newPuzzlePiece)
-	
+
+func play_puzzlepiece_pattern():
+	print("Play puzzle pattern")
+	activeRoom.puzzlePiecesInRoom[0].playColor(activeRoom.puzzlePiecesInRoom, -1)
 
 func create_enemy_room(unlockedDoor):
 	randomize()
@@ -847,47 +855,29 @@ func on_enemy_turn_done_confirmed():
 		for projectile in playerProjectilesToMoveCopy:
 			projectile.move_projectile()
 	playerProjectilesToMoveCopy.clear()
-	
-func on_player_turn_done_confirmed():
+
+func on_player_turn_done_confirmed_puzzle_room():
+	GlobalVariables.turnController.currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
+	emit_signal("enemyTurnDoneSignal")
+
+func on_player_turn_done_confirmed_enemy_room():
 	if movedThroughDoor:
 		return
 	mainPlayer.playerBackupPosition = mainPlayer.position
-	if activeRoom != null && !activeRoom.roomCleared && roomJustEntered && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && !activeRoom.puzzlePiecesInRoom.empty(): 
-		#print("Playing _on_Player_Made_Move PuzzlePieceCounter " + str(puzzlePiecesAnimationDoneCounter))
-		
-		if !puzzleAnimationPlaying:
-			puzzleAnimationPlaying=true
-			activeRoom.puzzlePiecesInRoom[0].playColor()
-	else:
-		#if player is not moving through door and is in cleared room skip turn 
-		roomJustEntered = false
-		
 		#go through all projectiles in room and select enemy projectiles
-		for projectile in projectilesInActiveRoom:
-			if projectile.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
-				#print("current projectile to append " + str(projectile) + " projectile position " + str(world_to_map(projectile.position)))
-				GlobalVariables.turnController.enemyProjectilesToMove.append(projectile)
-		var tempEnenmyProjectiles = GlobalVariables.turnController.enemyProjectilesToMove.duplicate()
-		if tempEnenmyProjectiles.empty():
-			GlobalVariables.turnController.enemy_projectiles_turn_done(null)
-		else:
-			tempEnenmyProjectiles[0].calc_projectiles_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, 0, "enemy")
-			for projectile in tempEnenmyProjectiles:
-				#print("Projectile moving " + str(projectile.position))
-				projectile.move_projectile()
-		tempEnenmyProjectiles.clear()
-			
-			
-func _on_puzzlepiece_played_animation():
-	puzzlePiecesAnimationDoneCounter += 1
-	if puzzlePiecesAnimationDoneCounter < activeRoom.puzzlePiecesInRoom.size():
-		#print("Playing Animation PuzzlePieceCounter " + str(puzzlePiecesAnimationDoneCounter))
-		activeRoom.puzzlePiecesInRoom[puzzlePiecesAnimationDoneCounter].playColor()
-	elif puzzlePiecesAnimationDoneCounter >= activeRoom.puzzlePiecesInRoom.size():
-		puzzlePiecesAnimationDoneCounter = 0
-		roomJustEntered = false
-		puzzleAnimationPlaying = false
-		on_player_turn_done_confirmed()
+	for projectile in projectilesInActiveRoom:
+		if projectile.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
+			#print("current projectile to append " + str(projectile) + " projectile position " + str(world_to_map(projectile.position)))
+			GlobalVariables.turnController.enemyProjectilesToMove.append(projectile)
+	var tempEnenmyProjectiles = GlobalVariables.turnController.enemyProjectilesToMove.duplicate()
+	if tempEnenmyProjectiles.empty():
+		GlobalVariables.turnController.enemy_projectiles_turn_done(null)
+	else:
+		tempEnenmyProjectiles[0].calc_projectiles_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, 0, "enemy")
+		for projectile in tempEnenmyProjectiles:
+			#print("Projectile moving " + str(projectile.position))
+			projectile.move_projectile()
+	tempEnenmyProjectiles.clear()
 
 func _on_puzzle_piece_activated():
 	#print ("activated puzzle pieces size " + str(activatedPuzzlePieces.size()) + " active puzzle pieces in room " + str(activeRoom.puzzlePiecesInRoom.size()))
@@ -1380,13 +1370,13 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage, attackCellA
 
 func on_Player_Defeated():
 	print("resetting player to start")
-	for enemy in activeRoom.enemiesInRoom:
-		enemy.isDisabled=true
-		enemy.turn_off_danger_fields_on_exit_room()
-	set_cellv(world_to_map(mainPlayer.position),get_tileset().find_tile_by_name("FLOOR")) 
-	activeRoom = null
-	emit_signal("moveCameraSignal", null)
-	mainPlayer.do_on_player_defeated()
+	if activeRoom != null:
+		for enemy in activeRoom.enemiesInRoom:
+			enemy.isDisabled=true
+			enemy.turn_off_danger_fields_on_exit_room()
+		set_cellv(world_to_map(mainPlayer.position),get_tileset().find_tile_by_name("FLOOR")) 
+		emit_signal("moveCameraSignal", null)
+		mainPlayer.do_on_player_defeated()
 
 	if(activeRoom != null && activeRoom.enemiesInRoom.size() != 0):
 		#disable elements in room just left

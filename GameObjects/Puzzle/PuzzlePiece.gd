@@ -16,7 +16,7 @@ var inRoom = null
 
 var barrierKeyValue
 
-signal puzzlePlayedAnimation 
+signal puzzlePlayedAnimation(puzzlePiece)
 
 signal puzzlePieceActivated
 
@@ -26,7 +26,7 @@ func _ready():
 	Grid.connect("puzzleBarrierDisableSignal", self, "_on_puzzlepiece_barrier_disable")
 
 	
-func playColor():
+func playColor(puzzlePieceArray, count):
 	set_process(false)
 	if isBarrier:
 		get_node("Sprite").set_self_modulate(baseModulation)
@@ -41,7 +41,10 @@ func playColor():
 		$AnimationPlayer.play("Idle")
 	set_process(true)
 	get_node("Sprite").set_self_modulate(baseModulation)
-	emit_signal("puzzlePlayedAnimation")
+	emit_signal("puzzlePlayedAnimation", self)
+	count += 1
+	if count < puzzlePieceArray.size():
+		puzzlePieceArray[count].playColor(puzzlePieceArray, count)
 
 func activatePuzzlePiece():
 	if !isActivated:
