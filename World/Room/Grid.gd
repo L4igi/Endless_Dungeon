@@ -1229,7 +1229,6 @@ func on_puzzle_Block_interaction(player, puzzleBlockDirection):
 	activatedPuzzleBlock.interactPowerBlock(puzzleBlockDirection, activeRoom.roomType)
 	
 func on_Power_Block_explode(powerBlock):
-	GlobalVariables.turnController.currentTurnWaiting = GlobalVariables.CURRENTPHASE.BLOCK
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(1,0)) == get_tileset().find_tile_by_name("ENEMY"):
 		enemiesHitByExplosion.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,0)))
 		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,0)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(1,0), mainPlayer, GlobalVariables.CURRENTPHASE.BLOCK)
@@ -1256,12 +1255,8 @@ func on_Power_Block_explode(powerBlock):
 		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(-1,-1), mainPlayer, GlobalVariables.CURRENTPHASE.BLOCK)
 	if activeRoom != null:
 		activeRoom.powerBlocksInRoom.erase(powerBlock)
-	powerBlock.queue_free()
 	set_cellv(world_to_map(powerBlock.position), get_tileset().find_tile_by_name("FLOOR"))
-	if enemiesHitByExplosion.empty():
-		GlobalVariables.turnController.currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
-		mainPlayer.waitingForEventBeforeContinue = false
-	
+	GlobalVariables.turnController.on_block_exploding(powerBlock)
 	
 func on_powerBlock_spawn_magic(powerBlock, signalSpawnMagic):
 	var surroundedByObstaclesCount = 0

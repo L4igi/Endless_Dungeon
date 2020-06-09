@@ -106,7 +106,7 @@ func addCount():
 func explodeBlock():
 	if counters < 1:
 		return false 
-		
+	GlobalVariables.turnController.blocksExploding.append(self)
 	set_process(false)
 	$AnimationPlayer.play("ExplodeBlock", -1, 1.5)
 	$Tween.interpolate_property(self, "position", position, position , $AnimationPlayer.current_animation_length/1.5, Tween.TRANS_LINEAR, Tween.EASE_IN)

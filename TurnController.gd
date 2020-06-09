@@ -4,6 +4,7 @@ var playerTakeDamage = []
 var enemyTakeDamage = []
 var projectileSpawned = []
 var projectileInteraction = []
+var blocksExploding = []
 var currentTurnWaiting = null
 var Grid = null
 var playersToMove = []
@@ -25,7 +26,7 @@ func check_turn_done_conditions():
 #	print("projectileSpawned " + str(projectileSpawned.size()))
 #	print("projectileInteraction " + str(projectileInteraction.size()))
 #	print("currentTurnWaiting " + str(currentTurnWaiting))
-	if playerTakeDamage.empty() && enemyTakeDamage.empty() && projectileSpawned.empty() && projectileInteraction.empty():
+	if playerTakeDamage.empty() && enemyTakeDamage.empty() && projectileSpawned.empty() && projectileInteraction.empty() && blocksExploding.empty():
 		match currentTurnWaiting:
 			GlobalVariables.CURRENTPHASE.PLAYER:
 				if Grid.mainPlayer.get_actions_left() == 0 && !playerMovedDoor:
@@ -138,12 +139,12 @@ func enemy_projectiles_turn_done(projectile):
 #	else:
 #		check_turn_progress()
 	
-func exploding_block_turn_done():
-#	currentTurnWaiting = GlobalVariables.CURRENTPHASE.BLOCK
-	if check_turn_done_conditions():
-		Grid.on_player_projectile_turn_done_request_confirmed()
-#	else:
-#		check_turn_progress()
+func on_block_exploding(powerBlock):
+	blocksExploding.erase(powerBlock)
+	print(str(powerBlock))
+	powerBlock.queue_free()
+	print("exploding power block " + str(blocksExploding))
+	check_turn_progress()
 
 #all functions to make turn possible afterwards
 func on_player_taken_damage(player):
