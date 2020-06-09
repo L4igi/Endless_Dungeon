@@ -319,8 +319,10 @@ func request_move(pawn, direction):
 						#print("Enemy defeated")
 						return update_pawn_position(pawn, cell_start, cell_target)
 					else:
+						#todo fix here things enemy enemy proejctile
 						projectilesInActiveRoom.erase(tempMagicProjectile)
-						set_cellv(world_to_map(tempMagicProjectile.position),get_tileset().find_tile_by_name("FLOOR"))
+						tempMagicProjectile.play_projectile_animation(false, "delete")
+						#set_cellv(world_to_map(tempMagicProjectile.position),get_tileset().find_tile_by_name("FLOOR"))
 						return update_pawn_position(pawn, cell_start, cell_target)
 				else:
 					tempMagicProjectile.play_projectile_animation(true,"delete")
@@ -445,13 +447,23 @@ func request_move(pawn, direction):
 #						print(GlobalVariables.turnController.playerProjectilesToMove.size())
 						var tempProjectileArray = GlobalVariables.turnController.playerProjectilesToMove.duplicate()
 						for projectile in tempProjectileArray:
-#							if projectile.moveTo!=null && projectile != pawn:
-							print(world_to_map(projectile.moveTo))
-							print(cell_target)
-							if world_to_map(projectile.moveTo) == cell_target:
-								pawn.play_projectile_animation(true,"delete")
-								projectile.play_projectile_animation(true,"merge")
-								return update_pawn_position(pawn, cell_start, cell_target)
+							if projectile.moveTo!=null && projectile != pawn:
+								print(world_to_map(projectile.moveTo))
+								print(cell_target)
+								if world_to_map(projectile.moveTo) == cell_target:
+									pawn.play_projectile_animation(true,"delete")
+									projectile.play_projectile_animation(true,"merge")
+									return update_pawn_position(pawn, cell_start, cell_target)
+					elif GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
+						var tempProjectileArray = GlobalVariables.turnController.enemyProjectilesToMove.duplicate()
+						for projectile in tempProjectileArray:
+							if projectile.moveTo!=null && projectile != pawn:
+								print(world_to_map(projectile.moveTo))
+								print(cell_target)
+								if world_to_map(projectile.moveTo) == cell_target:
+									pawn.play_projectile_animation(true,"delete")
+									projectile.play_projectile_animation(true,"delete")
+									return update_pawn_position(pawn, cell_start, cell_target)
 				return pawn.position
 #				return update_pawn_position(pawn, cell_start, cell_target)
 			TILETYPES.BLOCK:
@@ -503,10 +515,12 @@ func request_move(pawn, direction):
 
 func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile2):
 	#enemy enemy projectile interaction
-#	if magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
+	if magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
 #		magicProjectile1.play_projectile_animation(true,"delete")
+#		magicProjectile2.play_projectile_animation(false,"delete")
 #		set_cellv(world_to_map(magicProjectile1.position),get_tileset().find_tile_by_name("FLOOR")) 
-#		return false
+		print("HERE INTERACTING enemy enemy projectile")
+		return false
 		#magicProjectile1.movementDirection *=-1
 	#player enemy projectile interaction
 	if magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
@@ -1369,7 +1383,7 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage, attackCellA
 				newMagicProjectile.get_node("Sprite").set_frame(0)
 				newMagicProjectile.connect("playerEnemieProjectileMadeMove", GlobalVariables.turnController, "enemy_projectiles_turn_done")
 				newMagicProjectile.position = map_to_world(attackCell)+GlobalVariables.tileOffset
-				var movementDirectionRandom = randi()%4
+				var movementDirectionRandom = 1
 				match movementDirectionRandom:
 					0:
 						newMagicProjectile.movementDirection = Vector2(1,0)

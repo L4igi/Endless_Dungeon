@@ -587,15 +587,16 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 			attackType = GlobalVariables.ATTACKTYPE.MAGIC
 			get_node("SpriteMageEnemy").set_visible(true)
 			lifePoints = 1
-			attackDamage = 3
+			attackDamage = 0.5
 			var attackRange = 5
 			for count in attackRange:
 				attackRangeArray.append([])
-			attackRangeArray[0] = [0]
-			attackRangeArray[1] = [0,2]
+			attackRangeArray[0] = [0,1,2,3,4]
+			attackRangeArray[1] = [0,1,2,3,4]
+			attackRangeArray[2] = [0,1,2,3,4]
 			mirrorBaseDirection = true
 			attackRangeInitDirection = GlobalVariables.DIRECTION.RIGHT
-			mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN]
+#			mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN]
 			if mirrorBaseDirection:
 				mirror_base_direction()
 			if !mirrorDirectionsArray.has(attackRangeInitDirection):
