@@ -131,17 +131,17 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack",project
 	#print("ProjectileAnimation " + str(projectileAnimation) + ( " current node ") + str(self))
 	#print("current active turn waiting " + str(GlobalVariables.turnController.currentTurnWaiting ))
 	var animationMode = 1
-	if Grid.activeRoom == null || Grid.activeRoom != null && Grid.activeRoom.roomCleared || GlobalVariables.turnController.currentTurnWaiting != GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE && GlobalVariables.turnController.currentTurnWaiting != GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE && GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYER || GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMY:
+	if GlobalVariables.turnController.currentTurnWaiting != GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE && GlobalVariables.turnController.currentTurnWaiting != GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE && GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYER || GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMY:
 		animationMode = 1
-		pass
+		print(GlobalVariables.turnController.currentTurnWaiting)
 		#Grid.mainPlayer.waitingForEventBeforeContinue = true
-		#print("Phase1")
+		print("Phase1")
 	elif Grid.activeRoom != null && Grid.activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 		animationMode = 2
-		#print("Phase2")
+		print("Phase2")
 	else:
 		animationMode = 3
-		#print("Phase3")
+		print("Phase3")
 	
 	var animationToPlay = projectileAnimation
 	match projectileAnimation : 
