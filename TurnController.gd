@@ -147,11 +147,9 @@ func exploding_block_turn_done():
 
 #all functions to make turn possible afterwards
 func on_player_taken_damage(player):
-	print("in here after player took damage")
-	print("player took damage " + str(playerTakeDamage) + " mainPlayer " + str(Grid.mainPlayer))
 	#push player here multiple times remove at array place [0] until empty
 	playerTakeDamage.remove(0)
-	print("after player take damage currentTurnWaiting " + str(currentTurnWaiting))
+	
 	check_turn_progress()
 
 func on_enemy_taken_damage(enemy, deleting = false):
@@ -166,10 +164,13 @@ func on_projectile_spawned(projecitle):
 	check_turn_progress()
 	
 func on_projectile_interaction(projectile, deleting = false):
+	print("in here after projectile interaction " + str(projectileInteraction))
 	projectileInteraction.erase(projectile)
+	print("to delete projectileInteraction " + str(projectile))
 	if deleting:
 		Grid.projectilesInActiveRoom.erase(projectile)
 		projectile.queue_free()
+	#print("projectile currentTurnWaiting " + str(currentTurnWaiting))
 	check_turn_progress()
 
 

@@ -505,8 +505,8 @@ func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile
 #		magicProjectile1.position = magicProjectile2.position
 #		magicProjectile2.position = magicprojectil1temppos
 #		print("IN ENEMY PLAYER PROJECTILE INTERACTION")
-		magicProjectile1.play_projectile_animation(true,"delete", true)
-		magicProjectile2.play_projectile_animation(true,"delete", true)
+		magicProjectile1.play_projectile_animation(true,"delete")
+		magicProjectile2.play_projectile_animation(true,"delete")
 		return false
 
 	#player player projectile interaction
@@ -519,8 +519,9 @@ func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile
 			#print("Projectiles " + str(magicProjectile1.isMiniProjectile) + "  " + str(magicProjectile2.isMiniProjectile) )
 			if magicProjectile1.isMiniProjectile && magicProjectile2.isMiniProjectile:
 				#set_cellv(world_to_map(magicProjectile2.position),get_tileset().find_tile_by_name("FLOOR")) 
-				magicProjectile1.play_projectile_animation(true,"merge")
-				magicProjectile2.play_projectile_animation(true,"delete")
+				magicProjectile1.play_projectile_animation(true,"delete")
+				magicProjectile2.play_projectile_animation(true,"merge")
+				
 				return true
 			elif magicProjectile1.isMiniProjectile || magicProjectile2.isMiniProjectile:
 				magicProjectile1.play_projectile_animation(true,"delete")

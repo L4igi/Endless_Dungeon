@@ -124,10 +124,11 @@ func play_enemy_projectile_animation():
 func play_powerBlock_projectile_animation():
 	$AnimationPlayer.play("powerblock_shoot")
 
-func play_projectile_animation(onSpot=true, projectileAnimation="attack", projectileInteraction = false):
-	GlobalVariables.turnController.projectileInteraction.append(self)
-	#print("ProjectileAnimation " + str(projectileAnimation) + ( " current node ") + str(self))
-	#print("current active turn waiting " + str(GlobalVariables.turnController.currentTurnWaiting ))
+func play_projectile_animation(onSpot=true, projectileAnimation="attack"):
+	if !GlobalVariables.turnController.projectileInteraction.has(self):
+		GlobalVariables.turnController.projectileInteraction.append(self)
+	print("ProjectileAnimation " + str(projectileAnimation) + ( " current node ") + str(self))
+	print("current active turn waiting " + str(GlobalVariables.turnController.currentTurnWaiting ))
 	var animationMode = 1
 	if Grid.activeRoom == null || Grid.activeRoom != null && Grid.activeRoom.roomCleared || GlobalVariables.turnController.currentTurnWaiting != GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE && GlobalVariables.turnController.currentTurnWaiting != GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE && GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYER || GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMY:
 		animationMode = 1
@@ -187,8 +188,8 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack", projec
 		elif projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
 			#print("playing shoot " + str(projectileAnimation))
 			$AnimationPlayer.play("shoot")
-		print("merge done")
-		GlobalVariables.turnController.on_projectile_interaction(self)
+		print("merge done " + str(self))
+		GlobalVariables.turnController.on_projectile_interaction(self, false)
 	#player enemy phase
 	elif projectileAnimation == "mini":
 		#print("In second mini")
@@ -204,10 +205,10 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack", projec
 				$AnimationPlayer.play("mini1shoot")
 			set_process(true)
 		if deleteProjectilePlayAnimation == "delete":
-			print("mini delete done")
+			print("mini delete done " + str(self))
 			GlobalVariables.turnController.on_projectile_interaction(self, true)
 		else:
-			print("mini done")
+			print("mini done " + str(self))
 			GlobalVariables.turnController.on_projectile_interaction(self, false)
 	elif animationMode == 1:
 		GlobalVariables.turnController.on_projectile_interaction(self, true)
