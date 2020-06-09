@@ -612,6 +612,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 				activeRoom = oldCellTargetNode
 				if activeRoom != null:
 					pawn.inRoomType = activeRoom.roomType
+					GlobalVariables.turnController.inRoomType = activeRoom.roomType
 					print (activeRoom.enemiesInRoom)
 					for element in activeRoom.enemiesInRoom:
 						element.isDisabled = false
@@ -623,6 +624,8 @@ func update_pawn_position(pawn, cell_start, cell_target):
 						play_puzzlepiece_pattern()
 				else:
 					pawn.inRoomType = null
+					#todo change to empty cleared room whatevs
+					GlobalVariables.turnController.inRoomType = GlobalVariables.ROOM_TYPE.ENEMYROOM
 					#print ("Player in Room " + str(pawn.inRoomType))
 			if(oldCellTargetType == get_tileset().find_tile_by_name("UNLOCKEDDOOR")):
 				var tempProjectiles = projectilesInActiveRoom.duplicate()
@@ -645,6 +648,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 				activeRoom=oldCellTargetNode.get_room_by_movement_direction(direction)
 				if activeRoom != null:
 					pawn.inRoomType = activeRoom.roomType
+					GlobalVariables.turnController.inRoomType = activeRoom.roomType
 					#print ("Player in Room " + str(pawn.inRoomType))
 					for element in activeRoom.enemiesInRoom:
 						element.isDisabled = false
