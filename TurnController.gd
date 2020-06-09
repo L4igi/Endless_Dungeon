@@ -44,7 +44,7 @@ func check_turn_done_conditions():
 				if enemiesToMove.empty():
 					return true
 			GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE:
-				print("playerProjectilesToMove " + str(playerProjectilesToMove))
+				#print("playerProjectilesToMove " + str(playerProjectilesToMove))
 				if playerProjectilesToMove.empty():
 					return true
 			GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
@@ -130,15 +130,15 @@ func enemy_turn_done(enemy):
 
 func player_projectiles_turn_done(projectile):
 	playerProjectilesToMove.erase(projectile)
-	print("PROJECTILE " + str(projectile))
-	print("playerProjectilesToMove " + str(playerProjectilesToMove))
+	#print("PROJECTILE " + str(projectile))
+	#print("playerProjectilesToMove " + str(playerProjectilesToMove))
 	if projectile!=null:
 		for count in projectile.requestedMoveCount:
 			playerProjectilesToMove.erase(projectile)
 #	currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE
 	if check_turn_done_conditions():
 		if !playerDefeatStop:
-			print("HERE SENDING")
+			#print("HERE SENDING")
 			currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
 			Grid.on_player_projectile_turn_done_request_confirmed()
 		else:

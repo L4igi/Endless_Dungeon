@@ -431,22 +431,27 @@ func request_move(pawn, direction):
 							if GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
 								GlobalVariables.turnController.enemyProjectilesToMove.append(pawn)
 #							playerEnemyProjectileArray.append(pawn)
+							print(pawn.requestedMoveCount)
 							return 
 						else:
+#							print("IN IF AFTER MAGICPROJECTILE INTERACTION")
 #							pawn.deleteProjectilePlayAnimation="delete"
-#							targetProjectile.play_projectile_animation(true,"delete")
+#							pawn.play_projectile_animation(true,"delete")
 #							targetProjectile.deleteProjectilePlayAnimation="merge"
 							return 
 				else:
+					print("IN HERE")
 					if GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE:
-						for projectile in playerEnemyProjectileArray:
-							if projectile.moveTo!=null && projectile != pawn:
-								print(world_to_map(projectile.moveTo))
-								print(cell_target)
-								if world_to_map(projectile.moveTo) == cell_target:
-									pawn.play_projectile_animation(true,"delete")
-									projectile.play_projectile_animation(true,"merge")
-									return update_pawn_position(pawn, cell_start, cell_target)
+#						print(GlobalVariables.turnController.playerProjectilesToMove.size())
+						var tempProjectileArray = GlobalVariables.turnController.playerProjectilesToMove.duplicate()
+						for projectile in tempProjectileArray:
+#							if projectile.moveTo!=null && projectile != pawn:
+							print(world_to_map(projectile.moveTo))
+							print(cell_target)
+							if world_to_map(projectile.moveTo) == cell_target:
+								pawn.play_projectile_animation(true,"delete")
+								projectile.play_projectile_animation(true,"merge")
+								return update_pawn_position(pawn, cell_start, cell_target)
 				return pawn.position
 #				return update_pawn_position(pawn, cell_start, cell_target)
 			TILETYPES.BLOCK:
