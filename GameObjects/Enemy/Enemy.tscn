@@ -651,9 +651,10 @@ anims/walk = SubResource( 6 )
 
 [node name="SpriteNinjaEnemy" type="Sprite" parent="."]
 visible = false
+rotation = -6.28319
 texture = ExtResource( 4 )
 hframes = 63
-frame = 17
+frame = 29
 
 [node name="NinjaAnimationPlayer" type="AnimationPlayer" parent="."]
 autoplay = "idle"
@@ -701,6 +702,7 @@ anims/walk_right = SubResource( 28 )
 anims/walk_up = SubResource( 29 )
 
 [node name="HealthBar" type="TextureProgress" parent="."]
+visible = false
 modulate = Color( 1, 1, 1, 0.705882 )
 margin_left = -16.0
 margin_top = -20.0

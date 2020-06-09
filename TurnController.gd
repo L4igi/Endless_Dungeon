@@ -11,9 +11,10 @@ var enemiesToMove = []
 var playerProjectilesToMove = []
 var enemyProjectilesToMove = []
 var playerDefeatStop = false
+var playerMovedDoor = false
 
 func _ready():
-	pass # Replace with function body.
+	pass
 
 func set_Grid_to_use(gridToUse):
 	Grid = gridToUse
@@ -27,8 +28,15 @@ func check_turn_done_conditions():
 	if playerTakeDamage.empty() && enemyTakeDamage.empty() && projectileSpawned.empty() && projectileInteraction.empty():
 		match currentTurnWaiting:
 			GlobalVariables.CURRENTPHASE.PLAYER:
-				if playersToMove.empty():
+				if Grid.mainPlayer.get_actions_left() == 0 && !playerMovedDoor:
+					print("returns true")
 					return true
+				else:
+					if playerMovedDoor:
+						Grid.mainPlayer.movementCount = 0
+						Grid.mainPlayer.attackCount = 0
+						playerMovedDoor = false
+					Grid.mainPlayer.checkNextAction = true
 			GlobalVariables.CURRENTPHASE.ENEMY:
 				if enemiesToMove.empty():
 					return true
@@ -43,6 +51,10 @@ func check_turn_done_conditions():
 					return true
 			_:
 				return true
+	else:
+		match currentTurnWaiting:
+			GlobalVariables.CURRENTPHASE.PLAYER:
+				Grid.mainPlayer.checkNextAction = false
 	return false
 	
 func check_turn_progress():
@@ -50,11 +62,7 @@ func check_turn_progress():
 	if check_turn_done_conditions():
 		match currentTurnWaiting:
 			GlobalVariables.CURRENTPHASE.PLAYER:
-				if Grid.mainPlayer.maxTurnActions:
-					if Grid.mainPlayer.get_actions_left() == 0:
-						player_turn_done(null)
-					else:
-						return true
+				player_turn_done(null)
 			GlobalVariables.CURRENTPHASE.ENEMY:
 				enemy_turn_done(null)
 			GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE:
@@ -65,32 +73,16 @@ func check_turn_progress():
 				player_defeat()
 			_:
 				return true
-			
-	
-func player_next_action():
-	if check_turn_done_conditions():
-		return true
-	return false
-
-func clearAllWaiting():
-	playerTakeDamage.clear()
-	enemyTakeDamage.clear()
-	projectileSpawned.clear()
-	projectileInteraction.clear()
-	playersToMove.clear()
-	enemiesToMove.clear()
-	playerProjectilesToMove.clear()
-	enemyProjectilesToMove.clear()
 	
 func player_turn_done(player):
-	playersToMove.erase(player)
-	currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
+#	currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
 	if check_turn_done_conditions():
+		playersToMove.erase(player)
 		currentTurnWaiting = GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE
 		Grid.on_player_turn_done_confirmed()
 	else:
 		check_turn_progress()
-
+	
 func player_defeat():
 	if playerDefeatStop:
 		playerDefeatStop = false
@@ -108,7 +100,7 @@ func player_defeat():
 
 func enemy_turn_done(enemy):
 	enemiesToMove.erase(enemy)
-	currentTurnWaiting = GlobalVariables.CURRENTPHASE.ENEMY
+#	currentTurnWaiting = GlobalVariables.CURRENTPHASE.ENEMY
 	if check_turn_done_conditions():
 		if !playerDefeatStop:
 			currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE
@@ -123,7 +115,7 @@ func player_projectiles_turn_done(projectile):
 	if projectile!=null:
 		for count in projectile.requestedMoveCount:
 			playerProjectilesToMove.erase(projectile)
-	currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE
+#	currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE
 	if check_turn_done_conditions():
 		currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
 		Grid.on_player_projectile_turn_done_request_confirmed()
@@ -132,7 +124,7 @@ func player_projectiles_turn_done(projectile):
 
 func enemy_projectiles_turn_done(projectile):
 	enemyProjectilesToMove.erase(projectile)
-	currentTurnWaiting = GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE
+#	currentTurnWaiting = GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE
 	if projectile!=null:
 		for count in projectile.requestedMoveCount:
 			playerProjectilesToMove.erase(projectile)
@@ -144,7 +136,7 @@ func enemy_projectiles_turn_done(projectile):
 #		check_turn_progress()
 	
 func exploding_block_turn_done():
-	currentTurnWaiting = GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE
+#	currentTurnWaiting = GlobalVariables.CURRENTPHASE.BLOCK
 	if check_turn_done_conditions():
 		Grid.on_player_projectile_turn_done_request_confirmed()
 #	else:
@@ -153,13 +145,15 @@ func exploding_block_turn_done():
 #all functions to make turn possible afterwards
 func on_player_taken_damage(player):
 	#push player here multiple times remove at array place [0] until empty
-	playerTakeDamage.remove(0)
+#	playerTakeDamage.erase(0)
+	playerTakeDamage.erase(player)
 	check_turn_progress()
 
 func on_enemy_taken_damage(enemy, deleting = false):
 	enemyTakeDamage.erase(enemy)
 	if deleting:
 		enemy.queue_free()
+	print("ON enemy defeated currentTurnWaiting " + str(currentTurnWaiting))
 	check_turn_progress()
 
 func on_projectile_spawned(projecitle):
@@ -168,7 +162,10 @@ func on_projectile_spawned(projecitle):
 	
 func on_projectile_interaction(projectile, deleting = false):
 	projectileInteraction.erase(projectile)
+#	print("projectileInteraction size " + str(projectileInteraction.size()))
+#	print("projectile to delete " + str(projectile))
 	if deleting:
+		Grid.projectilesInActiveRoom.erase(projectile)
 		projectile.queue_free()
 	check_turn_progress()
 

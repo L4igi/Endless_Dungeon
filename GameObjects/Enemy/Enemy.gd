@@ -314,9 +314,9 @@ func enemyMovement():
 	if queueInflictDamage:
 		if lifePoints <= 0:
 			print("Play defeat animation")
-			play_defeat_animation(Grid.mainPlayer, Grid.currentActivePhase)
+			play_defeat_animation(Grid.mainPlayer, GlobalVariables.turnController.currentTurnWaiting)
 		else:
-			play_taken_damage_animation(playerQueueAttackType,Grid.mainPlayer, Grid.currentActivePhase)
+			play_taken_damage_animation(playerQueueAttackType,Grid.mainPlayer)
 		queueInflictDamage = false
 		queueInflictDamage = 0
 		playerQueueAttackType = null
@@ -641,12 +641,12 @@ func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, m
 			playerQueueAttackType = attackType
 	else:
 		if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER || CURRENTPHASE == GlobalVariables.CURRENTPHASE.BLOCK || CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE || CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
-			play_taken_damage_animation(inflictattackDamage, mainPlayer, CURRENTPHASE)
+			play_taken_damage_animation(inflictattackDamage, mainPlayer)
 		else:
 			queueInflictDamage = true
 			playerQueueAttackType =  inflictattackType
 	
-func play_taken_damage_animation(inflictattackType, mainPlayer, CURRENTPHASE):
+func play_taken_damage_animation(inflictattackType, mainPlayer):
 	var animationToPlay = str("take_damage_physical")
 	if inflictattackType == GlobalVariables.ATTACKTYPE.MAGIC:
 		animationToPlay = str("take_damage_magic")

@@ -16,7 +16,7 @@ var requestedMoveCount = 0
 
 signal projectileMadeMove (projectile)
 
-signal playerEnemieProjectileMadeMove (projectile ,type, projectileArray)
+signal playerEnemieProjectileMadeMove (projectile)
 
 signal tickingProjectileMadeMove(projectile, type)
 
@@ -56,13 +56,12 @@ func calc_projectiles_move_to(calcMode, count, playerEnemy = "player"):
 		
 func move_projectile(type = null):
 	if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
-		#print("in move_projectile " + str(moveTo))
 		if moveTo:
 			$Tween.interpolate_property(self, "position", position, moveTo , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
 			$Tween.start()
 			yield($Tween, "tween_completed")
 			if deleteProjectilePlayAnimation == null:
-				emit_signal("playerEnemieProjectileMadeMove",self, projectileType)
+				emit_signal("playerEnemieProjectileMadeMove",self)
 			else:
 				play_projectile_animation(false, deleteProjectilePlayAnimation)
 		else:
@@ -127,13 +126,12 @@ func play_powerBlock_projectile_animation():
 
 func play_projectile_animation(onSpot=true, projectileAnimation="attack", projectileInteraction = false):
 	GlobalVariables.turnController.projectileInteraction.append(self)
-	print("ProjectileAnimation " + str(projectileAnimation))
-	#print("current active phase " + str(Grid.currentActivePhase))
+	print("ProjectileAnimation " + str(projectileAnimation) + ( " current node ") + str(self))
+	print("current active turn waiting " + str(GlobalVariables.turnController.currentTurnWaiting ))
 	var animationMode = 1
-	if Grid.activeRoom == null || Grid.activeRoom != null && Grid.activeRoom.roomCleared || Grid.currentActivePhase != GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE && Grid.currentActivePhase != GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE && Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.PLAYER || Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
+	if Grid.activeRoom == null || Grid.activeRoom != null && Grid.activeRoom.roomCleared || GlobalVariables.turnController.currentTurnWaiting != GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE && GlobalVariables.turnController.currentTurnWaiting != GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE && GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYER || GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMY:
 		animationMode = 1
 		pass
-#		if Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.ENEMY:
 		#Grid.mainPlayer.waitingForEventBeforeContinue = true
 		print("Phase1")
 	elif Grid.activeRoom != null && Grid.activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
@@ -212,23 +210,23 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack", projec
 			print("mini done")
 			GlobalVariables.turnController.on_projectile_interaction(self, false)
 	elif animationMode == 1:
+		GlobalVariables.turnController.on_projectile_interaction(self, true)
 		Grid.projectilesInActiveRoom.erase(self)
-		if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.PLAYER:
+		if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYER:
 			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
 		print("delete phase 1 done")
-		GlobalVariables.turnController.on_projectile_interaction(self, true)
 	#puzzle room interactions
 	elif animationMode == 2:
 		Grid.projectilesInActiveRoom.erase(self)
 		emit_signal("projectileMadeMove", self)
 	#projectile phase
 	elif animationMode == 3:
+		GlobalVariables.turnController.on_projectile_interaction(self, true)
 		Grid.projectilesInActiveRoom.erase(self)
 		if projectileInteraction:
 			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
 		else:
-			emit_signal("playerEnemieProjectileMadeMove",self, projectileType)
-		GlobalVariables.turnController.on_projectile_interaction(self, true)
+			emit_signal("playerEnemieProjectileMadeMove",self)
 	
 
 func create_ticking_projectile(currentRoomLeftMostCorner):

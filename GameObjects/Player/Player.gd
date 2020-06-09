@@ -81,6 +81,8 @@ var toggledDangerArea = false
 
 var enemyToToggleArea = null
 
+var checkNextAction = true
+
 signal toggleDangerArea (enemyToToggleArea, toggleAll)
 
 signal puzzleBlockInteractionSignal (player, puzzleBlockDirection)
@@ -90,6 +92,7 @@ func _ready():
 	add_child(guiElements)
 	guiElements.set_health(lifePoints)
 	guiElements.set_maxturn_actions(maxTurnActions)
+	#GlobalVariables.turnController.player_next_action(self)
 
 	
 	inventoryElements = Inventory.instance()
@@ -123,9 +126,7 @@ func _process(delta):
 			var attackDirection = get_attack_direction()
 			player_interact_puzzle_block(attackDirection)
 		
-		if !playerTurnDone:
-			var checkNextAction = GlobalVariables.turnController.player_next_action()
-		
+		if checkNextAction:
 			if checkNextAction && !puzzleBlockInteraction && !playerPassingDoor:
 				var movementDirection = get_free_movement_direction()
 				var attackDirection = get_attack_direction()
@@ -165,10 +166,8 @@ func player_movement(movementDirection):
 #			update_enemy_move_attack()
 			movementCount += 1
 			guiElements.update_current_turns()
+			GlobalVariables.turnController.player_turn_done(self)
 			
-	if attackCount + movementCount == maxTurnActions && !playerTurnDone:
-		playerTurnDone = true
-		emit_signal("playerMadeMove")
 	
 func player_attack(attackDirection):
 	if attackDirection && (attackCount + movementCount) < maxTurnActions:
@@ -197,17 +196,10 @@ func player_attack(attackDirection):
 		yield($AnimationPlayer, "animation_finished")
 		$AnimationPlayer.play("Idle")
 		set_process(true)
-#		update_enemy_move_attack()
-		if attackType == GlobalVariables.ATTACKTYPE.BLOCK:
-			waitingForEventBeforeContinue = true
-		
 		emit_signal("playerAttacked", self, attackDirection, attackDamage, attackType)
 		attackCount += 1
 		guiElements.update_current_turns()
-		
-	if attackCount + movementCount == maxTurnActions && !playerTurnDone:
-		playerTurnDone = true
-		emit_signal("playerMadeMove")
+		GlobalVariables.turnController.player_turn_done(self)
 	
 func player_passed_door():
 	var targetPosition = Grid.request_move(self,movedThroughDoorDirection)
@@ -236,17 +228,17 @@ func player_passed_door():
 		if Grid.activeRoom != null && Grid.activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 			guiElements.change_hand_on_room(GlobalVariables.ROOM_TYPE.PUZZLEROOM)
 			emit_signal("playerMadeMove")
+			GlobalVariables.turnController.player_turn_done(self)
 		else:
+			#GlobalVariables.turnController.player_turn_done(self)
 			guiElements.change_hand_on_room(GlobalVariables.ROOM_TYPE.ENEMYROOM)
-			movementCount = 0
-			attackCount = 0
-			playerTurnDone = false
 			disablePlayerInput = false
 			
 	
 func player_interact_puzzle_block(puzzleBlockDirection):
 	if puzzleBlockDirection:
 		emit_signal("puzzleBlockInteractionSignal", self, puzzleBlockDirection)
+		checkNextAction = GlobalVariables.turnController.player_turn_done(self)
 	
 func get_free_movement_direction():
 	if Input.is_action_pressed("player_up"):
@@ -298,7 +290,7 @@ func get_attack_mode():
 		attackDamage = 0.5
 		#if used in puzzle room while magic is flying cancels out all magic
 		if attackType == GlobalVariables.ATTACKTYPE.MAGIC:
-			if Grid.currentActivePhase == GlobalVariables.CURRENTPHASE.PUZZLEPROJECTILE:
+			if GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PUZZLEPROJECTILE:
 				Grid.cancelMagicPuzzleRoom=true
 		puzzleBlockInteraction = false
 		return GlobalVariables.ATTACKTYPE.MAGIC
@@ -355,10 +347,9 @@ func toggle_enemy_danger_areas():
 			emit_signal("toggleDangerArea", enemyToToggleArea)
 		
 func inflict_damage_playerDefeated(attackDamage, attackType):
-	GlobalVariables.turnController.playerTakeDamage.append(self)
 	lifePoints -= attackDamage
+	guiElements.change_health(attackDamage)
 	if lifePoints > 0:
-		guiElements.change_health(attackDamage)
 		var animationToPlay = str("take_damage_physical")
 		if attackType == GlobalVariables.ATTACKTYPE.MAGIC:
 			animationToPlay = str("take_damage_magic")
@@ -420,15 +411,29 @@ func remove_key_item_from_inventory(item):
 		inventoryElements.get_node("Tabs/Weapon/WeaponList").remove_child(keyItemToDelete)
 
 func _on_enemy_turn_done_signal():
+	print("Player turn again ")
+	checkNextAction = true
+	if movementCount + attackCount == maxTurnActions:
+		movementCount = 0
+		attackCount = 0
+		guiElements.update_current_turns(true)
+
+func do_on_player_defeated():
+	position = Vector2(80,80)
+	inClearedRoom = true
+	lifePoints = 10
+	guiElements.set_health(10)
+	get_node("AnimationPlayer").play("Idle")
 	movementCount = 0
 	attackCount = 0
 	guiElements.update_current_turns(true)
-	playerTurnDone = false
-	disablePlayerInput = false
-
+	GlobalVariables.turnController.currentTurnWaiting= GlobalVariables.CURRENTPHASE.PLAYER
+	checkNextAction = true
+	
 func end_player_turn():
 	disablePlayerInput=true
 	playerTurnDone=true
+
 	
 func get_actions_left():
 	return maxTurnActions-movementCount-attackCount
