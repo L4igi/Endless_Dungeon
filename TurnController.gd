@@ -15,6 +15,7 @@ var puzzlePiecesToPattern = []
 var playerDefeatStop = false
 var playerMovedDoor = false
 var inRoomType = null
+var powerBlockInterActionDone = true
 
 func _ready():
 	pass
@@ -53,6 +54,9 @@ func check_turn_done_conditions():
 					return true
 			GlobalVariables.CURRENTPHASE.PUZZLEPIECES:
 				if puzzlePiecesToPattern.empty():
+					return true
+			GlobalVariables.CURRENTPHASE.PUZZLEPROJECTILE:
+				if powerBlockInterActionDone:
 					return true
 			_:
 				return true
@@ -146,6 +150,22 @@ func enemy_projectiles_turn_done(projectile):
 #	else:
 #		check_turn_progress()
 
+func start_power_projectiles():
+	powerBlockInterActionDone = false
+	Grid.mainPlayer.checkNextAction = false
+	currentTurnWaiting = GlobalVariables.CURRENTPHASE.PUZZLEPROJECTILE
+	
+func stop_power_projectiles():
+	powerBlockInterActionDone = true
+	Grid.mainPlayer.checkNextAction = true
+	currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
+	print("playerTakeDamage " + str(playerTakeDamage.size()))
+	print("enemyTakeDamage " + str(enemyTakeDamage.size()))
+	print("projectileSpawned " + str(projectileSpawned.size()))
+	print("projectileInteraction " + str(projectileInteraction.size()))
+	print("currentTurnWaiting " + str(currentTurnWaiting))
+	check_turn_progress()
+	
 func puzzle_pattern_turn_done(puzzlePiece):
 	puzzlePiecesToPattern.erase(puzzlePiece)
 	check_turn_progress()
@@ -154,7 +174,6 @@ func on_block_exploding(powerBlock):
 	blocksExploding.erase(powerBlock)
 	print(str(powerBlock))
 	powerBlock.queue_free()
-	print("exploding power block " + str(blocksExploding))
 	check_turn_progress()
 
 #all functions to make turn possible afterwards

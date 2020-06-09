@@ -239,7 +239,7 @@ func player_passed_door():
 func player_interact_puzzle_block(puzzleBlockDirection):
 	if puzzleBlockDirection:
 		emit_signal("puzzleBlockInteractionSignal", self, puzzleBlockDirection)
-		checkNextAction = GlobalVariables.turnController.player_turn_done(self)
+		#checkNextAction = GlobalVariables.turnController.player_turn_done(self)
 	
 func get_free_movement_direction():
 	if Input.is_action_pressed("player_up"):

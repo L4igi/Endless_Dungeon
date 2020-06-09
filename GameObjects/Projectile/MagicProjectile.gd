@@ -128,8 +128,8 @@ func play_powerBlock_projectile_animation():
 func play_projectile_animation(onSpot=true, projectileAnimation="attack",projectileInteraction = false):
 	if !GlobalVariables.turnController.projectileInteraction.has(self):
 		GlobalVariables.turnController.projectileInteraction.append(self)
-	print("ProjectileAnimation " + str(projectileAnimation) + ( " current node ") + str(self))
-	print("current active turn waiting " + str(GlobalVariables.turnController.currentTurnWaiting ))
+	#print("ProjectileAnimation " + str(projectileAnimation) + ( " current node ") + str(self))
+	#print("current active turn waiting " + str(GlobalVariables.turnController.currentTurnWaiting ))
 	var animationMode = 1
 	if Grid.activeRoom == null || Grid.activeRoom != null && Grid.activeRoom.roomCleared || GlobalVariables.turnController.currentTurnWaiting != GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE && GlobalVariables.turnController.currentTurnWaiting != GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE && GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYER || GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMY:
 		animationMode = 1

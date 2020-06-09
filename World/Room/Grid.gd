@@ -649,7 +649,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					for element in activeRoom.enemiesInRoom:
 						element.isDisabled = false
 						element.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
-					if GlobalVariables.turnController.inRoomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
+					if !activeRoom.roomCleared && GlobalVariables.turnController.inRoomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 						GlobalVariables.turnController.puzzlePiecesToPattern += activeRoom.puzzlePiecesInRoom
 						print(GlobalVariables.turnController.puzzlePiecesToPattern.size())
 						play_puzzlepiece_pattern()
@@ -942,7 +942,6 @@ func _on_ticking_projectile_made_move(projectile, projectileType):
 #	projectile.move_projectile(projectileType)
 
 func cancel_magic_in_puzzle_room():
-	#print("MAGIC IS CANCELED")
 	cancelMagicPuzzleRoom = false
 	spawnBlockProjectileNextTurn.clear()
 	activatePuzzlePieceNextTurn.clear()
@@ -961,14 +960,13 @@ func cancel_magic_in_puzzle_room():
 			puzzlePiece.get_node("AnimationPlayer").play("Idle")
 			puzzlePiece.get_node("Sprite").set_self_modulate(puzzlePiece.baseModulation)
 	set_cellv(world_to_map(mainPlayer.position), get_tileset().find_tile_by_name("PLAYER"))
-	GlobalVariables.turnController.currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
-	emit_signal("enemyTurnDoneSignal")
+	GlobalVariables.turnController.stop_power_projectiles()
 	
 func _on_projectiles_made_move(projectile=null):
 	if projectile!=null:
 		puzzleProjectilesToMove.erase(projectile)
 		if projectile.deleteProjectilePlayAnimation != null:
-			projectile.queue_free()
+			GlobalVariables.turnController.on_projectile_interaction(projectile, true)
 		#print("Projectiles made move " + str(projectilesMadeMoveCounter) + " projectiles in puzzleProjectilesToMove " + str(puzzleProjectilesToMove.size())) 
 
 	if puzzleProjectilesToMove.empty():
@@ -1053,7 +1051,7 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 	#use wand on block in puzzle room 
 	if  activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.BLOCK && attackType == GlobalVariables.ATTACKTYPE.MAGIC:
 		player.end_player_turn()
-		GlobalVariables.turnController.currentTurnWaiting = GlobalVariables.CURRENTPHASE.PUZZLEPROJECTILE
+		GlobalVariables.turnController.start_power_projectiles()
 		for projectile in projectilesInActiveRoom:
 			set_cellv(world_to_map(projectile.position),get_tileset().find_tile_by_name("FLOOR")) 
 			projectile.queue_free()
@@ -1295,6 +1293,7 @@ func on_powerBlock_spawn_magic(powerBlock, signalSpawnMagic):
 					blockHit.shootDelay = 0
 				else:
 					blockHit.shootDelay = 0
+			newMagicProjectile.queue_free()
 		elif get_cellv(world_to_map(newMagicProjectile.position)+newMagicProjectile.movementDirection) == get_tileset().find_tile_by_name("PUZZLEPIECE"):
 			projectilesInActiveRoom.append(newMagicProjectile)
 			var activatedPuzzlePiece = get_cell_pawn(world_to_map(newMagicProjectile.position)+newMagicProjectile.movementDirection)
