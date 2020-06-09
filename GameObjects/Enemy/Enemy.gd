@@ -495,7 +495,6 @@ func check_if_cell_valid_position(checkCell):
 	
 func make_enemy_turn():
 	if !isDisabled:
-		calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION)
 		movementCount = 0
 		attackCount = 0
 		enemyTurnDone = false
@@ -512,7 +511,7 @@ func matchEnemyTurn():
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			ninjaenemy_type_actions()
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
-				warriorenemy_type_actions()
+			warriorenemy_type_actions()
 						
 func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor): 
 #	var enemieToGenerate = randi()%4

@@ -319,6 +319,8 @@ func request_move(pawn, direction):
 						#print("Enemy defeated")
 						return update_pawn_position(pawn, cell_start, cell_target)
 					else:
+						projectilesInActiveRoom.erase(tempMagicProjectile)
+						set_cellv(world_to_map(tempMagicProjectile.position),get_tileset().find_tile_by_name("FLOOR"))
 						return update_pawn_position(pawn, cell_start, cell_target)
 				else:
 					tempMagicProjectile.play_projectile_animation(true,"delete")
@@ -863,7 +865,12 @@ func on_enemy_turn_done_confirmed():
 func on_player_turn_done_confirmed_puzzle_room():
 	GlobalVariables.turnController.currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
 	emit_signal("enemyTurnDoneSignal")
-
+	
+func on_player_turn_done_confirmed_empty_treasure_room():
+	GlobalVariables.turnController.currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
+	on_player_turn_done_confirmed_enemy_room()
+#	emit_signal("enemyTurnDoneSignal")
+	
 func on_player_turn_done_confirmed_enemy_room():
 	if movedThroughDoor:
 		return
@@ -925,6 +932,8 @@ func on_enemy_projectile_turn_done_request_confirmed():
 	if tempEnenmyToMove.empty():
 		GlobalVariables.turnController.enemy_turn_done(null)
 	else:
+		for enemy in tempEnenmyToMove:
+			enemy.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION)
 		print("making enemy turn")
 		for enemy in tempEnenmyToMove:
 			enemy.make_enemy_turn()

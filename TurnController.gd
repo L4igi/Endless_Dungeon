@@ -93,6 +93,9 @@ func player_turn_done(player):
 		elif inRoomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 			currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
 			Grid.on_player_turn_done_confirmed_puzzle_room()
+		elif inRoomType == GlobalVariables.ROOM_TYPE.EMPTYTREASUREROOM:
+			currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
+			Grid.on_player_turn_done_confirmed_empty_treasure_room()
 	else:
 		check_turn_progress()
 	
@@ -195,10 +198,10 @@ func on_projectile_spawned(projecitle):
 	check_turn_progress()
 	
 func on_projectile_interaction(projectile, deleting = false):
-	print("in here after projectile interaction " + str(projectileInteraction))
+	#print("in here after projectile interaction " + str(projectileInteraction))
 	projectileInteraction.erase(projectile)
-	print("to delete projectileInteraction " + str(projectile))
-	print("in here after projectile interaction deleted" + str(projectileInteraction))
+	#print("to delete projectileInteraction " + str(projectile))
+	#print("in here after projectile interaction deleted" + str(projectileInteraction))
 	if deleting:
 		playerProjectilesToMove.erase(projectile)
 		Grid.projectilesInActiveRoom.erase(projectile)
