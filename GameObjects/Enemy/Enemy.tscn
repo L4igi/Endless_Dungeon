@@ -702,7 +702,6 @@ anims/walk_right = SubResource( 28 )
 anims/walk_up = SubResource( 29 )
 
 [node name="HealthBar" type="TextureProgress" parent="."]
-visible = false
 modulate = Color( 1, 1, 1, 0.705882 )
 margin_left = -16.0
 margin_top = -20.0

@@ -126,20 +126,20 @@ func play_powerBlock_projectile_animation():
 
 func play_projectile_animation(onSpot=true, projectileAnimation="attack", projectileInteraction = false):
 	GlobalVariables.turnController.projectileInteraction.append(self)
-	print("ProjectileAnimation " + str(projectileAnimation) + ( " current node ") + str(self))
-	print("current active turn waiting " + str(GlobalVariables.turnController.currentTurnWaiting ))
+	#print("ProjectileAnimation " + str(projectileAnimation) + ( " current node ") + str(self))
+	#print("current active turn waiting " + str(GlobalVariables.turnController.currentTurnWaiting ))
 	var animationMode = 1
 	if Grid.activeRoom == null || Grid.activeRoom != null && Grid.activeRoom.roomCleared || GlobalVariables.turnController.currentTurnWaiting != GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE && GlobalVariables.turnController.currentTurnWaiting != GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE && GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYER || GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMY:
 		animationMode = 1
 		pass
 		#Grid.mainPlayer.waitingForEventBeforeContinue = true
-		print("Phase1")
+		#print("Phase1")
 	elif Grid.activeRoom != null && Grid.activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 		animationMode = 2
-		print("Phase2")
+		#print("Phase2")
 	else:
 		animationMode = 3
-		print("Phase3")
+		#print("Phase3")
 	
 	var animationToPlay = projectileAnimation
 	match projectileAnimation : 
@@ -221,12 +221,13 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack", projec
 		emit_signal("projectileMadeMove", self)
 	#projectile phase
 	elif animationMode == 3:
-		GlobalVariables.turnController.on_projectile_interaction(self, true)
 		Grid.projectilesInActiveRoom.erase(self)
-		if projectileInteraction:
-			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
-		else:
-			emit_signal("playerEnemieProjectileMadeMove",self)
+#		if projectileInteraction:
+		Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
+#		else
+		GlobalVariables.turnController.on_projectile_interaction(self, true)
+		emit_signal("playerEnemieProjectileMadeMove",self)
+		
 	
 
 func create_ticking_projectile(currentRoomLeftMostCorner):

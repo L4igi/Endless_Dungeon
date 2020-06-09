@@ -89,14 +89,15 @@ func player_defeat():
 	else:
 		playerDefeatStop = true
 	print("ON PLAYER DEFEATED IN TURNCONTROLLER")
+	Grid.mainPlayer.checkNextAction = false
 	if currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYER:
 		currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYERDEFEAT
 	playerTakeDamage.clear()
 	if check_turn_done_conditions():
 		playerDefeatStop = false
 		Grid.on_Player_Defeated()
-	else:
-		check_turn_progress()
+#	else:
+#		check_turn_progress()
 
 func enemy_turn_done(enemy):
 	enemiesToMove.erase(enemy)
@@ -110,17 +111,19 @@ func enemy_turn_done(enemy):
 			player_defeat()
 
 func player_projectiles_turn_done(projectile):
-	print("playerProjectilesToMove" +str(playerProjectilesToMove.size()))
+	#print("playerProjectilesToMove" +str(playerProjectilesToMove.size()))
 	playerProjectilesToMove.erase(projectile)
 	if projectile!=null:
 		for count in projectile.requestedMoveCount:
 			playerProjectilesToMove.erase(projectile)
 #	currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE
 	if check_turn_done_conditions():
-		currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
-		Grid.on_player_projectile_turn_done_request_confirmed()
-#	else:
-#		check_turn_progress()
+		if !playerDefeatStop:
+			currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
+			Grid.on_player_projectile_turn_done_request_confirmed()
+		else:
+			currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYERDEFEAT
+			player_defeat()
 
 func enemy_projectiles_turn_done(projectile):
 	enemyProjectilesToMove.erase(projectile)
@@ -130,7 +133,7 @@ func enemy_projectiles_turn_done(projectile):
 			playerProjectilesToMove.erase(projectile)
 	if check_turn_done_conditions():
 		currentTurnWaiting = GlobalVariables.CURRENTPHASE.ENEMY
-		print("confirming turn done " + str(projectile))
+		#print("confirming turn done " + str(projectile))
 		Grid.on_enemy_projectile_turn_done_request_confirmed()
 #	else:
 #		check_turn_progress()
@@ -144,16 +147,18 @@ func exploding_block_turn_done():
 
 #all functions to make turn possible afterwards
 func on_player_taken_damage(player):
+	print("in here after player took damage")
+	print("player took damage " + str(playerTakeDamage) + " mainPlayer " + str(Grid.mainPlayer))
 	#push player here multiple times remove at array place [0] until empty
-#	playerTakeDamage.erase(0)
-	playerTakeDamage.erase(player)
+	playerTakeDamage.remove(0)
+	print("after player take damage currentTurnWaiting " + str(currentTurnWaiting))
 	check_turn_progress()
 
 func on_enemy_taken_damage(enemy, deleting = false):
 	enemyTakeDamage.erase(enemy)
 	if deleting:
 		enemy.queue_free()
-	print("ON enemy defeated currentTurnWaiting " + str(currentTurnWaiting))
+	#print("ON enemy taken damage/defeated currentTurnWaiting " + str(currentTurnWaiting))
 	check_turn_progress()
 
 func on_projectile_spawned(projecitle):
@@ -162,8 +167,6 @@ func on_projectile_spawned(projecitle):
 	
 func on_projectile_interaction(projectile, deleting = false):
 	projectileInteraction.erase(projectile)
-#	print("projectileInteraction size " + str(projectileInteraction.size()))
-#	print("projectile to delete " + str(projectile))
 	if deleting:
 		Grid.projectilesInActiveRoom.erase(projectile)
 		projectile.queue_free()

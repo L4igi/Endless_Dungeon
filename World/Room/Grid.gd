@@ -266,7 +266,7 @@ func request_move(pawn, direction):
 					set_cellv(world_to_map(object_pawn.position), get_tileset().find_tile_by_name("PLAYER"))
 					object_pawn.play_projectile_animation(true, "attack")
 					#pawn.inflict_damage_playerDefeated(object_pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC)
-					GlobalVariables.turnController.playerTakeDamage.append(pawn)
+					GlobalVariables.turnController.playerTakeDamage.append(mainPlayer)
 					pawn.queueInflictDamage=true
 					pawn.enemyQueueAttackDamage = object_pawn.attackDamage
 					pawn.enemyQueueAttackType = GlobalVariables.ATTACKTYPE.MAGIC
@@ -367,7 +367,7 @@ func request_move(pawn, direction):
 			TILETYPES.PLAYER:
 				var tempPlayer = get_cell_pawn(cell_target)
 				if pawn.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY :
-					GlobalVariables.turnController.playerTakeDamage.append(pawn)
+					GlobalVariables.turnController.playerTakeDamage.append(mainPlayer)
 					tempPlayer.inflict_damage_playerDefeated(pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC)
 					projectilesInActiveRoom.erase(pawn)
 					if GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
@@ -432,9 +432,9 @@ func request_move(pawn, direction):
 							return 
 						else:
 #							pawn.deleteProjectilePlayAnimation="delete"
-#							targetProjectile.play_projectile_animation(true,"merge")
+#							targetProjectile.play_projectile_animation(true,"delete")
 #							targetProjectile.deleteProjectilePlayAnimation="merge"
-							return update_pawn_position(pawn, cell_start, cell_target)
+							return 
 				else:
 					if GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE:
 						for projectile in playerEnemyProjectileArray:
@@ -505,7 +505,7 @@ func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile
 #		magicProjectile1.position = magicProjectile2.position
 #		magicProjectile2.position = magicprojectil1temppos
 #		print("IN ENEMY PLAYER PROJECTILE INTERACTION")
-		magicProjectile1.play_projectile_animation(false,"delete", true)
+		magicProjectile1.play_projectile_animation(true,"delete", true)
 		magicProjectile2.play_projectile_animation(true,"delete", true)
 		return false
 
@@ -1348,7 +1348,7 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage, attackCellA
 			add_child(newMagicProjectile)
 			newMagicProjectile.play_projectile_animation(true, "attack")
 			attackCellArray.erase(attackCell)
-		GlobalVariables.turnController.playerTakeDamage.append(attackedPlayer)
+		GlobalVariables.turnController.playerTakeDamage.append(mainPlayer)
 		attackedPlayer.inflict_damage_playerDefeated(attackDamage, attackType)
 	if (attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		#spawn magic projectile
