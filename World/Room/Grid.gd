@@ -99,6 +99,7 @@ var tickingProjectile = null
 
 var cancelMagicPuzzleRoom = false
 
+var allEnemiesAlreadySaved = false
 
 func match_Enum(var index):
 	match index:
@@ -1407,9 +1408,9 @@ func on_powerBlock_spawn_magic(powerBlock, signalSpawnMagic):
 	mainPlayer.disablePlayerInput = false
 	
 func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage, attackCellArray=null):
-	if(get_cellv(attackCell) == TILETYPES.PLAYER):
+	if get_cellv(attackCell) == TILETYPES.PLAYER || get_cellv(attackCell) == TILETYPES.ENEMY:
 		print("Woosh ENEMY Attack hit")
-		var attackedPlayer = get_cell_pawn(attackCell)
+		var attackedNode = get_cell_pawn(attackCell)
 		if(attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 			var newMagicProjectile = MagicProjectile.instance()
 			newMagicProjectile.set_z_index(5)
@@ -1419,8 +1420,13 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage, attackCellA
 			add_child(newMagicProjectile)
 			newMagicProjectile.play_projectile_animation(true, "attack")
 			attackCellArray.erase(attackCell)
-		GlobalVariables.turnController.playerTakeDamage.append(mainPlayer)
-		attackedPlayer.inflict_damage_playerDefeated(attackDamage, attackType)
+		if get_cellv(attackCell) == TILETYPES.PLAYER:
+			GlobalVariables.turnController.playerTakeDamage.append(mainPlayer)
+			attackedNode.inflict_damage_playerDefeated(attackDamage, attackType)
+		elif get_cellv(attackCell) == TILETYPES.ENEMY:
+			if get_cell_pawn(attackCell).helpEnemy:
+				attackedNode.inflictDamage(attackDamage, attackType, attackCell, mainPlayer, GlobalVariables.CURRENTPHASE.ENEMYATTACK)
+			
 	if (attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		#spawn magic projectile
 		#print("ENEMY POSITION " + str(world_to_map(enemy.position)))
@@ -1483,7 +1489,19 @@ func _on_enemy_defeated(enemy):
 			dropLootInActiveRoom()
 		activeRoom.roomCleared=true
 		mainPlayer.inClearedRoom = true
+		allEnemiesAlreadySaved = false
 		emit_signal("enemyTurnDoneSignal")
+	#if you were able to save help enemy it eliminates itself and gives extra reward
+	else:
+		var allSaved = 0
+		for enemy in activeRoom.enemiesInRoom:
+			if enemy.helpEnemy:
+				allSaved+=1
+		if allSaved == activeRoom.enemiesInRoom.size() && !allEnemiesAlreadySaved:
+			allEnemiesAlreadySaved = true
+			for enemy in activeRoom.enemiesInRoom:
+				enemy.inflictDamage(100, GlobalVariables.ATTACKTYPE.SAVED, world_to_map(enemy.position), mainPlayer, GlobalVariables.turnController.currentTurnWaiting)
+				
 	GlobalVariables.turnController.on_enemy_taken_damage(enemy, true)
 		
 	
