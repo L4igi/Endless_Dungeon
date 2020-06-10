@@ -783,7 +783,7 @@ func create_enemy_room(unlockedDoor):
 	randomize()
 	#add adjustment for enemy amount 
 	#-2 because of walls on both sides
-	var enemiesToSpawn = 30
+	var enemiesToSpawn = 10
 #	if unlockedDoor.roomSizeMultiplier == Vector2(1,1):
 #		enemiesToSpawn = randi()%3+1
 #	elif unlockedDoor.roomSizeMultiplier == Vector2(2,2):

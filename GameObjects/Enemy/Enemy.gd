@@ -242,7 +242,7 @@ func enemyMovement():
 					animationToPlay = "walk_down"
 #			if moveTo && !enemyDefeated:
 			if moveTo:
-				print("moving to " + str(Grid.world_to_map(moveTo)))
+				#print("moving to " + str(Grid.world_to_map(moveTo)))
 				set_process(false)
 				#play defeat animation 
 				$WarriorAnimationPlayer.play(animationToPlay, -1, 3.0)
@@ -488,9 +488,9 @@ func make_enemy_turn():
 func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = 1
+	var enemieToGenerate = 2
 	if randi()%2 == 0:
-		enemieToGenerate = 2
+		enemieToGenerate = 3
 	match enemieToGenerate:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
