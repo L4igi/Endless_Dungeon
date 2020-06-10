@@ -763,7 +763,8 @@ func create_puzzle_room(unlockedDoor):
 			colorToUse = Color(randf(),randf(),randf(),1.0)
 		alreadyUsedColors.append(colorToUse)
 		var newPuzzlePiece = PuzzlePiece.instance()
-		newPuzzlePiece.set_z_index(5)
+		newPuzzlePiece.set_z_index(2)
+		#todo: barrier possibility
 		if !barrierPuzzlePieceAlreadySpawned:
 			newPuzzlePiece.makePuzzleBarrier(self, unlockedDoor)
 		newPuzzlePiece.color = colorToUse
@@ -782,52 +783,54 @@ func create_enemy_room(unlockedDoor):
 	randomize()
 	#add adjustment for enemy amount 
 	#-2 because of walls on both sides
-	var enemiesToSpawn = 8
-	if unlockedDoor.roomSizeMultiplier == Vector2(1,1):
-		enemiesToSpawn = randi()%3+1
-	elif unlockedDoor.roomSizeMultiplier == Vector2(2,2):
-		enemiesToSpawn = randi()%5+1
+	var enemiesToSpawn = 30
+#	if unlockedDoor.roomSizeMultiplier == Vector2(1,1):
+#		enemiesToSpawn = randi()%3+1
+#	elif unlockedDoor.roomSizeMultiplier == Vector2(2,2):
+#		enemiesToSpawn = randi()%5+1
 	var sizecounter = 0
 	var mageEnemyCount = 0
 	var spawnCellArray = []
+	var spawnCellX
+	var spawnCellY
+	var spawnCell 
+	var calculateSpawnAgain = true
 	for enemie in enemiesToSpawn: 
-		var tooCloseToDoor = true
-		var alreadyinArray = true
-		while(alreadyinArray == true):
-			var spawnCellX = randi()%(int(unlockedDoor.roomSize.x-2))+1
-			var spawnCellY = randi()%(int(unlockedDoor.roomSize.y-2))+1
-			while tooCloseToDoor:
-				var spawnCords = world_to_map(unlockedDoor.doorRoomLeftMostCorner) + Vector2(spawnCellX, spawnCellY)
-				#print("Spawn Coords" + str(spawnCords))
-				if get_cellv(spawnCords - Vector2(1,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(-1,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,1)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,-1)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(-1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,1)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,-1)) == TILETYPES.UNLOCKEDDOOR:
-					spawnCellX = randi()%(int(unlockedDoor.roomSize.x-2))+1
-					spawnCellY = randi()%(int(unlockedDoor.roomSize.y-2))+1
-				elif get_cellv(spawnCords + Vector2(1,0)) == TILETYPES.WALL && get_cellv(spawnCords + Vector2(-1,0)) == TILETYPES.WALL || get_cellv(spawnCords + Vector2(0,1)) == TILETYPES.WALL && get_cellv(spawnCords + Vector2(0,-1)) == TILETYPES.WALL:
-					spawnCellX = randi()%(int(unlockedDoor.roomSize.x-2))+1
-					spawnCellY = randi()%(int(unlockedDoor.roomSize.y-2))+1
-				else:
-					tooCloseToDoor = false
-
-			var spawnCell = spawnCellX*spawnCellY
-			if(!spawnCellArray.has(spawnCell)):
-				alreadyinArray = false
+		calculateSpawnAgain = true
+		while(calculateSpawnAgain == true):
+			spawnCellX = randi()%(int(unlockedDoor.roomSize.x-2))+1
+			spawnCellY = randi()%(int(unlockedDoor.roomSize.y-2))+1
+			spawnCell = spawnCellX*spawnCellY
+			var spawnCords = world_to_map(unlockedDoor.doorRoomLeftMostCorner) + Vector2(spawnCellX, spawnCellY)
+			#print("Spawn Coords" + str(spawnCords))
+			if get_cellv(spawnCords - Vector2(1,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(-1,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,1)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,-1)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(-1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,1)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,-1)) == TILETYPES.UNLOCKEDDOOR:
+				pass
+			elif get_cellv(spawnCords + Vector2(1,0)) == TILETYPES.WALL && get_cellv(spawnCords + Vector2(-1,0)) == TILETYPES.WALL || get_cellv(spawnCords + Vector2(0,1)) == TILETYPES.WALL && get_cellv(spawnCords + Vector2(0,-1)) == TILETYPES.WALL:
+				pass
+			elif get_cellv(spawnCords - Vector2(2,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(-2,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,2)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,-2)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(-1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,1)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,-1)) == TILETYPES.UNLOCKEDDOOR:
+				pass
+			elif spawnCellArray.has(spawnCell):
+				pass
+			else:
+				calculateSpawnAgain = false
 				spawnCellArray.append(spawnCell)
-				var newEnemy = Enemy.instance()
-				add_child(newEnemy)
-				newEnemy.set_z_index(2)
-				#create enemy typ here (enemy. createEnemyType
-				newEnemy.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(spawnCellX, spawnCellY))
-				var generatedEnemyType = newEnemy.generateEnemy(mageEnemyCount, self, unlockedDoor)
-				if(generatedEnemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY):
-					mageEnemyCount += 1
-				newEnemy.connect("enemyMadeMove", GlobalVariables.turnController, "enemy_turn_done")
-				newEnemy.connect("enemyAttacked", self, "_on_enemy_attacked")
-				newEnemy.connect("enemyDefeated", self, "_on_enemy_defeated")
-				newEnemy.connect("enemyExplosionDone", self, "_on_enemy_explosion_done")
-				newEnemy.calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW, unlockedDoor)
-				#newEnemy.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
-				set_cellv(world_to_map(newEnemy.position), get_tileset().find_tile_by_name(match_Enum(newEnemy.type)))
-				unlockedDoor.enemiesInRoom.append(newEnemy)
+				
+		var newEnemy = Enemy.instance()
+		add_child(newEnemy)
+		newEnemy.set_z_index(2)
+		#create enemy typ here (enemy. createEnemyType
+		newEnemy.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(spawnCellX, spawnCellY))
+		var generatedEnemyType = newEnemy.generateEnemy(mageEnemyCount, self, unlockedDoor)
+		if(generatedEnemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY):
+			mageEnemyCount += 1
+		newEnemy.connect("enemyMadeMove", GlobalVariables.turnController, "enemy_turn_done")
+		newEnemy.connect("enemyAttacked", self, "_on_enemy_attacked")
+		newEnemy.connect("enemyDefeated", self, "_on_enemy_defeated")
+		newEnemy.connect("enemyExplosionDone", self, "_on_enemy_explosion_done")
+		newEnemy.calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW, unlockedDoor)
+		#newEnemy.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
+		set_cellv(world_to_map(newEnemy.position), get_tileset().find_tile_by_name(match_Enum(newEnemy.type)))
+		unlockedDoor.enemiesInRoom.append(newEnemy)
 	#print(spawnCellArray)
 
 func get_enemy_move_towards_player(enemy):
@@ -1208,7 +1211,7 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 				newPowerBlock.get_node("PowerBlockModulate/Sprite").set_frame(21)
 			newPowerBlock.position = player.position + map_to_world(attack_direction)
 			add_child(newPowerBlock)
-			newPowerBlock.set_z_index(5)
+			newPowerBlock.set_z_index(2)
 			if(activeRoom != null):
 				activeRoom.powerBlocksInRoom.append(newPowerBlock)
 			set_cellv(world_to_map(player.position) + attack_direction, get_tileset().find_tile_by_name("BLOCK"))
