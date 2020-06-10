@@ -726,7 +726,9 @@ func enablePlayerAttack(player):
 
 func create_puzzle_room(unlockedDoor):
 	randomize()
+	#minimum 4 maximum 6
 	var puzzlePiecesToSpwan = randi()%3+4
+	print("Random rolled result : " + str(puzzlePiecesToSpwan))
 	var calculateSpawnAgain = true
 	var alreadyUsedColors = []
 	var spawnCellArray = []
@@ -774,13 +776,13 @@ func create_puzzle_room(unlockedDoor):
 
 func play_puzzlepiece_pattern():
 	print("Play puzzle pattern")
-	activeRoom.puzzlePiecesInRoom[0].playColor(activeRoom.puzzlePiecesInRoom, -1)
+	activeRoom.puzzlePiecesInRoom[0].playColor(activeRoom.puzzlePiecesInRoom, 0)
 
 func create_enemy_room(unlockedDoor):
 	randomize()
 	#add adjustment for enemy amount 
 	#-2 because of walls on both sides
-	var enemiesToSpawn = 4
+	var enemiesToSpawn = 8
 	if unlockedDoor.roomSizeMultiplier == Vector2(1,1):
 		enemiesToSpawn = randi()%3+1
 	elif unlockedDoor.roomSizeMultiplier == Vector2(2,2):
@@ -1017,8 +1019,9 @@ func cancel_magic_in_puzzle_room():
 	if !activeRoom.roomCleared:
 		for puzzlePiece in activatedPuzzlePieces:
 			puzzlePiece.isActivated = false
-			puzzlePiece.get_node("AnimationPlayer").play("Idle")
-			puzzlePiece.get_node("Sprite").set_self_modulate(puzzlePiece.baseModulation)
+			if !puzzlePiece.isBarrier:
+				puzzlePiece.get_node("AnimationPlayer").play("Idle")
+				puzzlePiece.get_node("Sprite").set_self_modulate(puzzlePiece.baseModulation)
 	set_cellv(world_to_map(mainPlayer.position), get_tileset().find_tile_by_name("PLAYER"))
 	GlobalVariables.turnController.stop_power_projectiles()
 	
@@ -1171,6 +1174,13 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 	elif (get_cellv(world_to_map(player.position) + attack_direction*2) == TILETYPES.MAGICPROJECTILE && attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		if get_cell_pawn(world_to_map(player.position) + attack_direction*2).projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
 			var projectileToErase = get_cell_pawn(world_to_map(player.position) + attack_direction*2)
+			var newMagicProjectile = MagicProjectile.instance()
+			newMagicProjectile.set_z_index(5)
+			newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.PLAYER
+			newMagicProjectile.get_node("Sprite").set_frame(17)
+			newMagicProjectile.position = player.position + map_to_world(attack_direction*2)
+			add_child(newMagicProjectile)
+			newMagicProjectile.play_projectile_animation(true, "attack")
 			projectilesInActiveRoom.erase(projectileToErase)
 			set_cellv(world_to_map(projectileToErase.position),get_tileset().find_tile_by_name("FLOOR")) 
 			projectileToErase.queue_free()

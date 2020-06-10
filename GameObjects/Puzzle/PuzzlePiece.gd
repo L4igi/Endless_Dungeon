@@ -28,12 +28,15 @@ func _ready():
 	
 func playColor(puzzlePieceArray, count):
 	set_process(false)
+	var playDuration = 1.1
+	if count == 0:
+		playDuration = 0.55
 	if isBarrier:
 		get_node("Sprite").set_self_modulate(baseModulation)
-		$AnimationPlayer.play("isBarrier", -1, 1.1)
+		$AnimationPlayer.play("isBarrier", -1, playDuration)
 	else:
 		get_node("Sprite").set_self_modulate(color)
-		$AnimationPlayer.play("playColor", -1, 1.1)
+		$AnimationPlayer.play("playColor", -1, playDuration)
 #	$Tween.interpolate_property(self, "position", position, position , $AnimationPlayer.current_animation_length*1.1, Tween.TRANS_LINEAR, Tween.EASE_IN)
 #	$Tween.start()
 	yield($AnimationPlayer, "animation_finished")
@@ -47,9 +50,10 @@ func playColor(puzzlePieceArray, count):
 		puzzlePieceArray[count].playColor(puzzlePieceArray, count)
 
 func activatePuzzlePiece():
-	if !isActivated:
+	if !isActivated && !Grid.activeRoom.roomCleared:
 		isActivated = true
 		if !isBarrier:
+			print("recoloring")
 			get_node("Sprite").set_self_modulate(color)
 		emit_signal("puzzlePieceActivated")
 	
