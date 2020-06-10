@@ -136,7 +136,7 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack",project
 	var animationMode = 1
 	if GlobalVariables.turnController.currentTurnWaiting != GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE && GlobalVariables.turnController.currentTurnWaiting != GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE && GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYER || GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMY:
 		animationMode = 1
-		print(GlobalVariables.turnController.currentTurnWaiting)
+		#print(GlobalVariables.turnController.currentTurnWaiting)
 		#Grid.mainPlayer.waitingForEventBeforeContinue = true
 		#print("Phase1")
 	elif Grid.activeRoom != null && Grid.activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:

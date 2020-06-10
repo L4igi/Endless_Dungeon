@@ -69,7 +69,7 @@ func check_turn_done_conditions():
 	return false
 	
 func check_turn_progress():
-	print(currentTurnWaiting)
+	#print(currentTurnWaiting)
 	if check_turn_done_conditions():
 		match currentTurnWaiting:
 			GlobalVariables.CURRENTPHASE.PLAYER:
@@ -118,8 +118,6 @@ func enemy_turn_done(enemy):
 	enemiesToMove.erase(enemy)
 #	currentTurnWaiting = GlobalVariables.CURRENTPHASE.ENEMY
 	if check_turn_done_conditions():
-		print("HOW often in enemy_turn_done")
-		print("playerDefeatStop " + str(playerDefeatStop))
 		if !playerDefeatStop:
 			currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE
 			Grid.on_enemy_turn_done_confirmed()
@@ -161,8 +159,6 @@ func enemy_attacked_done(enemy):
 	enemiesAttacking.erase(enemy)
 	#print("after erasing enemy " + str(enemiesAttacking.size()))
 	if check_turn_done_conditions():
-		print("HOW often in after enemy attacked")
-		print("playerDefeatStop " + str(playerDefeatStop))
 		if !playerDefeatStop:
 			currentTurnWaiting = GlobalVariables.CURRENTPHASE.ENEMY
 			Grid.on_enemy_attack_done()
@@ -187,7 +183,6 @@ func puzzle_pattern_turn_done(puzzlePiece):
 	
 func on_block_exploding(powerBlock):
 	blocksExploding.erase(powerBlock)
-	print(str(powerBlock))
 	powerBlock.queue_free()
 	check_turn_progress()
 
