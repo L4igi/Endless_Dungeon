@@ -60,11 +60,13 @@ func calc_projectiles_move_to(calcMode, count, playerEnemy = "player"):
 		
 func move_projectile(type = null):
 	if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
+		#print("COUNT PROJECTILES CALLING MOVETO " + str(self))
 		if moveTo:
 			$Tween.interpolate_property(self, "position", position, moveTo , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
 			$Tween.start()
 			yield($Tween, "tween_completed")
 			if deleteProjectilePlayAnimation == null:
+				#print("moving projectile not deleting " + str(self))
 				emit_signal("playerEnemieProjectileMadeMove",self)
 			else:
 				play_projectile_animation(false, deleteProjectilePlayAnimation)
@@ -144,7 +146,7 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack",project
 		#print("Phase2")
 	else:
 		animationMode = 3
-		#print("Phase3")
+		print("Phase3")
 	
 	var animationToPlay = projectileAnimation
 	match projectileAnimation : 
@@ -226,6 +228,7 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack",project
 		emit_signal("projectileMadeMove", self)
 	#projectile phase
 	elif animationMode == 3:
+		#print("projectile phase deleting "+ str(self))
 		Grid.projectilesInActiveRoom.erase(self)
 		if !hitObstacleOnDelete:
 			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))

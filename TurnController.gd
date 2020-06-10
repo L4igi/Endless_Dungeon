@@ -144,7 +144,9 @@ func player_projectiles_turn_done(projectile):
 
 func enemy_projectiles_turn_done(projectile):
 	enemyProjectilesToMove.erase(projectile)
+	#print("ENEMY PROJECTILE TURN DONE  " + str(projectile))
 #	currentTurnWaiting = GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE
+	print(enemyProjectilesToMove.size())
 	if projectile!=null:
 		for count in projectile.requestedMoveCount:
 			playerProjectilesToMove.erase(projectile)
@@ -208,9 +210,11 @@ func on_projectile_interaction(projectile, deleting = false):
 	#print("in here after projectile interaction " + str(projectileInteraction))
 	projectileInteraction.erase(projectile)
 	#print("to delete projectileInteraction " + str(projectile))
+	#print(projectileInteraction.size())
 	#print("in here after projectile interaction deleted" + str(projectileInteraction))
 	if deleting:
 		playerProjectilesToMove.erase(projectile)
+		enemyProjectilesToMove.erase(projectile)
 		Grid.projectilesInActiveRoom.erase(projectile)
 		projectile.queue_free()
 	#print("projectile currentTurnWaiting " + str(currentTurnWaiting))

@@ -436,46 +436,55 @@ func request_move(pawn, direction):
 					pawn.deleteProjectilePlayAnimation = "delete"
 			TILETYPES.MAGICPROJECTILE:
 				var targetProjectile = get_cell_pawn(cell_target)
+				if pawn == null && targetProjectile == null:
+					print("NUUUUUUULLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL")
 				if pawn != null && targetProjectile!= null:
-					if pawn.projectileType != GlobalVariables.PROJECTILETYPE.ENEMY && targetProjectile.projectileType != GlobalVariables.PROJECTILETYPE.ENEMY:
+#					if pawn.projectileType != GlobalVariables.PROJECTILETYPE.ENEMY || targetProjectile.projectileType != GlobalVariables.PROJECTILETYPE.ENEMY:
 						if magicProjectileMagicProjectileInteraction(pawn, targetProjectile):
-							if  pawn.requestedMoveCount < 2 && GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE || GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
+							#print("here interacting")
+							if  pawn.requestedMoveCount < 2 && GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE || pawn.requestedMoveCount < 2 && GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
 								pawn.requestedMoveCount+=1
 								if GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE:
 									GlobalVariables.turnController.playerProjectilesToMove.append(pawn)
 								if GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
 									GlobalVariables.turnController.enemyProjectilesToMove.append(pawn)
 	#							playerEnemyProjectileArray.append(pawn)
-								print(pawn.requestedMoveCount)
+								#print(pawn.requestedMoveCount)
 								return 
-						else:
-							projectilesInActiveRoom.erase(pawn)
-							pawn.deleteProjectilePlayAnimation = "delete"
-							pawn.hitObstacleOnDelete = true
-							#set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
-				else:
-					print("IN HERE")
-					if GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE:
-#						print(GlobalVariables.turnController.playerProjectilesToMove.size())
-						var tempProjectileArray = GlobalVariables.turnController.playerProjectilesToMove.duplicate()
-						for projectile in tempProjectileArray:
-							if projectile.moveTo!=null && projectile != pawn:
-								#print(world_to_map(projectile.moveTo))
-								#print(cell_target)
-								if world_to_map(projectile.moveTo) == cell_target:
-									pawn.play_projectile_animation(true,"delete")
-									projectile.play_projectile_animation(true,"merge")
-									return update_pawn_position(pawn, cell_start, cell_target)
-					elif GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
-						var tempProjectileArray = GlobalVariables.turnController.enemyProjectilesToMove.duplicate()
-						for projectile in tempProjectileArray:
-							if projectile.moveTo!=null && projectile != pawn:
-								#print(world_to_map(projectile.moveTo))
-								#print(cell_target)
-								if world_to_map(projectile.moveTo) == cell_target:
-									pawn.play_projectile_animation(true,"delete")
-									projectile.play_projectile_animation(true,"delete")
-									return update_pawn_position(pawn, cell_start, cell_target)
+							else:
+								projectilesInActiveRoom.erase(pawn)
+								pawn.deleteProjectilePlayAnimation = "delete"
+								pawn.hitObstacleOnDelete = true
+#								if pawn.projectileType != GlobalVariables.PROJECTILETYPE.ENEMY
+								set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
+#					else:
+#						print("HERE INTERACTING ENEMY")
+#						projectilesInActiveRoom.erase(pawn)
+#						pawn.deleteProjectilePlayAnimation = "delete"
+#						pawn.hitObstacleOnDelete = false
+#						#set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
+#				else:
+#					if GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE:
+#	#						print(GlobalVariables.turnController.playerProjectilesToMove.size())
+#						var tempProjectileArray = GlobalVariables.turnController.playerProjectilesToMove.duplicate()
+#						for projectile in tempProjectileArray:
+#							if projectile.moveTo!=null && projectile != pawn:
+#								#print(world_to_map(projectile.moveTo))
+#								#print(cell_target)
+#								if world_to_map(projectile.moveTo) == cell_target:
+#									pawn.play_projectile_animation(true,"delete")
+#									projectile.play_projectile_animation(true,"merge")
+#									return update_pawn_position(pawn, cell_start, cell_target)
+#					elif GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
+#						var tempProjectileArray = GlobalVariables.turnController.enemyProjectilesToMove.duplicate()
+#						for projectile in tempProjectileArray:
+#							if projectile.moveTo!=null && projectile != pawn:
+#								#print(world_to_map(projectile.moveTo))
+#								#print(cell_target)
+#								if world_to_map(projectile.moveTo) == cell_target:
+#									pawn.play_projectile_animation(true,"delete")
+#									projectile.play_projectile_animation(true,"delete")
+#									return update_pawn_position(pawn, cell_start, cell_target)
 				return pawn.position
 #				return update_pawn_position(pawn, cell_start, cell_target)
 			TILETYPES.BLOCK:
@@ -531,8 +540,8 @@ func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile
 #		magicProjectile1.play_projectile_animation(true,"delete")
 #		magicProjectile2.play_projectile_animation(false,"delete")
 #		set_cellv(world_to_map(magicProjectile1.position),get_tileset().find_tile_by_name("FLOOR")) 
-		print("HERE INTERACTING enemy enemy projectile")
-		return false
+		#print("HERE INTERACTING enemy enemy projectile")
+		return true
 		#magicProjectile1.movementDirection *=-1
 	#player enemy projectile interaction
 	if magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || magicProjectile1.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && magicProjectile2.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
@@ -783,7 +792,7 @@ func create_enemy_room(unlockedDoor):
 	randomize()
 	#add adjustment for enemy amount 
 	#-2 because of walls on both sides
-	var enemiesToSpawn = 20
+	var enemiesToSpawn = 10
 #	if unlockedDoor.roomSizeMultiplier == Vector2(1,1):
 #		enemiesToSpawn = randi()%3+1
 #	elif unlockedDoor.roomSizeMultiplier == Vector2(2,2):
@@ -887,16 +896,16 @@ func on_enemy_turn_done_confirmed():
 			enemy.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
 			#print("Moving " + str(currentEnemy) + " enemies left to move " + str(enemiesToMoveArray.size()))
 	for projectile in projectilesInActiveRoom:
-			if projectile.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
-				GlobalVariables.turnController.playerProjectilesToMove.append(projectile)
-	var playerProjectilesToMoveCopy = GlobalVariables.turnController.playerProjectilesToMove.duplicate()
-	if playerProjectilesToMoveCopy.empty():
+		if projectile.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
+			GlobalVariables.turnController.playerProjectilesToMove.append(projectile)
+	if GlobalVariables.turnController.playerProjectilesToMove.empty():
 		GlobalVariables.turnController.player_projectiles_turn_done(null)
 	else:
-		playerProjectilesToMoveCopy[0].calc_projectiles_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, 0, "player")
+		GlobalVariables.turnController.playerProjectilesToMove[0].calc_projectiles_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, 0, "player")
+		var playerProjectilesToMoveCopy = GlobalVariables.turnController.playerProjectilesToMove.duplicate()
 		for projectile in playerProjectilesToMoveCopy:
 			projectile.move_projectile()
-	playerProjectilesToMoveCopy.clear()
+		playerProjectilesToMoveCopy.clear()
 
 func on_player_turn_done_confirmed_puzzle_room():
 	GlobalVariables.turnController.currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
@@ -914,17 +923,16 @@ func on_player_turn_done_confirmed_enemy_room():
 		#go through all projectiles in room and select enemy projectiles
 	for projectile in projectilesInActiveRoom:
 		if projectile.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
-			#print("current projectile to append " + str(projectile) + " projectile position " + str(world_to_map(projectile.position)))
 			GlobalVariables.turnController.enemyProjectilesToMove.append(projectile)
-	var tempEnenmyProjectiles = GlobalVariables.turnController.enemyProjectilesToMove.duplicate()
-	if tempEnenmyProjectiles.empty():
+	if GlobalVariables.turnController.enemyProjectilesToMove.empty():
 		GlobalVariables.turnController.enemy_projectiles_turn_done(null)
 	else:
-		tempEnenmyProjectiles[0].calc_projectiles_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, 0, "enemy")
+		GlobalVariables.turnController.enemyProjectilesToMove[0].calc_projectiles_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, 0, "enemy")
+		var tempEnenmyProjectiles = GlobalVariables.turnController.enemyProjectilesToMove.duplicate()
+		print("tempEnenmyProjectiles size " +  str(tempEnenmyProjectiles.size()))
 		for projectile in tempEnenmyProjectiles:
-			#print("Projectile moving " + str(projectile.position))
 			projectile.move_projectile()
-	tempEnenmyProjectiles.clear()
+		tempEnenmyProjectiles.clear()
 
 func _on_puzzle_piece_activated():
 	#print ("activated puzzle pieces size " + str(activatedPuzzlePieces.size()) + " active puzzle pieces in room " + str(activeRoom.puzzlePiecesInRoom.size()))
