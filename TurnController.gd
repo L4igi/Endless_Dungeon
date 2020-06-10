@@ -5,6 +5,7 @@ var enemyTakeDamage = []
 var projectileSpawned = []
 var projectileInteraction = []
 var blocksExploding = []
+var enemiesAttacking = []
 var currentTurnWaiting = null
 var Grid = null
 var playersToMove = []
@@ -29,7 +30,7 @@ func check_turn_done_conditions():
 #	print("projectileSpawned " + str(projectileSpawned.size()))
 #	print("projectileInteraction " + str(projectileInteraction.size()))
 #	print("currentTurnWaiting " + str(currentTurnWaiting))
-	if playerTakeDamage.empty() && enemyTakeDamage.empty() && projectileSpawned.empty() && projectileInteraction.empty() && blocksExploding.empty() && puzzlePiecesToPattern.empty():
+	if playerTakeDamage.empty() && enemyTakeDamage.empty() && projectileSpawned.empty() && projectileInteraction.empty() && blocksExploding.empty() && puzzlePiecesToPattern.empty() && enemiesAttacking.empty():
 		match currentTurnWaiting:
 			GlobalVariables.CURRENTPHASE.PLAYER:
 				if Grid.mainPlayer.get_actions_left() == 0 && !playerMovedDoor:
@@ -53,8 +54,8 @@ func check_turn_done_conditions():
 			GlobalVariables.CURRENTPHASE.PLAYERDEFEAT:
 				if enemyProjectilesToMove.empty() && enemiesToMove.empty() && playerProjectilesToMove.empty():
 					return true
-			GlobalVariables.CURRENTPHASE.PUZZLEPIECES:
-				if puzzlePiecesToPattern.empty():
+			GlobalVariables.CURRENTPHASE.ENEMYATTACK:
+				if enemiesAttacking.empty():
 					return true
 			GlobalVariables.CURRENTPHASE.PUZZLEPROJECTILE:
 				if powerBlockInterActionDone:
@@ -75,6 +76,8 @@ func check_turn_progress():
 				player_turn_done(null)
 			GlobalVariables.CURRENTPHASE.ENEMY:
 				enemy_turn_done(null)
+			GlobalVariables.CURRENTPHASE.ENEMYATTACK:
+				enemy_attacked_done(null)
 			GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE:
 				player_projectiles_turn_done(null)
 			GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
@@ -100,20 +103,26 @@ func player_turn_done(player):
 		check_turn_progress()
 	
 func player_defeat():
-	
 	if playerDefeatStop:
 		playerDefeatStop = false
 	else:
 		playerDefeatStop = true
 	print("ON PLAYER DEFEATED IN TURNCONTROLLER")
-	Grid.mainPlayer.checkNextAction = false
-	Grid.mainPlayer.playerDefeated = true
-	if currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYER:
-		currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYERDEFEAT
-	playerTakeDamage.clear()
-	if check_turn_done_conditions():
-		playerDefeatStop = false
-		Grid.on_Player_Defeated()
+	if !Grid.mainPlayer.playerDefeated:
+		Grid.mainPlayer.checkNextAction = false
+		Grid.mainPlayer.playerDefeated = true
+		if currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYER:
+			currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYERDEFEAT
+		playerTakeDamage.clear()
+		if check_turn_done_conditions():
+			playerDefeatStop = false
+			GlobalVariables.turnController.enemiesToMove.clear()
+			print("playerTakeDamage " + str(playerTakeDamage.size()))
+			print("enemyTakeDamage " + str(enemyTakeDamage.size()))
+			print("projectileSpawned " + str(projectileSpawned.size()))
+			print("projectileInteraction " + str(projectileInteraction.size()))
+			print("currentTurnWaiting " + str(currentTurnWaiting))
+			Grid.on_Player_Defeated()
 #	else:
 #		check_turn_progress()
 
@@ -152,11 +161,22 @@ func enemy_projectiles_turn_done(projectile):
 		for count in projectile.requestedMoveCount:
 			playerProjectilesToMove.erase(projectile)
 	if check_turn_done_conditions():
-		currentTurnWaiting = GlobalVariables.CURRENTPHASE.ENEMY
+		currentTurnWaiting = GlobalVariables.CURRENTPHASE.ENEMYATTACK
 		#print("confirming turn done " + str(projectile))
 		Grid.on_enemy_projectile_turn_done_request_confirmed()
 #	else:
 #		check_turn_progress()
+
+func enemy_attacked_done(enemy):
+	enemiesAttacking.erase(enemy)
+	#print("after erasing enemy " + str(enemiesAttacking.size()))
+	if check_turn_done_conditions():
+		if !playerDefeatStop:
+			currentTurnWaiting = GlobalVariables.CURRENTPHASE.ENEMY
+			Grid.on_enemy_attack_done()
+		else:
+			currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYERDEFEAT
+			player_defeat()
 
 func start_power_projectiles():
 	powerBlockInterActionDone = false
@@ -172,7 +192,7 @@ func stop_power_projectiles():
 func puzzle_pattern_turn_done(puzzlePiece):
 	puzzlePiecesToPattern.erase(puzzlePiece)
 	check_turn_progress()
-		
+	
 func on_block_exploding(powerBlock):
 	blocksExploding.erase(powerBlock)
 	print(str(powerBlock))

@@ -965,9 +965,25 @@ func on_enemy_projectile_turn_done_request_confirmed():
 	else:
 		for enemy in tempEnenmyToMove:
 			enemy.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION)
-		print("making enemy turn")
-		for enemy in tempEnenmyToMove:
 			enemy.make_enemy_turn()
+			GlobalVariables.turnController.enemiesAttacking.append(enemy)
+		print("making enemy attack")
+		for enemy in tempEnenmyToMove:
+			enemy.enemyAttack()
+	tempEnenmyToMove.clear()
+
+func on_enemy_attack_done():
+	#get all enmies in active Room
+	var tempEnenmyToMove = GlobalVariables.turnController.enemiesToMove.duplicate()
+	if tempEnenmyToMove.empty():
+		GlobalVariables.turnController.enemy_turn_done(null)
+	else:
+		print("tempEnenmyToMove size " + str(tempEnenmyToMove.size()))
+		for enemy in tempEnenmyToMove:
+			enemy.calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, activeRoom)
+		print("making enemy move to")
+		for enemy in tempEnenmyToMove:
+			enemy.enemyMovement()
 	tempEnenmyToMove.clear()
 	
 func _on_ticking_projectile_made_move(projectile, projectileType):

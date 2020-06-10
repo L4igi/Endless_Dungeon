@@ -429,7 +429,8 @@ func do_on_player_defeated():
 	movementCount = 0
 	attackCount = 0
 	guiElements.update_current_turns(true)
-	GlobalVariables.turnController.currentTurnWaiting= GlobalVariables.CURRENTPHASE.PLAYER
+	GlobalVariables.turnController.currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
+	print("IN on player defeated current turn waiting " + str(GlobalVariables.turnController.currentTurnWaiting))
 	checkNextAction = true
 	playerDefeated = false
 	

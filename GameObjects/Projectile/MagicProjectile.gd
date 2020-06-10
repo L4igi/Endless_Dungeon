@@ -47,10 +47,10 @@ func calc_projectiles_move_to(calcMode, count, playerEnemy = "player"):
 			var target_position = Grid.request_move(self, movementDirection)
 			
 			if target_position && deleteProjectilePlayAnimation==null:
-				print("target position " + str(Grid.world_to_map(target_position)) + " deleteProjectilePlayAnimation " +str(deleteProjectilePlayAnimation))
+				#print("target position " + str(Grid.world_to_map(target_position)) + " deleteProjectilePlayAnimation " +str(deleteProjectilePlayAnimation))
 				moveTo = target_position
 			else:
-				print("projectiles cant move to targt position " +str(deleteProjectilePlayAnimation))
+				#print("projectiles cant move to targt position " +str(deleteProjectilePlayAnimation))
 				moveTo = null
 			count+=1
 			if count >= calcArray.size():

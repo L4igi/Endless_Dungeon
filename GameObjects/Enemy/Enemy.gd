@@ -97,27 +97,6 @@ func _ready():
 	var player = Grid.get_node("Player")
 	player.connect("toggleDangerArea", self, "on_toggle_danger_area")
 	
-
-func _process(delta): 
-	pass
-
-
-func barrierenemy_type_actions():
-	if !isDisabled:
-		enemyAttack()
-
-func ninjaenemy_type_actions():
-	if !isDisabled:
-		enemyAttack()
-
-func mageenemy_type_actions():
-	if !isDisabled:
-		enemyAttack()
-
-
-func warriorenemy_type_actions():
-	if !isDisabled:
-		enemyAttack()
 	
 func toggleVisibility(makeInVisible):
 	print("changing visibility")
@@ -263,7 +242,7 @@ func enemyMovement():
 					animationToPlay = "walk_down"
 #			if moveTo && !enemyDefeated:
 			if moveTo:
-				#print("moving to " + str(Grid.world_to_map(moveTo)))
+				print("moving to " + str(Grid.world_to_map(moveTo)))
 				set_process(false)
 				#play defeat animation 
 				$WarriorAnimationPlayer.play(animationToPlay, -1, 3.0)
@@ -320,10 +299,9 @@ func enemyMovement():
 		queueInflictDamage = false
 		queueInflictDamage = 0
 		playerQueueAttackType = null
-	if attackCount + movementCount < maxTurnActions:
-		enemyAttack()
-	else:
-		emit_signal("enemyMadeMove", self)
+#	if attackCount + movementCount < maxTurnActions:
+#		enemyAttack()
+	emit_signal("enemyMadeMove", self)
 
 func calc_enemy_attack_to(calcMode):
 	adjust_enemy_attack_range_enable_attack(calcMode)
@@ -333,7 +311,7 @@ func enemyAttack():
 	match enemyType:
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
 			if attackTo != Vector2.ZERO:
-				print("attack to " + str(attackTo))
+				#print("attack to " + str(attackTo))
 				set_process(false)
 				#play defeat animation 
 				$WarriorAnimationPlayer.play("attack", -1, 3.0)
@@ -343,12 +321,14 @@ func enemyAttack():
 				$WarriorAnimationPlayer.play("idle")
 				set_process(true)
 				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackTo, attackType,  attackDamage, attackCellArray)
+			GlobalVariables.turnController.enemy_attacked_done(self)
 			attackCount += 1
-			if attackCount + movementCount < maxTurnActions:
-				calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, Grid.activeRoom)
-				enemyMovement()
-			else:
-				emit_signal("enemyMadeMove", self)
+			
+#			if attackCount + movementCount < maxTurnActions:
+#				calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, Grid.activeRoom)
+#				enemyMovement()
+#			else:
+#				emit_signal("enemyMadeMove", self)
 
 		
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
@@ -361,12 +341,13 @@ func enemyAttack():
 			yield($MageAnimationPlayer, "animation_finished")
 			$MageAnimationPlayer.play("idle")
 			set_process(true)
+			GlobalVariables.turnController.enemy_attacked_done(self)
 			attackCount += 1
-			if attackCount + movementCount < maxTurnActions:
-				calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, Grid.activeRoom)
-				enemyMovement()
-			else:
-				emit_signal("enemyMadeMove", self)
+#			if attackCount + movementCount < maxTurnActions:
+#				calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, Grid.activeRoom)
+#				enemyMovement()
+#			else:
+#				emit_signal("enemyMadeMove", self)
 		
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			if attackTo.x == 1 || attackTo.y == 1:
@@ -387,12 +368,13 @@ func enemyAttack():
 				$NinjaAnimationPlayer.play("idle")
 				set_process(true)
 				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackTo, attackType, attackDamage, attackCellArray)
+			GlobalVariables.turnController.enemy_attacked_done(self)
 			attackCount += 1
-			if attackCount + movementCount < maxTurnActions:
-				calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, Grid.activeRoom)
-				enemyMovement()
-			else:
-				emit_signal("enemyMadeMove", self)
+#			if attackCount + movementCount < maxTurnActions:
+#				calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, Grid.activeRoom)
+#				enemyMovement()
+#			else:
+#				emit_signal("enemyMadeMove", self)
 			
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			if attackTo != Vector2.ZERO:
@@ -405,12 +387,14 @@ func enemyAttack():
 				$AnimationPlayer.play("idle")
 				set_process(true)
 				emit_signal("enemyAttacked", self, Grid.world_to_map(position) + attackTo, attackType, attackDamage, attackCellArray)
+			GlobalVariables.turnController.enemy_attacked_done(self)
 			attackCount += 1
-			if attackCount + movementCount < maxTurnActions:
-				calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, Grid.activeRoom)
-				enemyMovement()
-			else:
-				emit_signal("enemyMadeMove", self)
+			
+#			if attackCount + movementCount < maxTurnActions:
+#				calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, Grid.activeRoom)
+#				enemyMovement()
+#			else:
+#				emit_signal("enemyMadeMove", self)
 
 #todo check if cell target is free or used calcmode active
 func adjust_enemy_attack_range_enable_attack(calcMode):
@@ -499,25 +483,14 @@ func make_enemy_turn():
 		movementCount = 0
 		attackCount = 0
 		enemyTurnDone = false
-		matchEnemyTurn()
 			
-			
-func matchEnemyTurn():
-	#calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION)
-	match enemyType:
-		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
-			barrierenemy_type_actions()
-		GlobalVariables.ENEMYTYPE.MAGEENEMY:
-			mageenemy_type_actions()
-		GlobalVariables.ENEMYTYPE.NINJAENEMY:
-			ninjaenemy_type_actions()
-		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
-			warriorenemy_type_actions()
 						
 func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
 	var enemieToGenerate = 1
+	if randi()%2 == 0:
+		enemieToGenerate = 2
 	match enemieToGenerate:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
