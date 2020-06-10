@@ -320,8 +320,9 @@ func request_move(pawn, direction):
 						return update_pawn_position(pawn, cell_start, cell_target)
 					else:
 						#todo fix here things enemy enemy proejctile
+						print("IN HERE ENEMY MOVED ON ENEMY MAGIC PROJECTILE")
 						projectilesInActiveRoom.erase(tempMagicProjectile)
-						tempMagicProjectile.play_projectile_animation(false, "delete")
+						tempMagicProjectile.play_projectile_animation(true, "delete")
 						#set_cellv(world_to_map(tempMagicProjectile.position),get_tileset().find_tile_by_name("FLOOR"))
 						return update_pawn_position(pawn, cell_start, cell_target)
 				else:
@@ -358,11 +359,14 @@ func request_move(pawn, direction):
 					tempEnemy.inflictDamage(pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, cell_target, mainPlayer, GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE)
 					#projectilesMadeMoveCounter+=1
 					return
-				if pawn.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
+				elif pawn.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
 					projectilesInActiveRoom.erase(pawn)
 					pawn.deleteProjectilePlayAnimation = "delete"
+					pawn.hitObstacleOnDelete = true
 					set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
+					#set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
 					#projectilesMadeMoveCounter+=1
+					#return update_pawn_position(pawn, cell_start, cell_target)
 				else:
 					return pawn.position
 			TILETYPES.PLAYER:
@@ -372,7 +376,10 @@ func request_move(pawn, direction):
 					tempPlayer.inflict_damage_playerDefeated(pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC)
 					projectilesInActiveRoom.erase(pawn)
 					if GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
-						pawn.deleteProjectilePlayAnimation = "attack"
+						projectilesInActiveRoom.erase(pawn)
+						pawn.deleteProjectilePlayAnimation = "delete"
+						pawn.hitObstacleOnDelete = true
+						set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
 					else:
 						pawn.play_projectile_animation(false,"attack")
 					set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
@@ -380,6 +387,11 @@ func request_move(pawn, direction):
 					#set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("EMPTY")) 
 					set_cellv(cell_target, get_tileset().find_tile_by_name("MAGICPROJECTILE"))
 					return map_to_world(cell_target)
+				elif activeRoom == null:
+					projectilesInActiveRoom.erase(pawn)
+					pawn.deleteProjectilePlayAnimation = "delete"
+					pawn.hitObstacleOnDelete = true
+					set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
 				else:
 					return pawn.position
 			TILETYPES.WALL:
@@ -891,8 +903,8 @@ func on_player_turn_done_confirmed_empty_treasure_room():
 #	emit_signal("enemyTurnDoneSignal")
 	
 func on_player_turn_done_confirmed_enemy_room():
-	if movedThroughDoor:
-		return
+#	if movedThroughDoor:
+#		return
 	mainPlayer.playerBackupPosition = mainPlayer.position
 		#go through all projectiles in room and select enemy projectiles
 	for projectile in projectilesInActiveRoom:

@@ -6,7 +6,7 @@ enum CELL_TYPES{PLAYER=0, WALL=1, ENEMY=2, PUZZLEPIECE=3, ITEM=4, DOOR=5, UNLOCK
 export(CELL_TYPES) var type = CELL_TYPES.MAGICPROJECTILE
 
 var movementDirection 
-var attackDamage = 4
+var attackDamage = 0.5
 var projectileType = null
 var isMiniProjectile = false
 var tickAlreadyMoved = false
@@ -32,7 +32,7 @@ func calc_projectiles_move_to(calcMode, count, playerEnemy = "player"):
 		"enemy":
 			calcArray = GlobalVariables.turnController.enemyProjectilesToMove
 			
-	if(projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || projectileType == GlobalVariables.PROJECTILETYPE.PLAYER):
+	if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
 		var cell_target = Grid.world_to_map(position) + movementDirection
 		if calcMode == GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW:
 			var target_position = Grid.map_to_world(cell_target) + Grid.cell_size / GlobalVariables.isometricFactor
@@ -45,10 +45,12 @@ func calc_projectiles_move_to(calcMode, count, playerEnemy = "player"):
 				calcArray[count].calc_projectiles_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW, count)
 		elif calcMode == GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION:
 			var target_position = Grid.request_move(self, movementDirection)
-#			print("target position " + str(Grid.world_to_map(target_position)) + " deleteProjectilePlayAnimation " +str(deleteProjectilePlayAnimation))
+			
 			if target_position && deleteProjectilePlayAnimation==null:
+				print("target position " + str(Grid.world_to_map(target_position)) + " deleteProjectilePlayAnimation " +str(deleteProjectilePlayAnimation))
 				moveTo = target_position
 			else:
+				print("projectiles cant move to targt position " +str(deleteProjectilePlayAnimation))
 				moveTo = null
 			count+=1
 			if count >= calcArray.size():
@@ -136,13 +138,13 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack",project
 		animationMode = 1
 		print(GlobalVariables.turnController.currentTurnWaiting)
 		#Grid.mainPlayer.waitingForEventBeforeContinue = true
-		print("Phase1")
+		#print("Phase1")
 	elif Grid.activeRoom != null && Grid.activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 		animationMode = 2
-		print("Phase2")
+		#print("Phase2")
 	else:
 		animationMode = 3
-		print("Phase3")
+		#print("Phase3")
 	
 	var animationToPlay = projectileAnimation
 	match projectileAnimation : 
@@ -190,7 +192,7 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack",project
 		elif projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
 			#print("playing shoot " + str(projectileAnimation))
 			$AnimationPlayer.play("shoot")
-		print("merge done " + str(self))
+		#print("merge done " + str(self))
 		GlobalVariables.turnController.on_projectile_interaction(self, false)
 	#player enemy phase
 	elif projectileAnimation == "mini":
@@ -207,10 +209,10 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack",project
 				$AnimationPlayer.play("mini1shoot")
 			set_process(true)
 		if deleteProjectilePlayAnimation == "delete":
-			print("mini delete done " + str(self))
+			#print("mini delete done " + str(self))
 			GlobalVariables.turnController.on_projectile_interaction(self, true)
 		else:
-			print("mini done " + str(self))
+			#print("mini done " + str(self))
 			GlobalVariables.turnController.on_projectile_interaction(self, false)
 	elif animationMode == 1:
 		Grid.projectilesInActiveRoom.erase(self)

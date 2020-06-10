@@ -411,7 +411,8 @@ func enemyAttack():
 				enemyMovement()
 			else:
 				emit_signal("enemyMadeMove", self)
-				
+
+#todo check if cell target is free or used calcmode active
 func adjust_enemy_attack_range_enable_attack(calcMode):
 	if !attackCellArray.empty():
 		attackCellArray.clear()
@@ -516,7 +517,7 @@ func matchEnemyTurn():
 func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = randi()%4
+	var enemieToGenerate = 1
 	match enemieToGenerate:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
@@ -591,9 +592,8 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 			var attackRange = 5
 			for count in attackRange:
 				attackRangeArray.append([])
-			attackRangeArray[0] = [0,1,2,3,4]
-			attackRangeArray[1] = [0,1,2,3,4]
-			attackRangeArray[2] = [0,1,2,3,4]
+			attackRangeArray[0] = [0,1,2]
+			attackRangeArray[1] = [0,1,2]
 			mirrorBaseDirection = true
 			attackRangeInitDirection = GlobalVariables.DIRECTION.RIGHT
 #			mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN]
