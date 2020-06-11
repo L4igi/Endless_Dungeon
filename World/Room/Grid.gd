@@ -1,6 +1,6 @@
 extends TileMap
 
-enum TILETYPES { EMPTY, PLAYER, WALL, ENEMY, PUZZLEPIECE, ITEM, DOOR, UNLOCKEDDOOR, MAGICPROJECTILE, BLOCK, FLOOR}
+enum TILETYPES { EMPTY, PLAYER, WALL, ENEMY, PUZZLEPIECE, ITEM, DOOR, UNLOCKEDDOOR, MAGICPROJECTILE, BLOCK, FLOOR, UPGRADECONTAINER}
 
 
 var Enemy = preload("res://GameObjects/Enemy/Enemy.tscn")
@@ -127,6 +127,8 @@ func match_Enum(var index):
 			return "BLOCK"
 		9:
 			return "FLOOR"
+		10:
+			return "UPGRADECONTAINER"
 		-1:
 			return "EMPTY"
 		_:
@@ -155,6 +157,8 @@ func set_enum_index(var enumName, var setTo):
 			TILETYPES.BLOCK = setTo
 		"FLOOR":
 			TILETYPES.FLOOR = setTo
+		"UPGRADECONTAINER":
+			TILETYPES.UPGRADECONTAINER = setTo
 		"EMPTY":
 			TILETYPES.EMPTY= -1
 		_:
@@ -278,6 +282,8 @@ func request_move(pawn, direction):
 					pawn.enemyQueueAttackType = GlobalVariables.ATTACKTYPE.MAGIC
 					return update_pawn_position(pawn, cell_start, cell_target)
 			TILETYPES.BLOCK:
+				return 
+			TILETYPES.UPGRADECONTAINER:
 				return 
 					
 				
@@ -689,6 +695,8 @@ func update_pawn_position(pawn, cell_start, cell_target):
 						GlobalVariables.turnController.puzzlePiecesToPattern += activeRoom.puzzlePiecesInRoom
 						print(GlobalVariables.turnController.puzzlePiecesToPattern.size())
 						play_puzzlepiece_pattern()
+					elif GlobalVariables.turnController.inRoomType == GlobalVariables.ROOM_TYPE.EMPTYTREASUREROOM:
+						activeRoom.updateContainerPrices()
 				else:
 					pawn.inRoomType = null
 					#todo change to empty cleared room whatevs
@@ -725,6 +733,8 @@ func update_pawn_position(pawn, cell_start, cell_target):
 						GlobalVariables.turnController.puzzlePiecesToPattern += activeRoom.puzzlePiecesInRoom
 						print(GlobalVariables.turnController.puzzlePiecesToPattern.size())
 						play_puzzlepiece_pattern()
+					if GlobalVariables.turnController.inRoomType == GlobalVariables.ROOM_TYPE.EMPTYTREASUREROOM:
+						activeRoom.updateContainerPrices()
 				else:
 					pawn.inRoomType = null
 					#print ("Player in Room " + str(pawn.inRoomType))
@@ -815,46 +825,60 @@ func play_puzzlepiece_pattern():
 	activeRoom.puzzlePiecesInRoom[0].playColor(activeRoom.puzzlePiecesInRoom, 0)
 
 func create_empty_treasure_room(unlockedDoor):
+	var upgradeContainers = []
 	#place upgrade machines in corners
 	var actionUpContainer = UpgradeContainer.instance()
 	actionUpContainer.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(1,1))
 	actionUpContainer.set_upgrade_container(GlobalVariables.UPGRADETYPE.ACTIONSUP)
 	add_child(actionUpContainer)
+	upgradeContainers.append(actionUpContainer)
 	
 	var bombUpContainer = UpgradeContainer.instance()
 	bombUpContainer.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(2,1))
 	bombUpContainer.set_upgrade_container(GlobalVariables.UPGRADETYPE.BOMB)
 	add_child(bombUpContainer)
+	upgradeContainers.append(bombUpContainer)
 	
 	var flaskUpContainer = UpgradeContainer.instance()
 	flaskUpContainer.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(unlockedDoor.roomSize.x,0)) - map_to_world(Vector2(2,-1))
 	flaskUpContainer.set_upgrade_container(GlobalVariables.UPGRADETYPE.FLASK)
 	add_child(flaskUpContainer)
+	upgradeContainers.append(flaskUpContainer)
 	
 	var heartUpContainer = UpgradeContainer.instance()
 	heartUpContainer.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(unlockedDoor.roomSize.x,0)) - map_to_world(Vector2(3,-1))
 	heartUpContainer.set_upgrade_container(GlobalVariables.UPGRADETYPE.HEART)
 	add_child(heartUpContainer)
+	upgradeContainers.append(heartUpContainer)
 	
 	var heartFillContainer = UpgradeContainer.instance()
 	heartFillContainer.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(0,unlockedDoor.roomSize.y)) - map_to_world(Vector2(-2,2))
 	heartFillContainer.set_upgrade_container(GlobalVariables.UPGRADETYPE.FILLHEART)
 	add_child(heartFillContainer)
+	upgradeContainers.append(heartFillContainer)
 	
 	var flaskFillContainer = UpgradeContainer.instance()
 	flaskFillContainer.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(0,unlockedDoor.roomSize.y)) - map_to_world(Vector2(-1,2))
 	flaskFillContainer.set_upgrade_container(GlobalVariables.UPGRADETYPE.FILLFLASK)
 	add_child(flaskFillContainer)
+	upgradeContainers.append(flaskFillContainer)
 	
 	var swordContainer = UpgradeContainer.instance()
 	swordContainer.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(unlockedDoor.roomSize) - map_to_world(Vector2(3,2))
 	swordContainer.set_upgrade_container(GlobalVariables.UPGRADETYPE.SWORD)
 	add_child(swordContainer)
+	upgradeContainers.append(swordContainer)
 	
 	var magicContainer = UpgradeContainer.instance()
 	magicContainer.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(unlockedDoor.roomSize) - map_to_world(Vector2(2,2))
 	magicContainer.set_upgrade_container(GlobalVariables.UPGRADETYPE.MAGIC)
 	add_child(magicContainer)
+	upgradeContainers.append(magicContainer)
+	
+	for container in upgradeContainers:
+		set_cellv(world_to_map(container.position), get_tileset().find_tile_by_name("UPGRADECONTAINER"))
+	unlockedDoor.upgradeContainersInRoom = upgradeContainers.duplicate()
+	upgradeContainers.clear()
 	
 func create_enemy_room(unlockedDoor):
 	randomize()
@@ -1177,16 +1201,18 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 	randomize()
 	#if player hits wall return 
 	if get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.WALL || get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.DOOR || get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.UNLOCKEDDOOR:
-		player.waitingForEventBeforeContinue = false
+		return
+	#activate upgrade container
+	elif get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.UPGRADECONTAINER:
+		get_cell_pawn(world_to_map(player.position) + attack_direction).do_upgrade(player)
 		return
 	#sword attacks
-	if(get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.ENEMY && attackType == GlobalVariables.ATTACKTYPE.SWORD):
+	if get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.ENEMY && attackType == GlobalVariables.ATTACKTYPE.SWORD:
 		print("Woosh Player Sword Attack hit " + str(attackDamage))
 		var attackedEnemy = get_cell_pawn(world_to_map(player.position) + attack_direction)
 		GlobalVariables.turnController.enemyTakeDamage.append(attackedEnemy)
 		attackedEnemy.inflictDamage(attackDamage, attackType, world_to_map(player.position) + attack_direction, mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
 		
-				
 	elif(get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.FLOOR && attackType == GlobalVariables.ATTACKTYPE.SWORD):
 		match attackType:
 			GlobalVariables.ATTACKTYPE.SWORD:
@@ -1373,35 +1399,26 @@ func on_puzzle_Block_interaction(player, puzzleBlockDirection):
 func on_Power_Block_explode(powerBlock):
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(1,0)) == get_tileset().find_tile_by_name("ENEMY"):
 		enemiesHitByExplosion.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,0)))
-		GlobalVariables.turnController.enemyTakeDamage.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)))
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,0)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(1,0), mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(-1,0)) == get_tileset().find_tile_by_name("ENEMY"):
-		GlobalVariables.turnController.enemyTakeDamage.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)))
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,0)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(-1,0), mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
+		enemiesHitByExplosion.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,0)))
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(0,1)) == get_tileset().find_tile_by_name("ENEMY"):
 		GlobalVariables.turnController.enemyTakeDamage.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)))
 		enemiesHitByExplosion.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(0,1)))
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(0,1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(0,1), mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(0,-1)) == get_tileset().find_tile_by_name("ENEMY"):
-		GlobalVariables.turnController.enemyTakeDamage.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)))
 		enemiesHitByExplosion.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(0,-1)))
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(0,-1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(0,-1), mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(1,1)) == get_tileset().find_tile_by_name("ENEMY"):
-		GlobalVariables.turnController.enemyTakeDamage.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)))
 		enemiesHitByExplosion.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,1)))
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(1,1), mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(1,-1)) == get_tileset().find_tile_by_name("ENEMY"):
-		GlobalVariables.turnController.enemyTakeDamage.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)))
 		enemiesHitByExplosion.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,-1)))
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,-1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(1,-1), mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(-1,1)) == get_tileset().find_tile_by_name("ENEMY"):
-		GlobalVariables.turnController.enemyTakeDamage.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)))
 		enemiesHitByExplosion.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,1)))
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(-1,1), mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(-1,-1)) == get_tileset().find_tile_by_name("ENEMY"):
-		GlobalVariables.turnController.enemyTakeDamage.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)))
 		enemiesHitByExplosion.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)))
-		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(-1,-1), mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
+	
+	for enemy in enemiesHitByExplosion:
+		GlobalVariables.turnController.enemyTakeDamage.append(enemy)
+		enemy.inflictDamage(powerBlock.counters * mainPlayer.powerBlockAttackDamage, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(enemy.position), mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
+	enemiesHitByExplosion.clear()
 	if activeRoom != null:
 		activeRoom.powerBlocksInRoom.erase(powerBlock)
 	set_cellv(world_to_map(powerBlock.position), get_tileset().find_tile_by_name("FLOOR"))

@@ -35,6 +35,8 @@ var isPuzzleBarrier = false
 
 var powerBlocksInRoom = []
 
+var upgradeContainersInRoom = []
+
 var roomType = ROOM_TYPE.EMPTYTREASUREROOM
 
 var roomCleared = false
@@ -139,6 +141,10 @@ func dropLoot():
 	Grid.numberRoomsCleared+=1
 	on_room_solved()
 	return true
+	
+func updateContainerPrices():
+	for container in upgradeContainersInRoom:
+		container.updatePrice()
 	
 func makeDoorBarrier(currentGrid):
 	var barrierChance = 1

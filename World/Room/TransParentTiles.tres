@@ -157,7 +157,7 @@
 20/shape_one_way_margin = 0.0
 20/shapes = [  ]
 20/z_index = 0
-21/name = "UPGRADEBLOCK"
+21/name = "UPGRADECONTAINER"
 21/texture = ExtResource( 1 )
 21/tex_offset = Vector2( 0, 0 )
 21/modulate = Color( 1, 1, 1, 1 )

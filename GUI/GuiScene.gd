@@ -24,25 +24,20 @@ onready var maxTurnActionsText = $TurnStats/MaxTurnsActions
 onready var TurnStats = $TurnStats
 onready var coinCount = $CoinCount/CoinCountLabel
 
-var hearts = 10
-var maxHearts = 10
 var healthRectSize = 16
 var currentTurnActionCount = 0
-
-var potions = 0
-var maxPotions = 3
 var potionRectSize = 32
 
 func _ready():
-	PlayerStats.rect_size.x = maxHearts*4-6
-	HealthBarEmpty.rect_size.x = (maxHearts)*healthRectSize
-	HealthBarFill.rect_size.x = (hearts)*healthRectSize
-	PotionBarEmpty.rect_size.x = maxPotions*potionRectSize
-	PotionBarFill.rect_size.x = potions*potionRectSize
-	currentTurnActionsText.set_text(str(0))
-
-func _process(delta):
 	pass
+
+func setUpGUI(maxTurnActions, maxLifePoints, lifePoints, coinCount, maxPotions, currentPotions):
+	PlayerStats.rect_size.x = maxLifePoints*4-6
+	HealthBarEmpty.rect_size.x = (maxLifePoints)*healthRectSize
+	HealthBarFill.rect_size.x = (lifePoints)*healthRectSize
+	PotionBarEmpty.rect_size.x = maxPotions*potionRectSize
+	PotionBarFill.rect_size.x = currentPotions*potionRectSize
+	currentTurnActionsText.set_text(str(0))
 		
 func set_maxturn_actions(maxTurnActions):
 		maxTurnActionsText.set_text(str(maxTurnActions))
@@ -57,15 +52,22 @@ func update_current_turns(reset = false):
 func change_health(attackDamage):
 	#print("current Healthbar value " + str($TextureRect/HealthBar.value))
 	HealthBarFill.rect_size.x -= attackDamage * healthRectSize
-		
+	
+func change_max_health(amount):
+	PlayerStats.rect_size.x = amount*4-6
+	HealthBarEmpty.rect_size.x = (amount)*healthRectSize
+	
+func change_max_potions(amount):
+	PotionBarEmpty.rect_size.x = amount*potionRectSize
+	
 func set_health(lifepoints):
 	if HealthBarFill != null:
 		HealthBarFill.rect_size.x = lifepoints*healthRectSize
 
-func fill_one_potion():
+func fill_potions(amount):
 	#print("filling one potion")
 	if PotionBarFill.rect_size.x != 3*potionRectSize:
-		PotionBarFill.rect_size.x += 1*potionRectSize
+		PotionBarFill.rect_size.x += amount*potionRectSize
 
 func use_potion():
 	if PotionBarFill.rect_size.x > 0:

@@ -23,13 +23,26 @@ var playerPassedDoor = Vector2.ZERO
 var movementCount = 0
 
 var maxTurnActions = 20
+
 var attackCount = 0
 
 var attackDamage = 0.5
 
+var swordAttackDamage = 1.0
+
+var magicAttackDamage = 0.5
+
+var powerBlockAttackDamage = 1.0
+
+var coinCount = 0
+
 var maxLifePoints = 10
 
 var lifePoints = 10
+
+var maxPotions = 2
+
+var currentPotions = 0
 
 var itemsInPosession = []
 
@@ -83,8 +96,6 @@ var enemyToToggleArea = null
 
 var checkNextAction = true
 
-var cointCount = 0
-
 signal toggleDangerArea (enemyToToggleArea, toggleAll)
 
 signal puzzleBlockInteractionSignal (player, puzzleBlockDirection)
@@ -92,10 +103,8 @@ signal puzzleBlockInteractionSignal (player, puzzleBlockDirection)
 func _ready():
 	guiElements = GUI.instance()
 	add_child(guiElements)
-	guiElements.set_health(lifePoints)
-	guiElements.set_maxturn_actions(maxTurnActions)
 	#GlobalVariables.turnController.player_next_action(self)
-
+	guiElements.setUpGUI(maxTurnActions, maxLifePoints, lifePoints, coinCount, maxPotions, currentPotions)
 	
 	inventoryElements = Inventory.instance()
 	inventoryElements.currentPlayerPosition = self.position
@@ -201,7 +210,12 @@ func player_attack(attackDirection):
 		yield($AnimationPlayer, "animation_finished")
 		$AnimationPlayer.play("Idle")
 		set_process(true)
-		emit_signal("playerAttacked", self, attackDirection, attackDamage, attackType)
+		if attackType == GlobalVariables.ATTACKTYPE.MAGIC:
+			emit_signal("playerAttacked", self, attackDirection, magicAttackDamage, attackType)
+		elif attackType == GlobalVariables.ATTACKTYPE.SWORD:
+			emit_signal("playerAttacked", self, attackDirection, swordAttackDamage, attackType)
+		else:
+			emit_signal("playerAttacked", self, attackDirection, 0, attackType)
 		attackCount += 1
 		guiElements.update_current_turns()
 		GlobalVariables.turnController.player_turn_done(self)
@@ -287,13 +301,11 @@ func get_attack_direction():
 func get_attack_mode():
 	if Input.is_action_just_pressed("Mode_Sword"):
 		guiElements.change_attack_mode(GlobalVariables.ATTACKTYPE.SWORD)
-		attackDamage = 1
 		puzzleBlockInteraction = false
 		return GlobalVariables.ATTACKTYPE.SWORD
 		
 	if Input.is_action_just_pressed("Mode_Magic"):
 		guiElements.change_attack_mode(GlobalVariables.ATTACKTYPE.MAGIC)
-		attackDamage = 0.5
 		#if used in puzzle room while magic is flying cancels out all magic
 		if attackType == GlobalVariables.ATTACKTYPE.MAGIC:
 			if GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PUZZLEPROJECTILE:
@@ -303,13 +315,11 @@ func get_attack_mode():
 		
 	if Input.is_action_just_pressed("Mode_Block"):
 		guiElements.change_attack_mode(GlobalVariables.ATTACKTYPE.BLOCK)
-		attackDamage = 0  
 		puzzleBlockInteraction = false
 		return GlobalVariables.ATTACKTYPE.BLOCK                     	
 		
 	if Input.is_action_just_pressed("Mode_Hand"):
 		guiElements.change_attack_mode(GlobalVariables.ATTACKTYPE.HAND)
-		attackDamage = 0
 		puzzleBlockInteraction = false
 		return GlobalVariables.ATTACKTYPE.HAND
 		
@@ -395,10 +405,10 @@ func inflict_damage_playerDefeated(attackDamage, attackType):
 func add_nonkey_items(itemtype):
 	match itemtype:
 		GlobalVariables.ITEMTYPE.POTION:
-			guiElements.fill_one_potion()
+			guiElements.fill_potions(1)
 		GlobalVariables.ITEMTYPE.COIN:
-			cointCount += 1
-			guiElements.add_coin(cointCount)
+			coinCount += 1
+			guiElements.add_coin(coinCount)
 
 func add_key_item_to_inventory(item):
 	var newInventoryItem = InventoryItem.instance()
@@ -431,6 +441,34 @@ func remove_key_item_from_inventory(item):
 				pass
 		inventoryElements.get_node("Tabs/Weapon/WeaponList").remove_child(keyItemToDelete)
 
+func on_upgradeContainer_interaction(upgradeType, addAmount, spentAmount):
+	match upgradeType:
+		GlobalVariables.UPGRADETYPE.ACTIONSUP:
+			maxTurnActions += addAmount
+			guiElements.set_maxturn_actions(maxTurnActions)
+		GlobalVariables.UPGRADETYPE.FILLFLASK:
+			currentPotions += addAmount
+			guiElements.fill_potions(addAmount)
+		GlobalVariables.UPGRADETYPE.FILLHEART:
+			if lifePoints + addAmount > maxLifePoints:
+				lifePoints = maxLifePoints
+				guiElements.set_health(maxLifePoints)
+			else:
+				lifePoints += addAmount
+				guiElements.change_health(-addAmount)
+		GlobalVariables.UPGRADETYPE.BOMB:
+			powerBlockAttackDamage+=addAmount
+		GlobalVariables.UPGRADETYPE.FLASK:
+			maxPotions += addAmount
+			guiElements.change_max_potions(addAmount)
+		GlobalVariables.UPGRADETYPE.HEART:
+			maxLifePoints+=addAmount
+			guiElements.change_max_health(addAmount)
+		GlobalVariables.UPGRADETYPE.MAGIC:
+			magicAttackDamage+=addAmount
+		GlobalVariables.UPGRADETYPE.SWORD:
+			swordAttackDamage+=addAmount
+	
 func _on_enemy_turn_done_signal():
 	print("Player turn again ")
 	checkNextAction = true

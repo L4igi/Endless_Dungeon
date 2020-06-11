@@ -14,10 +14,11 @@
 script = ExtResource( 5 )
 
 [node name="AttackMode" type="TextureRect" parent="."]
-margin_left = 133.455
-margin_top = 133.392
-margin_right = 149.455
-margin_bottom = 149.392
+margin_left = 135.17
+margin_top = 134.824
+margin_right = 151.17
+margin_bottom = 150.824
+rect_scale = Vector2( 0.9, 0.9 )
 size_flags_horizontal = 3
 size_flags_vertical = 3
 texture = ExtResource( 6 )
@@ -29,9 +30,10 @@ __meta__ = {
 [node name="Attacks" type="TextureRect" parent="AttackMode"]
 anchor_top = 0.5
 anchor_bottom = 0.5
-margin_top = -8.0
-margin_right = 16.0
-margin_bottom = 8.0
+margin_left = -0.484177
+margin_top = -8.79779
+margin_right = 15.5158
+margin_bottom = 7.20221
 texture = ExtResource( 7 )
 expand = true
 stretch_mode = 6
@@ -40,8 +42,10 @@ __meta__ = {
 }
 
 [node name="PlayerStats" type="TextureRect" parent="."]
-margin_right = 40.0
-margin_bottom = 16.0
+margin_left = 0.850216
+margin_top = 0.850218
+margin_right = 40.8502
+margin_bottom = 16.8502
 texture = ExtResource( 6 )
 expand = true
 __meta__ = {
@@ -100,10 +104,10 @@ __meta__ = {
 }
 
 [node name="TurnStats" type="TextureRect" parent="."]
-margin_left = 0.579918
-margin_top = 133.42
-margin_right = 29.5799
-margin_bottom = 149.42
+margin_left = 1.0
+margin_top = 138.0
+margin_right = 27.0
+margin_bottom = 149.0
 texture = ExtResource( 6 )
 expand = true
 __meta__ = {
@@ -111,19 +115,19 @@ __meta__ = {
 }
 
 [node name="CurrentTurnActions" type="Label" parent="TurnStats"]
-margin_left = 2.66758
-margin_top = -2.08768
-margin_right = 11.6676
-margin_bottom = 15.9123
-rect_scale = Vector2( 0.7, 0.7 )
+margin_left = 1.04427
+margin_top = -0.0585327
+margin_right = 10.0443
+margin_bottom = 17.9415
+rect_scale = Vector2( 0.6, 0.6 )
 custom_fonts/font = ExtResource( 1 )
 text = "2"
 
 [node name="Seperator" type="Label" parent="TurnStats"]
-margin_left = 13.7114
-margin_top = 1.21642
-margin_right = 22.7114
-margin_bottom = 19.2164
+margin_left = 11.0059
+margin_top = -1.08326
+margin_right = 20.0059
+margin_bottom = 16.9167
 rect_scale = Vector2( 0.7, 0.7 )
 custom_fonts/font = ExtResource( 1 )
 text = "/"
@@ -132,11 +136,11 @@ __meta__ = {
 }
 
 [node name="MaxTurnsActions" type="Label" parent="TurnStats"]
-margin_left = 17.0
-margin_top = 3.0
-margin_right = 25.0
-margin_bottom = 21.0
-rect_scale = Vector2( 0.7, 0.8 )
+margin_left = 15.6472
+margin_top = -0.246628
+margin_right = 23.6472
+margin_bottom = 17.7534
+rect_scale = Vector2( 0.6, 0.6 )
 custom_fonts/font = ExtResource( 1 )
 text = "6"
 __meta__ = {
@@ -144,9 +148,10 @@ __meta__ = {
 }
 
 [node name="CoinCount" type="TextureRect" parent="."]
-margin_left = 125.0
-margin_right = 150.0
-margin_bottom = 16.0
+margin_left = 127.339
+margin_top = 0.850216
+margin_right = 149.339
+margin_bottom = 9.85022
 texture = ExtResource( 6 )
 expand = true
 __meta__ = {
@@ -154,19 +159,22 @@ __meta__ = {
 }
 
 [node name="XLabel" type="Label" parent="CoinCount"]
-margin_left = 11.6957
-margin_top = 3.73814
-margin_right = 19.6957
-margin_bottom = 21.7381
+margin_left = 8.29391
+margin_top = 0.741327
+margin_right = 16.2939
+margin_bottom = 18.7413
 rect_scale = Vector2( 0.4, 0.4 )
 text = "x"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="CoinCountLabel" type="Label" parent="CoinCount"]
-margin_left = 15.8585
-margin_top = 0.685719
-margin_right = 28.8585
-margin_bottom = 18.6857
-rect_scale = Vector2( 0.75, 0.75 )
+margin_left = 12.2947
+margin_top = -2.2301
+margin_right = 25.2947
+margin_bottom = 15.7699
+rect_scale = Vector2( 0.65, 0.65 )
 size_flags_horizontal = 4
 text = "0"
 __meta__ = {
@@ -174,11 +182,11 @@ __meta__ = {
 }
 
 [node name="CoinTextureRect" type="TextureRect" parent="CoinCount"]
-margin_left = 0.877411
-margin_top = 3.88568
-margin_right = 40.8774
-margin_bottom = 43.8857
-rect_scale = Vector2( 0.301, 0.301 )
+margin_left = 1.40497
+margin_top = 1.81314
+margin_right = 33.405
+margin_bottom = 35.8131
+rect_scale = Vector2( 0.2, 0.2 )
 texture = ExtResource( 2 )
 __meta__ = {
 "_edit_use_anchors_": false
