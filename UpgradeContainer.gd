@@ -53,6 +53,6 @@ func updatePrice():
 func do_upgrade(player):
 	if player.coinCount >= int(upgradeCost.get_text()):
 		$AnimationPlayer.play("ActivateUpgrade", -1, 1.5)
-		player.on_upgradeContainer_interaction(upgradeType, GlobalVariables.upgradeAmount[upgradeType-1],upgradeCost)
+		player.on_upgradeContainer_interaction(upgradeType, GlobalVariables.upgradeAmount[upgradeType-1],int(upgradeCost.get_text()))
 	else:
 		$AnimationPlayer.play("NotEnoughMoney", -1, 1.0)

@@ -34,7 +34,7 @@ var magicAttackDamage = 0.5
 
 var powerBlockAttackDamage = 1.0
 
-var coinCount = 0
+var coinCount = 50
 
 var maxLifePoints = 10
 
@@ -405,7 +405,9 @@ func inflict_damage_playerDefeated(attackDamage, attackType):
 func add_nonkey_items(itemtype):
 	match itemtype:
 		GlobalVariables.ITEMTYPE.POTION:
-			guiElements.fill_potions(1)
+			if currentPotions < maxPotions:
+				currentPotions+=1
+				guiElements.fill_potions(currentPotions)
 		GlobalVariables.ITEMTYPE.COIN:
 			coinCount += 1
 			guiElements.add_coin(coinCount)
@@ -442,13 +444,15 @@ func remove_key_item_from_inventory(item):
 		inventoryElements.get_node("Tabs/Weapon/WeaponList").remove_child(keyItemToDelete)
 
 func on_upgradeContainer_interaction(upgradeType, addAmount, spentAmount):
+	coinCount-=spentAmount
+	guiElements.spend_coins(coinCount)
 	match upgradeType:
 		GlobalVariables.UPGRADETYPE.ACTIONSUP:
 			maxTurnActions += addAmount
 			guiElements.set_maxturn_actions(maxTurnActions)
 		GlobalVariables.UPGRADETYPE.FILLFLASK:
 			currentPotions += addAmount
-			guiElements.fill_potions(addAmount)
+			guiElements.fill_potions(currentPotions)
 		GlobalVariables.UPGRADETYPE.FILLHEART:
 			if lifePoints + addAmount > maxLifePoints:
 				lifePoints = maxLifePoints
@@ -460,10 +464,10 @@ func on_upgradeContainer_interaction(upgradeType, addAmount, spentAmount):
 			powerBlockAttackDamage+=addAmount
 		GlobalVariables.UPGRADETYPE.FLASK:
 			maxPotions += addAmount
-			guiElements.change_max_potions(addAmount)
+			guiElements.change_max_potions(maxPotions)
 		GlobalVariables.UPGRADETYPE.HEART:
 			maxLifePoints+=addAmount
-			guiElements.change_max_health(addAmount)
+			guiElements.change_max_health(maxLifePoints)
 		GlobalVariables.UPGRADETYPE.MAGIC:
 			magicAttackDamage+=addAmount
 		GlobalVariables.UPGRADETYPE.SWORD:

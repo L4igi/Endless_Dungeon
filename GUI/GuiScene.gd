@@ -37,10 +37,12 @@ func setUpGUI(maxTurnActions, maxLifePoints, lifePoints, coinCount, maxPotions, 
 	HealthBarFill.rect_size.x = (lifePoints)*healthRectSize
 	PotionBarEmpty.rect_size.x = maxPotions*potionRectSize
 	PotionBarFill.rect_size.x = currentPotions*potionRectSize
+	self.coinCount.set_text(str(coinCount))
 	currentTurnActionsText.set_text(str(0))
+	set_maxturn_actions(maxTurnActions)
 		
 func set_maxturn_actions(maxTurnActions):
-		maxTurnActionsText.set_text(str(maxTurnActions))
+	maxTurnActionsText.set_text(str(maxTurnActions))
 		
 func update_current_turns(reset = false):
 	if reset:
@@ -66,8 +68,7 @@ func set_health(lifepoints):
 
 func fill_potions(amount):
 	#print("filling one potion")
-	if PotionBarFill.rect_size.x != 3*potionRectSize:
-		PotionBarFill.rect_size.x += amount*potionRectSize
+	PotionBarFill.rect_size.x = amount*potionRectSize
 
 func use_potion():
 	if PotionBarFill.rect_size.x > 0:
