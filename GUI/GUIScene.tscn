@@ -1,6 +1,7 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://GUI/pixelFont.tres" type="DynamicFont" id=1]
+[ext_resource path="res://GameObjects/Item/Coin_Item.png" type="Texture" id=2]
 [ext_resource path="res://GUI/GUIScene.gd" type="Script" id=5]
 [ext_resource path="res://GUI/label_HP_bg.png" type="Texture" id=6]
 [ext_resource path="res://GUI/Sword.png" type="Texture" id=7]
@@ -131,13 +132,54 @@ __meta__ = {
 }
 
 [node name="MaxTurnsActions" type="Label" parent="TurnStats"]
-margin_left = 16.7015
-margin_top = 2.89954
-margin_right = 31.7015
-margin_bottom = 20.8995
+margin_left = 17.0
+margin_top = 3.0
+margin_right = 25.0
+margin_bottom = 21.0
 rect_scale = Vector2( 0.7, 0.8 )
 custom_fonts/font = ExtResource( 1 )
 text = "6"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CoinCount" type="TextureRect" parent="."]
+margin_left = 125.0
+margin_right = 150.0
+margin_bottom = 16.0
+texture = ExtResource( 6 )
+expand = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="XLabel" type="Label" parent="CoinCount"]
+margin_left = 11.6957
+margin_top = 3.73814
+margin_right = 19.6957
+margin_bottom = 21.7381
+rect_scale = Vector2( 0.4, 0.4 )
+text = "x"
+
+[node name="CoinCountLabel" type="Label" parent="CoinCount"]
+margin_left = 15.8585
+margin_top = 0.685719
+margin_right = 28.8585
+margin_bottom = 18.6857
+rect_scale = Vector2( 0.75, 0.75 )
+size_flags_horizontal = 4
+text = "0"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CoinTextureRect" type="TextureRect" parent="CoinCount"]
+margin_left = 0.877411
+margin_top = 3.88568
+margin_right = 40.8774
+margin_bottom = 43.8857
+rect_scale = Vector2( 0.301, 0.301 )
+texture = ExtResource( 2 )
 __meta__ = {
 "_edit_use_anchors_": false
 }

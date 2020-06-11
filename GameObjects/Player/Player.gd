@@ -83,6 +83,8 @@ var enemyToToggleArea = null
 
 var checkNextAction = true
 
+var cointCount = 0
+
 signal toggleDangerArea (enemyToToggleArea, toggleAll)
 
 signal puzzleBlockInteractionSignal (player, puzzleBlockDirection)
@@ -394,6 +396,9 @@ func add_nonkey_items(itemtype):
 	match itemtype:
 		GlobalVariables.ITEMTYPE.POTION:
 			guiElements.fill_one_potion()
+		GlobalVariables.ITEMTYPE.COIN:
+			cointCount += 1
+			guiElements.add_coin(cointCount)
 
 func add_key_item_to_inventory(item):
 	var newInventoryItem = InventoryItem.instance()

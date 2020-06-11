@@ -11,6 +11,7 @@ var swordTexture = preload ("res://GameObjects/Item/Sword_Color.png")
 var heartContainerTexture = preload ("res://GameObjects/Item/Heart_Item.png")
 var flaskContainerTexture = preload ("res://GameObjects/Item/Flask_Item.png")
 var puzzleSwitch = preload("res://GameObjects/Item/PuzzleSwitch.png")
+var coin = preload("res://GameObjects/Item/Coin_Item.png")
 var exit = preload("res://GameObjects/Item/exit_item.png")
 
 var keyValue 
@@ -45,6 +46,9 @@ func setTexture(textureType):
 		GlobalVariables.ITEMTYPE.EXIT:
 			get_node("Sprite").set_texture(exit)
 			itemType = GlobalVariables.ITEMTYPE.EXIT
+		GlobalVariables.ITEMTYPE.COIN:
+			get_node("Sprite").set_texture(coin)
+			itemType = GlobalVariables.ITEMTYPE.COIN
 
 func on_item_pickUp(newPosition):
 	$AnimationPlayer.play("itemPickUp")

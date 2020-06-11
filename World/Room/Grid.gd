@@ -101,6 +101,8 @@ var cancelMagicPuzzleRoom = false
 
 var allEnemiesAlreadySaved = false
 
+var bonusLootArray = []
+
 func match_Enum(var index):
 	match index:
 		0:
@@ -230,6 +232,8 @@ func request_move(pawn, direction):
 					emit_signal("puzzleBarrierDisableSignal", object_pawn, mainPlayer)
 				elif object_pawn.itemType == GlobalVariables.ITEMTYPE.EXIT:
 					get_tree().reload_current_scene()
+				elif object_pawn.itemType == GlobalVariables.ITEMTYPE.COIN:
+					pawn.add_nonkey_items(object_pawn.itemType)
 				else:
 					pawn.itemsInPosession.append(object_pawn)
 					pawn.add_key_item_to_inventory(object_pawn)
@@ -1549,11 +1553,15 @@ func _on_enemy_defeated(enemy):
 			#so that all help enemies play defeated animation in each current phase 
 			GlobalVariables.turnController.currentTurnWaiting = GlobalVariables.CURRENTPHASE.ENEMYATTACK
 			for enemy in activeRoom.enemiesInRoom:
+				var bonusCoin = Item.instance()
+				bonusCoin.position = enemy.position
+				bonusLootArray.append(bonusCoin)
 				GlobalVariables.turnController.enemyTakeDamage.append(enemy)
 				enemy.inflictDamage(100, GlobalVariables.ATTACKTYPE.SAVED, world_to_map(enemy.position), mainPlayer, GlobalVariables.turnController.currentTurnWaiting)
 	GlobalVariables.turnController.on_enemy_taken_damage(enemy, true)
 	
 func dropLootInActiveRoom():
+	dropBonusLoot()
 	#create loot currently matching with closed doord 
 	print(barrierKeysNoSolution)
 	if !barrierKeysNoSolution.empty():
@@ -1603,6 +1611,16 @@ func dropLootInActiveRoom():
 		add_child(newItem)
 		set_cellv(world_to_map(newItem.position), get_tileset().find_tile_by_name("ITEM"))
 
+func dropBonusLoot():
+	for object in bonusLootArray:
+		object.set_z_index(1)
+		object.get_node("Sprite").set_scale(Vector2(0.5,0.5))
+		object.get_node("Sprite").set_offset(Vector2(0,10))
+		object.keyValue = str(0)
+		object.setTexture(GlobalVariables.ITEMTYPE.COIN)
+		add_child(object)
+		set_cellv(world_to_map(object.position), get_tileset().find_tile_by_name("ITEM"))
+		
 func generate_keyValue_item(keyValue, modulation, type, barrierRoom):
 	var newItem = Item.instance()
 	newItem.set_z_index(1)

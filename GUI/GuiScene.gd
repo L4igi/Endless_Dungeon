@@ -22,6 +22,7 @@ onready var PlayerStats = $PlayerStats
 onready var currentTurnActionsText = $TurnStats/CurrentTurnActions
 onready var maxTurnActionsText = $TurnStats/MaxTurnsActions
 onready var TurnStats = $TurnStats
+onready var coinCount = $CoinCount/CoinCountLabel
 
 var hearts = 10
 var maxHearts = 10
@@ -99,3 +100,8 @@ func change_attack_mode(attackmode):
 				$AttackMode/Attacks.texture = powerHandCombat
 			currentAttackMode = attackmode
 
+func add_coin(playerCoinCount):
+	coinCount.set_text(str(playerCoinCount))
+	
+func spend_coins(playerCoinCount):
+	coinCount.set_text(str(playerCoinCount))
