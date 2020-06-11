@@ -529,9 +529,9 @@ func make_enemy_turn():
 func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = 0
+	var enemieToGenerate = 2
 	if randi()%4 == 1:
-		enemieToGenerate = 1
+		enemieToGenerate = 2
 	match enemieToGenerate:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			makeEnemyBarrier(currentGrid, unlockedDoor)

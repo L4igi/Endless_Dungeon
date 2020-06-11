@@ -135,6 +135,9 @@ func _process(delta):
 
 #
 func player_movement(movementDirection):
+	if GlobalVariables.turnController.queueDropLoot:
+		GlobalVariables.turnController.player_turn_done(self)
+		return
 	if movementDirection && (attackCount + movementCount) < maxTurnActions:
 		var target_position = Grid.request_move(self, movementDirection)
 		if target_position:

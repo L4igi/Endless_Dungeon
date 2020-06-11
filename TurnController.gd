@@ -17,6 +17,7 @@ var playerDefeatStop = false
 var playerMovedDoor = false
 var inRoomType = null
 var powerBlockInterActionDone = true
+var queueDropLoot = false
 
 func _ready():
 	pass
@@ -88,6 +89,9 @@ func check_turn_progress():
 				return true
 	
 func player_turn_done(player):
+	if queueDropLoot:
+		queueDropLoot = false
+		Grid.dropLootInActiveRoom()
 	if check_turn_done_conditions():
 		playersToMove.erase(player)
 		playerDefeatStop = false

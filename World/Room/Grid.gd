@@ -221,6 +221,7 @@ func request_move(pawn, direction):
 				pass
 			TILETYPES.ITEM:
 				var object_pawn = get_cell_pawn(cell_target)
+				print("Picking up Item")
 				#print("Item spawned key value " + str(object_pawn.keyValue))
 				#add additional items with || 
 				if(object_pawn.itemType == GlobalVariables.ITEMTYPE.POTION):
@@ -238,6 +239,7 @@ func request_move(pawn, direction):
 				#pawn.queue_free()
 				#print("Player has Items in posession " + str(pawn.itemsInPosession))
 				return update_pawn_position(pawn, cell_start, cell_target)
+				return pawn.position
 			TILETYPES.DOOR:
 				var object_pawn = get_cell_pawn(cell_target)
 				var requestDoorUnlockResult = object_pawn.request_door_unlock(pawn.itemsInPosession)
@@ -1530,11 +1532,12 @@ func _on_enemy_defeated(enemy):
 			projectile.queue_free()
 		projectilesInActiveRoom.clear()
 		if activeRoom.dropLoot() && !activeRoom.roomCleared:
-			dropLootInActiveRoom()
+			GlobalVariables.turnController.queueDropLoot = true
 		activeRoom.roomCleared=true
 		mainPlayer.inClearedRoom = true
 		allEnemiesAlreadySaved = false
-#		emit_signal("enemyTurnDoneSignal")
+		GlobalVariables.turnController.on_enemy_taken_damage(enemy, true)
+		return 
 	#if you were able to save help enemy it eliminates itself and gives extra reward
 	else:
 		var allSaved = 0
@@ -1543,14 +1546,14 @@ func _on_enemy_defeated(enemy):
 				allSaved+=1
 		if allSaved == activeRoom.enemiesInRoom.size() && !allEnemiesAlreadySaved:
 			allEnemiesAlreadySaved = true
+			#so that all help enemies play defeated animation in each current phase 
+			GlobalVariables.turnController.currentTurnWaiting = GlobalVariables.CURRENTPHASE.ENEMYATTACK
 			for enemy in activeRoom.enemiesInRoom:
 				GlobalVariables.turnController.enemyTakeDamage.append(enemy)
 				enemy.inflictDamage(100, GlobalVariables.ATTACKTYPE.SAVED, world_to_map(enemy.position), mainPlayer, GlobalVariables.turnController.currentTurnWaiting)
 	GlobalVariables.turnController.on_enemy_taken_damage(enemy, true)
-		
 	
 func dropLootInActiveRoom():
-	print("Dropping Loot")
 	#create loot currently matching with closed doord 
 	print(barrierKeysNoSolution)
 	if !barrierKeysNoSolution.empty():
@@ -1575,7 +1578,6 @@ func dropLootInActiveRoom():
 			get_cell_pawn(world_to_map(itemToGenerate.position)).queue_free()
 		add_child(itemToGenerate)
 		set_cellv(world_to_map(itemToGenerate.position), get_tileset().find_tile_by_name("ITEM"))
-			#set type of item 
 	else:
 		var newItem = Item.instance()
 		newItem.set_z_index(1)
@@ -1600,7 +1602,6 @@ func dropLootInActiveRoom():
 			newItem.setTexture(GlobalVariables.ITEMTYPE.POTION)
 		add_child(newItem)
 		set_cellv(world_to_map(newItem.position), get_tileset().find_tile_by_name("ITEM"))
-		
 
 func generate_keyValue_item(keyValue, modulation, type, barrierRoom):
 	var newItem = Item.instance()
