@@ -228,7 +228,7 @@ func calc_enemy_move_to(calcMode, activeRoom, count):
 	elif calcMode == GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION:
 		var target_position = Grid.request_move(self, movementdirectionVector)
 		#print("target position "+ str(target_position))
-		if target_position && !enemyDefeated:
+		if target_position:
 			moveTo = target_position
 		else:
 			moveTo = null
@@ -300,7 +300,7 @@ func enemyMovement():
 				set_process(true)
 			movementCount += 1
 
-
+	check_inflicted_damage()
 #	if attackCount + movementCount < maxTurnActions:
 #		enemyAttack()
 	emit_signal("enemyMadeMove", self)

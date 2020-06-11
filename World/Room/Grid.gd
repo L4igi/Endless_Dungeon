@@ -317,16 +317,23 @@ func request_move(pawn, direction):
 					tempMagicProjectile.play_projectile_animation(true, "attack")
 					GlobalVariables.turnController.enemyTakeDamage.append(pawn)
 					pawn.inflictDamage(tempMagicProjectile.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, map_to_world(cell_target), mainPlayer, GlobalVariables.CURRENTPHASE.ENEMY)
-					if pawn.enemyDefeated:
-						#print("Enemy defeated")
-						return update_pawn_position(pawn, cell_start, cell_target)
-					else:
-						#todo fix here things enemy enemy proejctile
-						print("IN HERE ENEMY MOVED ON ENEMY MAGIC PROJECTILE")
-						projectilesInActiveRoom.erase(tempMagicProjectile)
-						tempMagicProjectile.play_projectile_animation(true, "delete")
-						#set_cellv(world_to_map(tempMagicProjectile.position),get_tileset().find_tile_by_name("FLOOR"))
-						return update_pawn_position(pawn, cell_start, cell_target)
+#					if pawn.enemyDefeated:
+#						#print("Enemy defeated")
+#						return update_pawn_position(pawn, cell_start, cell_target)
+#					else:
+#						#todo fix here things enemy enemy proejctile
+#						print("IN HERE ENEMY MOVED ON ENEMY MAGIC PROJECTILE")
+#						projectilesInActiveRoom.erase(tempMagicProjectile)
+#						tempMagicProjectile.play_projectile_animation(true, "delete")
+#						#set_cellv(world_to_map(tempMagicProjectile.position),get_tileset().find_tile_by_name("FLOOR"))
+					return update_pawn_position(pawn, cell_start, cell_target)
+				elif tempMagicProjectile.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && pawn.helpEnemy:
+					projectilesInActiveRoom.erase(tempMagicProjectile)
+					set_cellv(world_to_map(tempMagicProjectile.position), get_tileset().find_tile_by_name("ENEMY"))
+					tempMagicProjectile.play_projectile_animation(true, "attack")
+					GlobalVariables.turnController.enemyTakeDamage.append(pawn)
+					pawn.inflictDamage(tempMagicProjectile.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, cell_target, mainPlayer, GlobalVariables.CURRENTPHASE.ENEMY)
+					return update_pawn_position(pawn, cell_start, cell_target)
 				else:
 					tempMagicProjectile.play_projectile_animation(true,"delete")
 #					if pawn.helpEnemy:
@@ -366,17 +373,18 @@ func request_move(pawn, direction):
 					tempEnemy.inflictDamage(pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, cell_target, mainPlayer, GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE)
 					#projectilesMadeMoveCounter+=1
 					return
-				elif pawn.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
+				elif pawn.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && tempEnemy.helpEnemy:
+					GlobalVariables.turnController.enemyTakeDamage.append(tempEnemy)
+					tempEnemy.inflictDamage(pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, cell_target, mainPlayer, GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE)
 					projectilesInActiveRoom.erase(pawn)
-					pawn.deleteProjectilePlayAnimation = "delete"
-					pawn.hitObstacleOnDelete = true
-					if tempEnemy.helpEnemy:
-						GlobalVariables.turnController.enemyTakeDamage.append(tempEnemy)
-						tempEnemy.inflictDamage(pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, cell_target, mainPlayer, GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE)
+					if GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
+						projectilesInActiveRoom.erase(pawn)
+						pawn.deleteProjectilePlayAnimation = "delete"
+						pawn.hitObstacleOnDelete = true
+						set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
+					else:
+						pawn.play_projectile_animation(false,"attack")
 					set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
-					#set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
-					#projectilesMadeMoveCounter+=1
-					#return update_pawn_position(pawn, cell_start, cell_target)
 				else:
 					return pawn.position
 			TILETYPES.PLAYER:
@@ -802,7 +810,7 @@ func create_enemy_room(unlockedDoor):
 	randomize()
 	#add adjustment for enemy amount 
 	#-2 because of walls on both sides
-	var enemiesToSpawn = 10
+	var enemiesToSpawn = 3
 #	if unlockedDoor.roomSizeMultiplier == Vector2(1,1):
 #		enemiesToSpawn = randi()%3+1
 #	elif unlockedDoor.roomSizeMultiplier == Vector2(2,2):
@@ -1517,7 +1525,6 @@ func _on_enemy_defeated(enemy):
 	activeRoom.enemiesInRoom.erase(enemy)
 	if activeRoom.enemiesInRoom.size() == 0:
 		#delete all projectiles 
-		enemy.queue_free()
 		for projectile in projectilesInActiveRoom:
 			set_cellv(world_to_map(projectile.position),get_tileset().find_tile_by_name("FLOOR")) 
 			projectile.queue_free()
@@ -1527,7 +1534,7 @@ func _on_enemy_defeated(enemy):
 		activeRoom.roomCleared=true
 		mainPlayer.inClearedRoom = true
 		allEnemiesAlreadySaved = false
-		emit_signal("enemyTurnDoneSignal")
+#		emit_signal("enemyTurnDoneSignal")
 	#if you were able to save help enemy it eliminates itself and gives extra reward
 	else:
 		var allSaved = 0
@@ -1537,6 +1544,7 @@ func _on_enemy_defeated(enemy):
 		if allSaved == activeRoom.enemiesInRoom.size() && !allEnemiesAlreadySaved:
 			allEnemiesAlreadySaved = true
 			for enemy in activeRoom.enemiesInRoom:
+				GlobalVariables.turnController.enemyTakeDamage.append(enemy)
 				enemy.inflictDamage(100, GlobalVariables.ATTACKTYPE.SAVED, world_to_map(enemy.position), mainPlayer, GlobalVariables.turnController.currentTurnWaiting)
 	GlobalVariables.turnController.on_enemy_taken_damage(enemy, true)
 		
