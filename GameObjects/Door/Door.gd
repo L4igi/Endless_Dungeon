@@ -109,6 +109,7 @@ func unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance):
 		#print("creating empty/Treasure room " + str(randRoomType))
 		GlobalVariables.turnController.inRoomType = ROOM_TYPE.EMPTYTREASUREROOM
 		roomType = ROOM_TYPE.EMPTYTREASUREROOM
+		Grid.create_empty_treasure_room(self)
 		#set room to cleared because its empty room
 
 

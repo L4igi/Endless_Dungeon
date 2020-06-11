@@ -19,6 +19,8 @@ var Player = preload("res://GameObjects/Player/Player.tscn")
 
 var PuzzlePiece = preload("res://GameObjects/Puzzle/PuzzlePiece.tscn")
 
+var UpgradeContainer = preload("res://GameObjects/UpgradeContainer/UpgradeContainer.tscn")
+
 var roomDimensions = GlobalVariables.roomDimensions
 
 var evenOddModifier = 0 
@@ -812,6 +814,48 @@ func play_puzzlepiece_pattern():
 	print("Play puzzle pattern")
 	activeRoom.puzzlePiecesInRoom[0].playColor(activeRoom.puzzlePiecesInRoom, 0)
 
+func create_empty_treasure_room(unlockedDoor):
+	#place upgrade machines in corners
+	var actionUpContainer = UpgradeContainer.instance()
+	actionUpContainer.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(1,1))
+	actionUpContainer.set_upgrade_container(GlobalVariables.UPGRADETYPE.ACTIONSUP)
+	add_child(actionUpContainer)
+	
+	var bombUpContainer = UpgradeContainer.instance()
+	bombUpContainer.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(2,1))
+	bombUpContainer.set_upgrade_container(GlobalVariables.UPGRADETYPE.BOMB)
+	add_child(bombUpContainer)
+	
+	var flaskUpContainer = UpgradeContainer.instance()
+	flaskUpContainer.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(unlockedDoor.roomSize.x,0)) - map_to_world(Vector2(2,-1))
+	flaskUpContainer.set_upgrade_container(GlobalVariables.UPGRADETYPE.FLASK)
+	add_child(flaskUpContainer)
+	
+	var heartUpContainer = UpgradeContainer.instance()
+	heartUpContainer.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(unlockedDoor.roomSize.x,0)) - map_to_world(Vector2(3,-1))
+	heartUpContainer.set_upgrade_container(GlobalVariables.UPGRADETYPE.HEART)
+	add_child(heartUpContainer)
+	
+	var heartFillContainer = UpgradeContainer.instance()
+	heartFillContainer.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(0,unlockedDoor.roomSize.y)) - map_to_world(Vector2(-2,2))
+	heartFillContainer.set_upgrade_container(GlobalVariables.UPGRADETYPE.FILLHEART)
+	add_child(heartFillContainer)
+	
+	var flaskFillContainer = UpgradeContainer.instance()
+	flaskFillContainer.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(0,unlockedDoor.roomSize.y)) - map_to_world(Vector2(-1,2))
+	flaskFillContainer.set_upgrade_container(GlobalVariables.UPGRADETYPE.FILLFLASK)
+	add_child(flaskFillContainer)
+	
+	var swordContainer = UpgradeContainer.instance()
+	swordContainer.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(unlockedDoor.roomSize) - map_to_world(Vector2(3,2))
+	swordContainer.set_upgrade_container(GlobalVariables.UPGRADETYPE.SWORD)
+	add_child(swordContainer)
+	
+	var magicContainer = UpgradeContainer.instance()
+	magicContainer.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(unlockedDoor.roomSize) - map_to_world(Vector2(2,2))
+	magicContainer.set_upgrade_container(GlobalVariables.UPGRADETYPE.MAGIC)
+	add_child(magicContainer)
+	
 func create_enemy_room(unlockedDoor):
 	randomize()
 	#add adjustment for enemy amount 

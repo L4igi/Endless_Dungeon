@@ -1,0 +1,36 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://GUI/pixelFont.tres" type="DynamicFont" id=1]
+[ext_resource path="res://UpgradeContainer.gd" type="Script" id=2]
+[ext_resource path="res://GameObjects/Item/Heart_Item.png" type="Texture" id=3]
+[ext_resource path="res://GameObjects/UpgradeContainer/UpgradeContainer.png" type="Texture" id=4]
+
+[node name="UpgradeContainer" type="Node2D"]
+script = ExtResource( 2 )
+
+[node name="Sprite" type="Sprite" parent="."]
+texture = ExtResource( 4 )
+
+[node name="UpgradeItem" type="TextureRect" parent="Sprite"]
+margin_left = -8.0
+margin_top = -14.0
+margin_right = 24.0
+margin_bottom = 18.0
+rect_scale = Vector2( 0.5, 0.5 )
+texture = ExtResource( 3 )
+stretch_mode = 6
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="UpgradeCost" type="Label" parent="Sprite"]
+margin_left = -4.0
+margin_top = 4.5
+margin_right = 28.0
+margin_bottom = 22.5
+rect_scale = Vector2( 0.5, 0.5 )
+custom_fonts/font = ExtResource( 1 )
+text = "45 C"
+__meta__ = {
+"_edit_use_anchors_": false
+}

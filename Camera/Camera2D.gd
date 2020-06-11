@@ -87,7 +87,7 @@ func on_move_camera_signal(activeRoom):
 			Vector2(2,1):
 				goToZoom = standardZoomLevel * Vector2(2,2)
 			Vector2(2,2):
-				goToZoom = standardZoomLevel * Vector2(2,2)
+				goToZoom = standardZoomLevel * Vector2(2.2,2.2)
 		$Tween.interpolate_property(self, "position", position, goToPos , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
 		$Tween.interpolate_property(self, "zoom", zoom, goToZoom , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
 		$Tween.start()
