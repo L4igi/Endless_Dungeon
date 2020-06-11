@@ -336,6 +336,11 @@ func toggle_enemy_danger_areas():
 				enemyToToggleArea = null
 			else:
 				enemyToToggleArea -= 1
+				while Grid.activeRoom.enemiesInRoom[enemyToToggleArea].helpEnemy:
+					enemyToToggleArea -=1
+					if enemyToToggleArea <= 0:
+						enemyToToggleArea = 0
+						break
 			emit_signal("toggleDangerArea", enemyToToggleArea)
 	elif Input.is_action_just_pressed("toggle_danger_area_next") && toggledDangerArea:
 		if Grid.activeRoom !=null:
@@ -345,9 +350,16 @@ func toggle_enemy_danger_areas():
 				enemyToToggleArea = null
 			else:
 				enemyToToggleArea += 1
+				while Grid.activeRoom.enemiesInRoom[enemyToToggleArea].helpEnemy:
+					enemyToToggleArea +=1
+					if enemyToToggleArea >= Grid.activeRoom.enemiesInRoom.size():
+						enemyToToggleArea = 0
+						break
 			emit_signal("toggleDangerArea", enemyToToggleArea)
 		
 func inflict_damage_playerDefeated(attackDamage, attackType):
+	if !GlobalVariables.turnController.playerTakeDamage.has(self):
+		GlobalVariables.turnController.playerTakeDamage.append(self)
 	lifePoints -= attackDamage
 	guiElements.change_health(attackDamage)
 	if lifePoints > 0:

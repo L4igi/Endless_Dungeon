@@ -315,6 +315,7 @@ func request_move(pawn, direction):
 					projectilesInActiveRoom.erase(tempMagicProjectile)
 					set_cellv(world_to_map(tempMagicProjectile.position),get_tileset().find_tile_by_name("FLOOR"))
 					tempMagicProjectile.play_projectile_animation(true, "attack")
+					GlobalVariables.turnController.enemyTakeDamage.append(pawn)
 					pawn.inflictDamage(tempMagicProjectile.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, map_to_world(cell_target), mainPlayer, GlobalVariables.CURRENTPHASE.ENEMY)
 					if pawn.enemyDefeated:
 						#print("Enemy defeated")
@@ -328,8 +329,10 @@ func request_move(pawn, direction):
 						return update_pawn_position(pawn, cell_start, cell_target)
 				else:
 					tempMagicProjectile.play_projectile_animation(true,"delete")
-					if pawn.helpEnemy:
-						pawn.inflictDamage(tempMagicProjectile.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, map_to_world(cell_target), mainPlayer, GlobalVariables.CURRENTPHASE.ENEMY)
+#					if pawn.helpEnemy:
+#						print("INFLICTING DAMAGE IN PAWN MAGICPROJECTILE")
+#						GlobalVariables.turnController.enemyTakeDamage.append(self)
+#						pawn.inflictDamage(tempMagicProjectile.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, map_to_world(cell_target), mainPlayer, GlobalVariables.CURRENTPHASE.ENEMY)
 					return update_pawn_position(pawn, cell_start, cell_target)
 			TILETYPES.BLOCK:
 				return pawn.position
@@ -359,6 +362,7 @@ func request_move(pawn, direction):
 						pawn.play_projectile_animation(false,"attack")
 					set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
 					#pawn.waitingForEventBeforeContinue = true
+					GlobalVariables.turnController.enemyTakeDamage.append(tempEnemy)
 					tempEnemy.inflictDamage(pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, cell_target, mainPlayer, GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE)
 					#projectilesMadeMoveCounter+=1
 					return
@@ -367,6 +371,7 @@ func request_move(pawn, direction):
 					pawn.deleteProjectilePlayAnimation = "delete"
 					pawn.hitObstacleOnDelete = true
 					if tempEnemy.helpEnemy:
+						GlobalVariables.turnController.enemyTakeDamage.append(tempEnemy)
 						tempEnemy.inflictDamage(pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, cell_target, mainPlayer, GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE)
 					set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
 					#set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
@@ -377,7 +382,7 @@ func request_move(pawn, direction):
 			TILETYPES.PLAYER:
 				var tempPlayer = get_cell_pawn(cell_target)
 				if pawn.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
-					GlobalVariables.turnController.playerTakeDamage.append(mainPlayer)
+#					GlobalVariables.turnController.playerTakeDamage.append(mainPlayer)
 					tempPlayer.inflict_damage_playerDefeated(pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC)
 					projectilesInActiveRoom.erase(pawn)
 					if GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
@@ -664,8 +669,6 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					for element in activeRoom.enemiesInRoom:
 						element.isDisabled = false
 						element.enemyTurnDone=true
-					if !activeRoom.enemiesInRoom.empty():
-						activeRoom.enemiesInRoom[0].calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW,0)
 					if GlobalVariables.turnController.inRoomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 						GlobalVariables.turnController.puzzlePiecesToPattern += activeRoom.puzzlePiecesInRoom
 						print(GlobalVariables.turnController.puzzlePiecesToPattern.size())
@@ -701,7 +704,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					for element in activeRoom.enemiesInRoom:
 						element.isDisabled = false
 					if !activeRoom.enemiesInRoom.empty():
-						activeRoom.enemiesInRoom[0].calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW,0)
+						activeRoom.enemiesInRoom[0].calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW,activeRoom,0)
 					if !activeRoom.roomCleared && GlobalVariables.turnController.inRoomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 						GlobalVariables.turnController.puzzlePiecesToPattern += activeRoom.puzzlePiecesInRoom
 						print(GlobalVariables.turnController.puzzlePiecesToPattern.size())
@@ -844,10 +847,10 @@ func create_enemy_room(unlockedDoor):
 		newEnemy.connect("enemyDefeated", self, "_on_enemy_defeated")
 		newEnemy.connect("enemyExplosionDone", self, "_on_enemy_explosion_done")
 #		newEnemy.calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW, unlockedDoor,0)
-		#newEnemy.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
 		set_cellv(world_to_map(newEnemy.position), get_tileset().find_tile_by_name(match_Enum(newEnemy.type)))
 		unlockedDoor.enemiesInRoom.append(newEnemy)
-	#print(spawnCellArray)
+	if unlockedDoor != null && !unlockedDoor.enemiesInRoom.empty():
+		unlockedDoor.enemiesInRoom[0].calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW, unlockedDoor, 0)
 
 func get_enemy_move_towards_player(enemy):
 	var distance = world_to_map(mainPlayer.position) - world_to_map(enemy.position)
@@ -900,7 +903,7 @@ func _on_Enemy_Turn_Done_Request(enemy):
 func on_enemy_turn_done_confirmed():
 	if activeRoom != null:
 		if !activeRoom.enemiesInRoom.empty():
-			activeRoom.enemiesInRoom[0].calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW, 0)
+			activeRoom.enemiesInRoom[0].calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW, activeRoom, 0)
 			#print("Moving " + str(currentEnemy) + " enemies left to move " + str(enemiesToMoveArray.size()))
 	for projectile in projectilesInActiveRoom:
 		if projectile.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
@@ -985,7 +988,7 @@ func on_enemy_projectile_turn_done_request_confirmed():
 	else:
 		for enemy in tempEnenmyToAttack:
 			enemy.make_enemy_turn()
-		GlobalVariables.turnController.enemiesAttacking[0].calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, 0)
+		GlobalVariables.turnController.enemiesAttacking[0].calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION,activeRoom, 0)
 		print("making enemy attack")
 		for enemy in tempEnenmyToAttack:
 			enemy.enemyAttack()
@@ -1122,6 +1125,7 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 	if(get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.ENEMY && attackType == GlobalVariables.ATTACKTYPE.SWORD):
 		print("Woosh Player Sword Attack hit " + str(attackDamage))
 		var attackedEnemy = get_cell_pawn(world_to_map(player.position) + attack_direction)
+		GlobalVariables.turnController.enemyTakeDamage.append(attackedEnemy)
 		attackedEnemy.inflictDamage(attackDamage, attackType, world_to_map(player.position) + attack_direction, mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
 		
 				
@@ -1174,6 +1178,7 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 		newMagicProjectile.position = player.position + map_to_world(attack_direction*2)
 		add_child(newMagicProjectile)
 		newMagicProjectile.play_projectile_animation(true, "attack")
+		GlobalVariables.turnController.enemyTakeDamage.append(attackedEnemy)
 		attackedEnemy.inflictDamage(attackDamage, attackType, world_to_map(player.position) + attack_direction*2, mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
 	elif (get_cellv(world_to_map(player.position) + attack_direction*2) == TILETYPES.FLOOR && attackType == GlobalVariables.ATTACKTYPE.MAGIC):
 		print("Magic was used to attack")
@@ -1294,6 +1299,7 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 			player.position = player.position + map_to_world(attack_direction)
 			set_cellv(world_to_map(enemyToSwap.position), get_tileset().find_tile_by_name("ENEMY"))
 			set_cellv(world_to_map(player.position), get_tileset().find_tile_by_name("PLAYER"))
+			enemyToSwap.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW, activeRoom, 0)
 			#player and enemy swap spaces
 		elif get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.PUZZLEPIECE:
 			var puzzlePieceToSwap = get_cell_pawn(world_to_map(player.position) + attack_direction)
@@ -1309,26 +1315,33 @@ func on_puzzle_Block_interaction(player, puzzleBlockDirection):
 func on_Power_Block_explode(powerBlock):
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(1,0)) == get_tileset().find_tile_by_name("ENEMY"):
 		enemiesHitByExplosion.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,0)))
+		GlobalVariables.turnController.enemyTakeDamage.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)))
 		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,0)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(1,0), mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(-1,0)) == get_tileset().find_tile_by_name("ENEMY"):
-		enemiesHitByExplosion.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,0)))
+		GlobalVariables.turnController.enemyTakeDamage.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)))
 		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,0)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(-1,0), mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(0,1)) == get_tileset().find_tile_by_name("ENEMY"):
+		GlobalVariables.turnController.enemyTakeDamage.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)))
 		enemiesHitByExplosion.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(0,1)))
 		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(0,1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(0,1), mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(0,-1)) == get_tileset().find_tile_by_name("ENEMY"):
+		GlobalVariables.turnController.enemyTakeDamage.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)))
 		enemiesHitByExplosion.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(0,-1)))
 		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(0,-1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(0,-1), mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(1,1)) == get_tileset().find_tile_by_name("ENEMY"):
+		GlobalVariables.turnController.enemyTakeDamage.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)))
 		enemiesHitByExplosion.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,1)))
 		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(1,1), mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(1,-1)) == get_tileset().find_tile_by_name("ENEMY"):
+		GlobalVariables.turnController.enemyTakeDamage.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)))
 		enemiesHitByExplosion.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,-1)))
 		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(1,-1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(1,-1), mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(-1,1)) == get_tileset().find_tile_by_name("ENEMY"):
+		GlobalVariables.turnController.enemyTakeDamage.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)))
 		enemiesHitByExplosion.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,1)))
 		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(-1,1), mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
 	if get_cellv(world_to_map(powerBlock.position)+Vector2(-1,-1)) == get_tileset().find_tile_by_name("ENEMY"):
+		GlobalVariables.turnController.enemyTakeDamage.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)))
 		enemiesHitByExplosion.append(get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)))
 		get_cell_pawn(world_to_map(powerBlock.position)+Vector2(-1,-1)).inflictDamage(powerBlock.counters, GlobalVariables.ATTACKTYPE.BLOCK, world_to_map(powerBlock.position)+Vector2(-1,-1), mainPlayer, GlobalVariables.CURRENTPHASE.PLAYER)
 	if activeRoom != null:
@@ -1428,10 +1441,9 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage, attackCellA
 		var attackedNode = get_cell_pawn(attackCellSingleAttack)
 		print(attackedNode)
 		if get_cellv(attackCellSingleAttack) == TILETYPES.PLAYER:
-			GlobalVariables.turnController.playerTakeDamage.append(mainPlayer)
 			attackedNode.inflict_damage_playerDefeated(attackDamage, attackType)
 		elif get_cellv(attackCellSingleAttack) == TILETYPES.ENEMY && get_cell_pawn(attackCellSingleAttack).helpEnemy:
-			print("ATTACKING HELP ENEMY")
+			print("ATTACKING HELP ENEMY no Magic")
 			attackedNode.inflictDamage(attackDamage, attackType, attackCellSingleAttack, mainPlayer, GlobalVariables.CURRENTPHASE.ENEMYATTACK)
 		
 	elif attackType == GlobalVariables.ATTACKTYPE.MAGIC && !attackCell.empty():
@@ -1447,10 +1459,9 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage, attackCellA
 			newMagicProjectile.play_projectile_animation(true, "attack")
 			attackCellArray.erase(cell)
 			if get_cellv(cell) == TILETYPES.PLAYER:
-				GlobalVariables.turnController.playerTakeDamage.append(mainPlayer)
 				attackedNode.inflict_damage_playerDefeated(attackDamage, attackType)
 			elif get_cellv(cell) == TILETYPES.ENEMY && attackedNode.helpEnemy:
-				print("ATTACKING HELP ENEMY")
+				print("ATTACKING HELP ENEMY Magic")
 				attackedNode.inflictDamage(attackDamage, attackType, cell, mainPlayer, GlobalVariables.CURRENTPHASE.ENEMYATTACK)
 			
 	if (attackType == GlobalVariables.ATTACKTYPE.MAGIC):

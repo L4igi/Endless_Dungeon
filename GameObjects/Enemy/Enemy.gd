@@ -300,30 +300,28 @@ func enemyMovement():
 				set_process(true)
 			movementCount += 1
 
-	if check_inflicted_damage():
+
 #	if attackCount + movementCount < maxTurnActions:
 #		enemyAttack()
-		emit_signal("enemyMadeMove", self)
+	emit_signal("enemyMadeMove", self)
 
 func check_inflicted_damage():
 	if queueInflictDamage:
 		if lifePoints <= 0:
 			print("Play defeat animation")
 			play_defeat_animation(Grid.mainPlayer, GlobalVariables.turnController.currentTurnWaiting)
-			return false
 		else:
 			play_taken_damage_animation(playerQueueAttackType,Grid.mainPlayer)
 		queueInflictDamage = false
 		queueInflictDamage = 0
 		playerQueueAttackType = null
-	return true
 
-func calc_enemy_attack_to(calcMode, count):
-	adjust_enemy_attack_range_enable_attack(calcMode)
+func calc_enemy_attack_to(calcMode, activeRoom ,count):
+	adjust_enemy_attack_range_enable_attack(calcMode, activeRoom)
 	count +=1 
-	if count >= GlobalVariables.turnController.enemiesAttacking.size():
+	if count >= activeRoom.enemiesInRoom.size():
 		return
-	GlobalVariables.turnController.enemiesAttacking[count].calc_enemy_attack_to(calcMode, count)
+	activeRoom.enemiesInRoom[count].calc_enemy_attack_to(calcMode, activeRoom, count)
 
 			
 func enemyAttack(): 
@@ -405,13 +403,13 @@ func enemyAttack():
 				emit_signal("enemyAttacked", self, attackCell, attackType, attackDamage, attackCellArray)
 			attackCount += 1
 			
-	check_inflicted_damage()
+	#check_inflicted_damage()
 #	if attackCount + movementCount < maxTurnActions:
 #		enemyAttack()
 	GlobalVariables.turnController.enemy_attacked_done(self)
 
 #todo check if cell target is free or used calcmode active
-func adjust_enemy_attack_range_enable_attack(calcMode):
+func adjust_enemy_attack_range_enable_attack(calcMode, activeRoom):
 	if !attackCellArray.empty():
 		attackCellArray.clear()
 	if !attackCell.empty():
@@ -425,6 +423,8 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 	var enemyMapPostion = Grid.world_to_map(position)
 	var attackToSet = false
 	var count = 0
+	var attackedPlayer = []
+	var attackedEnemy = []
 	#print("mirrordirectionArray " + str(mirrorDirectionsArray))
 	for direction in mirrorDirectionsArray:
 		for attackRange in attackRangeArray:
@@ -443,25 +443,44 @@ func adjust_enemy_attack_range_enable_attack(calcMode):
 							directionVector = Vector2(values,-count)
 					var checkCell = enemyMapPostion + directionVector
 					#print(str(enemyMapPostion) +"-" +str(directionVector) +"="+ str(checkCell))
-					if check_if_cell_valid_position(checkCell):
+					if check_if_cell_valid_position(checkCell, activeRoom):
 						#print("valid")
 						var checkCellValue = Grid.get_cellv(checkCell)
-						if checkCellValue == Grid.get_tileset().find_tile_by_name("PLAYER"):
-							attackTo = directionVector
-							attackCell.append(checkCell)
-							attackToSet = true
-						elif checkCellValue == Grid.get_tileset().find_tile_by_name("ENEMY"):
-							if Grid.get_cell_pawn(checkCell).helpEnemy:
-								if !attackToSet:
-									attackTo = directionVector
+						if calcMode == GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION:
+							if checkCellValue == Grid.get_tileset().find_tile_by_name("PLAYER"):
+								attackTo = directionVector
 								attackCell.append(checkCell)
 								attackToSet = true
+								attackedPlayer.append(Grid.get_cell_pawn(checkCell))
+							elif checkCellValue == Grid.get_tileset().find_tile_by_name("ENEMY"):
+								if Grid.get_cell_pawn(checkCell).helpEnemy:
+									if !attackToSet:
+										attackTo = directionVector
+									attackCell.append(checkCell)
+									attackToSet = true
+									attackedEnemy.append(Grid.get_cell_pawn(checkCell))
 						if checkCellValue == Grid.get_tileset().find_tile_by_name("WALL") || checkCellValue == Grid.get_tileset().find_tile_by_name("DOOR") || checkCellValue == Grid.get_tileset().find_tile_by_name("UNLOCKEDDOOR"):
 							break
 						else:
 							cellsToColor.append(checkCell)
 		count = 0
 	#print ("cellstocolor size " + str(cellsToColor.size()))
+	if calcMode == GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION:
+		if !attackedPlayer.empty() && enemyType != GlobalVariables.ENEMYTYPE.MAGEENEMY && calcMode == GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION:
+			GlobalVariables.turnController.playerTakeDamage.append(attackedPlayer[0])
+		elif !attackedEnemy.empty() && enemyType != GlobalVariables.ENEMYTYPE.MAGEENEMY && calcMode == GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION:
+			var tempEnemyTakenDamage = attackedEnemy.duplicate()
+			for enemy in tempEnemyTakenDamage:
+				if Grid.world_to_map(enemy.position) != Grid.world_to_map(position)+attackTo:
+					attackedEnemy.erase(enemy)
+			GlobalVariables.turnController.enemyTakeDamage.append(attackedEnemy[0])
+		else:
+			if !attackedPlayer.empty():
+				GlobalVariables.turnController.playerTakeDamage.append(attackedPlayer[0])
+			for enemy in attackedEnemy:
+				if !GlobalVariables.turnController.enemyTakeDamage.has(enemy):
+					GlobalVariables.turnController.enemyTakeDamage.append(enemy)
+	print(cellsToColor.size())
 	for cell in cellsToColor:
 		var alreadyColored = false
 		for child in attackRangeNode.get_children():
@@ -493,8 +512,8 @@ func mirror_base_direction():
 				tempAttackRang.clear()
 						
 						
-func check_if_cell_valid_position(checkCell):
-	if checkCell.x >= (Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(1,1)).x && checkCell.x <= (Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Grid.activeRoom.roomSize-Vector2(2,2)).x && checkCell.y >= (Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(1,1)).y && checkCell.y <= (Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Grid.activeRoom.roomSize-Vector2(2,2)).y:
+func check_if_cell_valid_position(checkCell, activeRoom):
+	if checkCell.x >= (Grid.world_to_map(activeRoom.doorRoomLeftMostCorner)+Vector2(1,1)).x && checkCell.x <= (Grid.world_to_map(activeRoom.doorRoomLeftMostCorner)+activeRoom.roomSize-Vector2(2,2)).x && checkCell.y >= (Grid.world_to_map(activeRoom.doorRoomLeftMostCorner)+Vector2(1,1)).y && checkCell.y <= (Grid.world_to_map(activeRoom.doorRoomLeftMostCorner)+activeRoom.roomSize-Vector2(2,2)).y:
 		#print("in range")
 		return true
 	#print("not in range")
@@ -614,8 +633,7 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 
 
 func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, mainPlayer = null, CURRENTPHASE = null):
-	GlobalVariables.turnController.enemyTakeDamage.append(self)
-	print("TURNCONTROLLER PHASE " + str(GlobalVariables.turnController.currentTurnWaiting))
+	print("IN INFLICT DAMAGE TURNCONTROLLER PHASE " + str(GlobalVariables.turnController.currentTurnWaiting))
 	var barrierDefeatItem = null
 	self.inflictattackType = inflictattackType
 	if inflictattackType == GlobalVariables.ATTACKTYPE.SAVED:

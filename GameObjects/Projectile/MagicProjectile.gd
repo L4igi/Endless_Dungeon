@@ -136,7 +136,7 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack",project
 	#print("ProjectileAnimation " + str(projectileAnimation) + ( " current node ") + str(self))
 	#print("current active turn waiting " + str(GlobalVariables.turnController.currentTurnWaiting ))
 	var animationMode = 1
-	if GlobalVariables.turnController.currentTurnWaiting != GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE && GlobalVariables.turnController.currentTurnWaiting != GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE && GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYER || GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMY:
+	if GlobalVariables.turnController.currentTurnWaiting != GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE && GlobalVariables.turnController.currentTurnWaiting != GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE && GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYER || GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMY || GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMYATTACK:
 		animationMode = 1
 		#print(GlobalVariables.turnController.currentTurnWaiting)
 		#Grid.mainPlayer.waitingForEventBeforeContinue = true
@@ -219,6 +219,8 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack",project
 	elif animationMode == 1:
 		Grid.projectilesInActiveRoom.erase(self)
 		if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYER:
+			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
+		elif projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMYATTACK:
 			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
 		GlobalVariables.turnController.on_projectile_interaction(self, true)
 		#print("delete phase 1 done")

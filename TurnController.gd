@@ -159,9 +159,6 @@ func enemy_projectiles_turn_done(projectile):
 func enemy_attacked_done(enemy):
 	enemiesAttacking.erase(enemy)
 	#print("after erasing enemy " + str(enemiesAttacking.size()))
-	if enemiesAttacking.empty():
-		for enemy in Grid.activeRoom.enemiesInRoom:
-			enemy.check_inflicted_damage()
 	if check_turn_done_conditions():
 		if !playerDefeatStop:
 			currentTurnWaiting = GlobalVariables.CURRENTPHASE.ENEMY
@@ -198,6 +195,8 @@ func on_player_taken_damage(player):
 	check_turn_progress()
 
 func on_enemy_taken_damage(enemy, deleting = false):
+	print(enemyTakeDamage)
+	print(enemy)
 	enemyTakeDamage.erase(enemy)
 	if deleting:
 		enemy.queue_free()
