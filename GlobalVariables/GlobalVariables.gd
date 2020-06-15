@@ -43,3 +43,5 @@ var tileSize = 32
 var isometricFactor = 2
 
 var turnController = preload("res://TurnController.gd").new()
+
+var firstCall = true

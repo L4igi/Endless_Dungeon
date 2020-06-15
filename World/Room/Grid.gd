@@ -168,7 +168,8 @@ func _ready():
 	#todo replace with cleared room later on 
 	GlobalVariables.turnController.currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
 	GlobalVariables.turnController.inRoomType = GlobalVariables.ROOM_TYPE.ENEMYROOM
-	if !load_game():
+	if GlobalVariables.firstCall:
+		GlobalVariables.firstCall=false
 		var newPlayer = Player.instance()
 		newPlayer.set_z_index(2)
 		newPlayer.position = Vector2(80,80)
@@ -178,6 +179,8 @@ func _ready():
 		get_node("Player").connect("puzzleBlockInteractionSignal", self, "on_puzzle_Block_interaction")
 	#	get_parent().get_node("MainCamera").connect_grid_camera_signal()
 		mainPlayer = get_node("Player")
+	else:
+		load_game()
 	for child in get_children():
 		if !child is Camera2D:
 			set_cellv(world_to_map(child.position), get_tileset().find_tile_by_name(match_Enum(child.type)))
