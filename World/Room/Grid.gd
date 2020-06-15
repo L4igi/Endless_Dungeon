@@ -57,8 +57,6 @@ var mainPlayer
 
 signal enemyTurnDoneSignal
 
-signal playerTurnDoneSignal
-
 signal puzzleBarrierDisableSignal (item, mainPlayer)
 
 signal moveCameraSignal (activeRoom)
@@ -170,16 +168,16 @@ func _ready():
 	#todo replace with cleared room later on 
 	GlobalVariables.turnController.currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
 	GlobalVariables.turnController.inRoomType = GlobalVariables.ROOM_TYPE.ENEMYROOM
-	var newPlayer = Player.instance()
-	newPlayer.set_z_index(2)
-	newPlayer.position = Vector2(80,80)
-	newPlayer.set_name("Player")
-	add_child(newPlayer)
-	get_node("Player").connect("playerMadeMove", GlobalVariables.turnController, "player_turn_done")
-	get_node("Player").connect("playerAttacked", self, "_on_Player_Attacked")
-	get_node("Player").connect("puzzleBlockInteractionSignal", self, "on_puzzle_Block_interaction")
-#	get_parent().get_node("MainCamera").connect_grid_camera_signal()
-	mainPlayer = get_node("Player")
+	if !load_game():
+		var newPlayer = Player.instance()
+		newPlayer.set_z_index(2)
+		newPlayer.position = Vector2(80,80)
+		newPlayer.set_name("Player")
+		add_child(newPlayer)
+		get_node("Player").connect("playerAttacked", self, "_on_Player_Attacked")
+		get_node("Player").connect("puzzleBlockInteractionSignal", self, "on_puzzle_Block_interaction")
+	#	get_parent().get_node("MainCamera").connect_grid_camera_signal()
+		mainPlayer = get_node("Player")
 	for child in get_children():
 		if !child is Camera2D:
 			set_cellv(world_to_map(child.position), get_tileset().find_tile_by_name(match_Enum(child.type)))
@@ -237,6 +235,7 @@ func request_move(pawn, direction):
 				elif object_pawn.itemType == GlobalVariables.ITEMTYPE.PUZZLESWITCH:
 					emit_signal("puzzleBarrierDisableSignal", object_pawn, mainPlayer)
 				elif object_pawn.itemType == GlobalVariables.ITEMTYPE.EXIT:
+					save_game()
 					get_tree().reload_current_scene()
 				elif object_pawn.itemType == GlobalVariables.ITEMTYPE.COIN:
 					pawn.add_nonkey_items(object_pawn.itemType)
@@ -927,7 +926,6 @@ func create_enemy_room(unlockedDoor):
 		newEnemy.connect("enemyMadeMove", GlobalVariables.turnController, "enemy_turn_done")
 		newEnemy.connect("enemyAttacked", self, "_on_enemy_attacked")
 		newEnemy.connect("enemyDefeated", self, "_on_enemy_defeated")
-		newEnemy.connect("enemyExplosionDone", self, "_on_enemy_explosion_done")
 #		newEnemy.calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW, unlockedDoor,0)
 		set_cellv(world_to_map(newEnemy.position), get_tileset().find_tile_by_name(match_Enum(newEnemy.type)))
 		unlockedDoor.enemiesInRoom.append(newEnemy)
@@ -1632,7 +1630,7 @@ func dropLootInActiveRoom():
 		barrierKeysNoSolution.erase(itemToGenerate)
 		var newItemPosition = activeRoom.doorRoomLeftMostCorner + map_to_world(activeRoom.roomSize/2)
 		var itemPosMover = Vector2(0,1)
-		while(get_cellv(world_to_map(newItemPosition)) == TILETYPES.PLAYER || get_cellv(world_to_map(newItemPosition)) == TILETYPES.PUZZLEPIECE):
+		while get_cellv(world_to_map(newItemPosition)) == TILETYPES.PLAYER || get_cellv(world_to_map(newItemPosition)) == TILETYPES.PUZZLEPIECE || get_cellv(world_to_map(newItemPosition)) == TILETYPES.ITEM:
 			newItemPosition += map_to_world(itemPosMover)
 			if itemPosMover.x >= itemPosMover.y:
 				itemPosMover += Vector2(0,1)
@@ -2277,3 +2275,73 @@ func manage_barrier_creation(barrierType):
 		return true
 	return false
 
+
+# Note: This can be called from anywhere inside the tree. This function is
+# path independent.
+# Go through everything in the persist category and ask them to return a
+# dict of relevant variables
+func save_game():
+	print("Saving game")
+	var save_game = File.new()
+	save_game.open("user://savegame.save", File.WRITE)
+	var save_nodes = get_tree().get_nodes_in_group("Persist")
+	for node in save_nodes:
+		print("saved node " +str(node.name))
+		# Check the node is an instanced scene so it can be instanced again during load
+		if node.filename.empty():
+			print("persistent node '%s' is not an instanced scene, skipped" % node.name)
+			continue
+
+		# Check the node has a save function
+		if !node.has_method("save"):
+			print("persistent node '%s' is missing a save() function, skipped" % node.name)
+			continue
+
+		# Call the node's save function
+		var node_data = node.call("save")
+
+		# Store the save dictionary as a new line in the save file
+		save_game.store_line(to_json(node_data))
+	save_game.close()
+
+# Note: This can be called from anywhere inside the tree. This function
+# is path independent.
+func load_game():
+	print(OS.get_user_data_dir())
+	var save_game = File.new()
+	if not save_game.file_exists("user://savegame.save"):
+		return false # Error! We don't have a save to load.
+
+	# We need to revert the game state so we're not cloning objects
+	# during loading. This will vary wildly depending on the needs of a
+	# project, so take care with this step.
+	# For our example, we will accomplish this by deleting saveable objects.
+	var save_nodes = get_tree().get_nodes_in_group("Persist")
+	for i in save_nodes:
+		i.queue_free()
+
+	# Load the file line by line and process that dictionary to restore
+	# the object it represents.
+	save_game.open("user://savegame.save", File.READ)
+	while save_game.get_position() < save_game.get_len():
+		# Get the saved dictionary from the next line in the save file
+		var node_data = parse_json(save_game.get_line())
+
+		# Firstly, we need to create the object and add it to the tree and set its position.
+		var new_object = load(node_data["filename"]).instance()
+		get_node(node_data["parent"]).add_child(new_object)
+		mainPlayer = new_object
+		new_object.set_z_index(2)
+		new_object.position = Vector2(80,80)
+		new_object.set_name("Player")
+		get_node("Player").connect("playerAttacked", self, "_on_Player_Attacked")
+		get_node("Player").connect("puzzleBlockInteractionSignal", self, "on_puzzle_Block_interaction")
+
+		# Now we set the remaining variables.
+		for i in node_data.keys():
+			if i == "filename" or i == "parent":
+				continue
+			new_object.set(i, node_data[i])
+		new_object.update_gui_elements()
+	save_game.close()
+	return true

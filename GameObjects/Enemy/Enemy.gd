@@ -23,8 +23,6 @@ signal enemyAttacked (enemy, attackDirection, attackDamange )
 
 signal enemyDefeated (enemy, CURRENTPHASE)
 
-signal enemyExplosionDone(enemy)
-
 var lifePoints = 1
 
 var isBarrier = false
@@ -632,10 +630,10 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 	return enemyType
 
 
-func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, mainPlayer = null, CURRENTPHASE = null):
+func inflictDamage(inflictattackDamageVar, inflictattackTypeVar, takeDamagePosition, mainPlayer = null, CURRENTPHASE = null):
 	print("IN INFLICT DAMAGE TURNCONTROLLER PHASE " + str(GlobalVariables.turnController.currentTurnWaiting))
 	var barrierDefeatItem = null
-	self.inflictattackType = inflictattackType
+	self.inflictattackType = inflictattackTypeVar
 	if inflictattackType == GlobalVariables.ATTACKTYPE.SAVED:
 		#print("ENEMY WAS SAVED")
 		playSavedAnimation = true
@@ -654,7 +652,7 @@ func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, m
 			print("need weapon: " + str(barrierKeyValue) + " to defeat enemy ")
 
 	if !self.isBarrier:
-		lifePoints -= inflictattackDamage
+		lifePoints -= inflictattackDamageVar
 		healthBar.set_value(lifePoints*10)
 	if lifePoints <= 0:
 		enemyDefeated = true
@@ -668,7 +666,7 @@ func inflictDamage(inflictattackDamage, inflictattackType, takeDamagePosition, m
 			playerQueueAttackType = attackType
 	else:
 		if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER || CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE || CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE || CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMYATTACK:
-			play_taken_damage_animation(inflictattackDamage, mainPlayer)
+			play_taken_damage_animation(inflictattackDamageVar, mainPlayer)
 		else:
 			queueInflictDamage = true
 			playerQueueAttackType =  inflictattackType

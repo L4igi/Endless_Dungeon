@@ -2,7 +2,7 @@ extends Node
 
 var roomDimensions = 9
 
-var maxNumberRooms = 10
+var maxNumberRooms = 1
 
 enum BARRIERTYPE {DOOR = 0, ENEMY = 1, PUZZLE = 2}
 
@@ -43,4 +43,3 @@ var tileSize = 32
 var isometricFactor = 2
 
 var turnController = preload("res://TurnController.gd").new()
-

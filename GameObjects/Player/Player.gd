@@ -12,17 +12,13 @@ var playerTurnDone = false
 var playerCanAttack = false 
 var playerPreviousPosition = Vector2.ZERO
 
-signal playerMadeMove 
-
 signal playerAttacked (player, attackDirection, attackDamage)
-
-signal onPlayerDefeated (player, lifepoints)
 
 var playerPassedDoor = Vector2.ZERO
 
 var movementCount = 0
 
-var maxTurnActions = 20
+var maxTurnActions = 10
 
 var attackCount = 0
 
@@ -34,7 +30,7 @@ var magicAttackDamage = 0.5
 
 var powerBlockAttackDamage = 1.0
 
-var coinCount = 50
+var coinCount = 10
 
 var maxLifePoints = 10
 
@@ -117,7 +113,7 @@ func _ready():
 	
 	Grid.connect("enemyTurnDoneSignal", self, "_on_enemy_turn_done_signal")
 
-func _process(delta):
+func _process(_delta):
 	if !disablePlayerInput && !inInventory:
 		if movedThroughDoorDirection!=Vector2.ZERO:
 			player_passed_door()
@@ -143,8 +139,7 @@ func _process(delta):
 				var attackDirection = get_attack_direction()
 				player_movement(movementDirection)
 				player_attack(attackDirection)
-
-#
+				
 func player_movement(movementDirection):
 	if GlobalVariables.turnController.queueDropLoot:
 		GlobalVariables.turnController.player_turn_done(self)
@@ -372,14 +367,14 @@ func toggle_enemy_danger_areas():
 						break
 			emit_signal("toggleDangerArea", enemyToToggleArea)
 		
-func inflict_damage_playerDefeated(attackDamage, attackType):
+func inflict_damage_playerDefeated(attackDamageVar, attackTypeVar):
 	if !GlobalVariables.turnController.playerTakeDamage.has(self):
 		GlobalVariables.turnController.playerTakeDamage.append(self)
-	lifePoints -= attackDamage
-	guiElements.change_health(attackDamage)
+	lifePoints -= attackDamageVar
+	guiElements.change_health(attackDamageVar)
 	if lifePoints > 0:
 		var animationToPlay = str("take_damage_physical")
-		if attackType == GlobalVariables.ATTACKTYPE.MAGIC:
+		if attackTypeVar == GlobalVariables.ATTACKTYPE.MAGIC:
 			animationToPlay = str("take_damage_magic")
 		set_process(false)
 		#print("Playing hit animation")
@@ -509,3 +504,28 @@ func get_actions_left():
 #		if !Grid.activeRoom.enemiesInRoom.empty():
 #			for enemy in Grid.activeRoom.enemiesInRoom:
 #				enemy.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
+
+func update_gui_elements():
+	guiElements.add_coin(coinCount)
+	guiElements.change_max_health(maxLifePoints)
+	guiElements.set_health(lifePoints)
+	guiElements.fill_potions(currentPotions)
+	guiElements.change_max_potions(maxPotions)
+	
+func save():
+	var save_dict = {
+		"filename" : get_filename(),
+		"parent" : get_parent().get_path(),
+		"maxTurnActions" : maxTurnActions,
+		"attackCount" : attackCount,
+		"attackDamage" : attackDamage,
+		"swordAttackDamage" : swordAttackDamage,
+		"magicAttackDamage" : magicAttackDamage,
+		"powerBlockAttackDamage" : powerBlockAttackDamage,
+		"coinCount" : coinCount,
+		"maxLifePoints" : maxLifePoints,
+		"lifePoints" : lifePoints,
+		"maxPotions" : maxPotions,
+		"currentPotions" : currentPotions
+	}
+	return save_dict

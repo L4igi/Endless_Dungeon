@@ -170,10 +170,10 @@ __meta__ = {
 }
 
 [node name="CoinCountLabel" type="Label" parent="CoinCount"]
-margin_left = 12.2947
-margin_top = -2.2301
-margin_right = 25.2947
-margin_bottom = 15.7699
+margin_left = 11.128
+margin_top = -1.87112
+margin_right = 24.128
+margin_bottom = 16.1289
 rect_scale = Vector2( 0.65, 0.65 )
 size_flags_horizontal = 4
 text = "0"

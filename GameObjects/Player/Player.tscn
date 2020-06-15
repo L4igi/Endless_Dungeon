@@ -233,7 +233,9 @@ tracks/0/keys = {
 "values": [ 117, 118, 119, 120, 121, 122, 123, 124, 125, 126 ]
 }
 
-[node name="Player" type="Node2D"]
+[node name="Player" type="Node2D" groups=[
+"Persist",
+]]
 script = ExtResource( 2 )
 
 [node name="Sprite" type="Sprite" parent="."]
