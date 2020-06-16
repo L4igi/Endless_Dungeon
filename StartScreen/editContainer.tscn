@@ -1,28 +1,31 @@
 [gd_scene format=2]
 
 [node name="editContainer" type="HBoxContainer"]
+margin_left = -4.0
 margin_right = 40.0
 margin_bottom = 40.0
+alignment = 1
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="sub" type="Label" parent="."]
+margin_left = 8.0
 margin_top = 11.0
-margin_right = 6.0
+margin_right = 14.0
 margin_bottom = 29.0
 text = "<"
 
 [node name="value" type="Label" parent="."]
-margin_left = 10.0
+margin_left = 18.0
 margin_top = 11.0
-margin_right = 18.0
+margin_right = 26.0
 margin_bottom = 29.0
 text = "1"
 
 [node name="add" type="Label" parent="."]
-margin_left = 22.0
+margin_left = 30.0
 margin_top = 11.0
-margin_right = 28.0
+margin_right = 36.0
 margin_bottom = 29.0
 text = ">"

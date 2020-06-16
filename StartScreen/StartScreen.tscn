@@ -58,29 +58,30 @@ margin_right = 40.0
 margin_bottom = 40.0
 
 [node name="ItemList" type="ItemList" parent="Menu/CenterRow/VBoxContainer/OptionsButton/OptionsPopup/HBoxContainer"]
-margin_left = 10.0
-margin_top = 5.0
-margin_right = 130.0
-margin_bottom = 125.0
-rect_min_size = Vector2( 120, 120 )
-size_flags_horizontal = 3
-size_flags_vertical = 3
-items = [ "RoomSize", null, false, "RoomCount", null, false, "Difficulty", null, false ]
+margin_right = 135.0
+margin_bottom = 120.0
+rect_min_size = Vector2( 135, 120 )
+items = [ "Size", null, false, "Rooms", null, false, "Mode", null, false ]
 auto_height = true
 icon_mode = 0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Menu/CenterRow/VBoxContainer/OptionsButton/OptionsPopup/HBoxContainer/ItemList"]
-margin_left = 85.0
+margin_left = 70.0
 margin_top = 6.0
-margin_right = 125.0
+margin_right = 110.0
 margin_bottom = 68.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 alignment = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="roomSizeLabel" parent="Menu/CenterRow/VBoxContainer/OptionsButton/OptionsPopup/HBoxContainer/ItemList/VBoxContainer" instance=ExtResource( 2 )]
+margin_bottom = 18.0
 
 [node name="roomCountLabel" parent="Menu/CenterRow/VBoxContainer/OptionsButton/OptionsPopup/HBoxContainer/ItemList/VBoxContainer" instance=ExtResource( 2 )]
+margin_top = 22.0
 
 [node name="difficultyLabel" parent="Menu/CenterRow/VBoxContainer/OptionsButton/OptionsPopup/HBoxContainer/ItemList/VBoxContainer" instance=ExtResource( 2 )]
 
