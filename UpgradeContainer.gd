@@ -48,11 +48,29 @@ func set_upgrade_container(containerType):
 			upgradeType = GlobalVariables.UPGRADETYPE.SWORD
 			
 func updatePrice():
-	upgradeCost.set_text(str(GlobalVariables.upgradeCosts[upgradeType-1]))
+	upgradeCost.set_text(str(int(ceil(GlobalVariables.upgradeCosts[upgradeType-1]))))
 	
 func do_upgrade(player):
 	if player.coinCount >= int(upgradeCost.get_text()):
 		$AnimationPlayer.play("ActivateUpgrade", -1, 1.5)
 		player.on_upgradeContainer_interaction(upgradeType, GlobalVariables.upgradeAmount[upgradeType-1],int(upgradeCost.get_text()))
+		match upgradeType:
+			GlobalVariables.UPGRADETYPE.ACTIONSUP:
+				GlobalVariables.upgradeCosts[upgradeType-1]*=1.5
+			GlobalVariables.UPGRADETYPE.FILLFLASK:
+				GlobalVariables.upgradeCosts[upgradeType-1]*=1.5
+			GlobalVariables.UPGRADETYPE.FILLHEART:
+				GlobalVariables.upgradeCosts[upgradeType-1]*=1.5
+			GlobalVariables.UPGRADETYPE.BOMB:
+				GlobalVariables.upgradeCosts[upgradeType-1]*=1.5
+			GlobalVariables.UPGRADETYPE.FLASK:
+				GlobalVariables.upgradeCosts[upgradeType-1]*=1.5
+			GlobalVariables.UPGRADETYPE.HEART:
+				GlobalVariables.upgradeCosts[upgradeType-1]*=1.5
+			GlobalVariables.UPGRADETYPE.MAGIC:
+				GlobalVariables.upgradeCosts[upgradeType-1]*=1.5
+			GlobalVariables.UPGRADETYPE.SWORD:
+				GlobalVariables.upgradeCosts[upgradeType-1]*=1.5
+		updatePrice()
 	else:
 		$AnimationPlayer.play("NotEnoughMoney", -1, 1.0)

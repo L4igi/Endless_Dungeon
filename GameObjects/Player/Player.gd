@@ -30,7 +30,7 @@ var magicAttackDamage = 0.5
 
 var powerBlockAttackDamage = 1.0
 
-var coinCount = 10
+var coinCount = 99
 
 var maxLifePoints = 10
 
@@ -406,6 +406,14 @@ func add_nonkey_items(itemtype):
 		GlobalVariables.ITEMTYPE.COIN:
 			coinCount += 1
 			guiElements.add_coin(coinCount)
+		GlobalVariables.ITEMTYPE.FILLUPHALFHEART:
+			if lifePoints < maxLifePoints:
+				lifePoints+=1
+				guiElements.set_health(lifePoints)
+		GlobalVariables.ITEMTYPE.FILLUPHEART:
+			if lifePoints < maxLifePoints:
+				lifePoints+=2
+				guiElements.set_health(lifePoints)
 
 func add_key_item_to_inventory(item):
 	var newInventoryItem = InventoryItem.instance()

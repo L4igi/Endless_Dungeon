@@ -242,6 +242,10 @@ func request_move(pawn, direction):
 					get_tree().reload_current_scene()
 				elif object_pawn.itemType == GlobalVariables.ITEMTYPE.COIN:
 					pawn.add_nonkey_items(object_pawn.itemType)
+				elif object_pawn.itemType == GlobalVariables.ITEMTYPE.FILLUPHALFHEART:
+					pawn.add_nonkey_items(object_pawn.itemType)
+				elif object_pawn.itemType == GlobalVariables.ITEMTYPE.FILLUPHEART:
+					pawn.add_nonkey_items(object_pawn.itemType)
 				else:
 					pawn.itemsInPosession.append(object_pawn)
 					pawn.add_key_item_to_inventory(object_pawn)
@@ -1625,8 +1629,16 @@ func _on_enemy_defeated(enemy):
 func dropLootInActiveRoom():
 	dropBonusLoot()
 	#create loot currently matching with closed doord 
-	print(barrierKeysNoSolution)
-	if !barrierKeysNoSolution.empty():
+	#calculating chance of dropping key item 
+	var dropKeyItem = false
+	print("currentNumberRoomsgenerated-numberRoomsCleared " + str(currentNumberRoomsgenerated-numberRoomsCleared))
+	if currentNumberRoomsgenerated-numberRoomsCleared == 0:
+		dropKeyItem = true
+	elif currentNumberRoomsgenerated-numberRoomsCleared > 0:
+		if randi()%100 > randi()%30+20:
+			dropKeyItem = true
+			print("DROPKEYITEM")
+	if !barrierKeysNoSolution.empty() && dropKeyItem:
 		#create key and spawn it on floor spawn one left of player if player is in the middle of the room
 		var itemToGenerate = barrierKeysNoSolution[randi()%barrierKeysNoSolution.size()]
 		barrierKeysSolutionSpawned.append(itemToGenerate)
@@ -1653,7 +1665,7 @@ func dropLootInActiveRoom():
 		newItem.set_z_index(1)
 		var newItemPosition = activeRoom.doorRoomLeftMostCorner + map_to_world(activeRoom.roomSize/2)
 		var itemPosMover = Vector2(0,1)
-		while(get_cellv(world_to_map(newItemPosition)) == TILETYPES.PLAYER || get_cellv(world_to_map(newItemPosition)) == TILETYPES.PUZZLEPIECE):
+		while(get_cellv(world_to_map(newItemPosition)) == TILETYPES.PLAYER || get_cellv(world_to_map(newItemPosition)) == TILETYPES.PUZZLEPIECE) || get_cellv(world_to_map(newItemPosition)) == TILETYPES.ITEM:
 			newItemPosition += map_to_world(itemPosMover)
 			if itemPosMover.x >= itemPosMover.y:
 				itemPosMover += Vector2(0,1)
@@ -1669,7 +1681,13 @@ func dropLootInActiveRoom():
 		if numberRoomsCleared == GlobalVariables.maxNumberRooms:
 			newItem.setTexture(GlobalVariables.ITEMTYPE.EXIT)
 		else:
-			newItem.setTexture(GlobalVariables.ITEMTYPE.POTION)
+			var nonKeyItemToDrop = randi()%100
+			if nonKeyItemToDrop < 50:
+				newItem.setTexture(GlobalVariables.ITEMTYPE.FILLUPHALFHEART)
+			elif nonKeyItemToDrop < 85:
+				newItem.setTexture(GlobalVariables.ITEMTYPE.FILLUPHEART)
+			else:
+				newItem.setTexture(GlobalVariables.ITEMTYPE.POTION)
 		add_child(newItem)
 		set_cellv(world_to_map(newItem.position), get_tileset().find_tile_by_name("ITEM"))
 

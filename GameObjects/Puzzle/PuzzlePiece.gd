@@ -70,7 +70,7 @@ func playWrongWriteAnimation(right = true):
 
 func makePuzzleBarrier(currentGrid, unlockedDoor):
 	randomize()
-	var barrierChance = 1
+	var barrierChance = randi()%3
 	var checkBarrierPossible = currentGrid.manage_barrier_creation(GlobalVariables.BARRIERTYPE.PUZZLE)
 	#currentGrid.barrierPuzzlePieceAlreadySpawned = true
 	if(barrierChance == 1 && currentGrid.currentNumberRoomsgenerated!=0 && checkBarrierPossible):

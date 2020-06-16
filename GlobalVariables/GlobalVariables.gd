@@ -2,7 +2,7 @@ extends Node
 
 var roomDimensions = 9
 
-var maxNumberRooms = 1
+var maxNumberRooms = 15
 
 enum BARRIERTYPE {DOOR = 0, ENEMY = 1, PUZZLE = 2}
 
@@ -24,11 +24,11 @@ enum PROJECTILETYPE{PLAYER = 0, ENEMY = 1, POWERBLOCK = 2, TICKERPROJECTILE = 3}
 
 enum COLOR {RED = 0, GREEN = 1, BLUE = 2, YELLOW = 3} 
 
-enum ITEMTYPE{POTION = 0, KEY = 1, WEAPON = 2, HEARTCONTAINER = 3, FLASKCONTAINER = 4, PUZZLESWITCH=5, EXIT = 6, COIN=7}
+enum ITEMTYPE{POTION = 0, KEY = 1, WEAPON = 2, HEARTCONTAINER = 3, FLASKCONTAINER = 4, PUZZLESWITCH=5, EXIT = 6, COIN=7, FILLUPHEART = 8, FILLUPHALFHEART=9}
 
 enum MOVEMENTATTACKCALCMODE {PREVIEW = 0, ACTION = 1}
 
-var upgradeCosts = [1,1,1,1,1,1,1,1]
+var upgradeCosts = [3,3,4,6,1,2,6,2]
 
 var upgradeAmount = [1,1,1,1,1,1,1,1]
 

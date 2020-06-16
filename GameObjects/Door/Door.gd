@@ -94,7 +94,7 @@ func unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance):
 
 	Grid.create_doors(doorRoomLeftMostCorner, false, roomSize.x, roomSize.y, roomSizeMultiplier, doorLocationDirection)
 
-	var randRoomType = randi()%85
+	var randRoomType = 90
 #		randRoomType = 90
 	if(randRoomType < enemyRoomChance):
 		#print("create enemy room " + str(randRoomType))
@@ -146,7 +146,8 @@ func updateContainerPrices():
 		container.updatePrice()
 	
 func makeDoorBarrier(currentGrid):
-	var barrierChance = 1
+	var barrierChance = randi()%1+1
+	print("BarrierChance == " + str(barrierChance))
 	var checkBarrierPossible = currentGrid.manage_barrier_creation(GlobalVariables.BARRIERTYPE.DOOR)
 	if(barrierChance == 1 && currentGrid.currentNumberRoomsgenerated!=0 && checkBarrierPossible):
 		#print("generating door barrier")
