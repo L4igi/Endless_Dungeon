@@ -37,6 +37,8 @@ var powerBlocksInRoom = []
 
 var upgradeContainersInRoom = []
 
+var countingBlocksInRoom = []
+
 var roomType = ROOM_TYPE.EMPTYTREASUREROOM
 
 var roomCleared = false
@@ -94,7 +96,7 @@ func unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance):
 
 	Grid.create_doors(doorRoomLeftMostCorner, false, roomSize.x, roomSize.y, roomSizeMultiplier, doorLocationDirection)
 
-	var randRoomType = 90
+	var randRoomType = 50
 #		randRoomType = 90
 	if(randRoomType < enemyRoomChance):
 		#print("create enemy room " + str(randRoomType))

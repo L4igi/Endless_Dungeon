@@ -1,6 +1,6 @@
 extends TileMap
 
-enum TILETYPES { EMPTY, PLAYER, WALL, ENEMY, PUZZLEPIECE, ITEM, DOOR, UNLOCKEDDOOR, MAGICPROJECTILE, BLOCK, FLOOR, UPGRADECONTAINER}
+enum TILETYPES { EMPTY, PLAYER, WALL, ENEMY, PUZZLEPIECE, ITEM, DOOR, UNLOCKEDDOOR, MAGICPROJECTILE, BLOCK, FLOOR, UPGRADECONTAINER, COUNTINGBLOCK}
 
 
 var Enemy = preload("res://GameObjects/Enemy/Enemy.tscn")
@@ -20,6 +20,8 @@ var Player = preload("res://GameObjects/Player/Player.tscn")
 var PuzzlePiece = preload("res://GameObjects/Puzzle/PuzzlePiece.tscn")
 
 var UpgradeContainer = preload("res://GameObjects/UpgradeContainer/UpgradeContainer.tscn")
+
+var CountingBlock = preload("res://GameObjects/CountingBlock/CountingBlock.tscn")
 
 var roomDimensions = GlobalVariables.roomDimensions
 
@@ -127,6 +129,8 @@ func match_Enum(var index):
 			return "FLOOR"
 		10:
 			return "UPGRADECONTAINER"
+		11:
+			return "COUNTINGBLOCK"
 		-1:
 			return "EMPTY"
 		_:
@@ -157,6 +161,8 @@ func set_enum_index(var enumName, var setTo):
 			TILETYPES.FLOOR = setTo
 		"UPGRADECONTAINER":
 			TILETYPES.UPGRADECONTAINER = setTo
+		"COUNTINGBLOCK":
+			TILETYPES.COUNTINGBLOCK = setTo
 		"EMPTY":
 			TILETYPES.EMPTY= -1
 		_:
@@ -291,6 +297,9 @@ func request_move(pawn, direction):
 				return 
 			TILETYPES.UPGRADECONTAINER:
 				return 
+			TILETYPES.COUNTINGBLOCK:
+				print("HERE")
+				return
 					
 				
 #	if(pawn.type == TILETYPES.ENEMY):
@@ -561,6 +570,12 @@ func request_move(pawn, direction):
 					pawn.deleteProjectilePlayAnimation = "delete"
 				else:
 					pawn.play_projectile_animation(false,"delete")
+			TILETYPES.COUNTINGBLOCK:
+				projectilesInActiveRoom.erase(pawn)
+				pawn.deleteProjectilePlayAnimation = "delete"
+				pawn.hitObstacleOnDelete = true
+				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
+				get_cell_pawn(cell_target).decrease_count()
 			_:
 				projectilesInActiveRoom.erase(pawn)
 				if GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
@@ -825,6 +840,34 @@ func create_puzzle_room(unlockedDoor):
 		newPuzzlePiece.connect("puzzlePlayedAnimation", GlobalVariables.turnController, "puzzle_pattern_turn_done")
 		set_cellv(world_to_map(newPuzzlePiece.position), get_tileset().find_tile_by_name("PUZZLEPIECE"))
 		unlockedDoor.puzzlePiecesInRoom.append(newPuzzlePiece)
+		#spawn additional counting blocks for bonus loot
+	var countingBlocksRand = randi()%3
+	for countingBlock in countingBlocksRand:
+		#print("generatig puzzle pieces")
+		calculateSpawnAgain = true
+		while(calculateSpawnAgain == true):
+			spawnCellX = randi()%(int(unlockedDoor.roomSize.x-2))+1
+			spawnCellY = randi()%(int(unlockedDoor.roomSize.y-2))+1
+			spawnCell = spawnCellX*spawnCellY
+			var spawnCords = world_to_map(unlockedDoor.doorRoomLeftMostCorner) + Vector2(spawnCellX, spawnCellY)
+			#print("Spawn Coords" + str(spawnCords))
+			if get_cellv(spawnCords - Vector2(1,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(-1,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,1)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,-1)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(-1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,1)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,-1)) == TILETYPES.UNLOCKEDDOOR:
+				pass
+			elif get_cellv(spawnCords + Vector2(1,0)) == TILETYPES.WALL && get_cellv(spawnCords + Vector2(-1,0)) == TILETYPES.WALL || get_cellv(spawnCords + Vector2(0,1)) == TILETYPES.WALL && get_cellv(spawnCords + Vector2(0,-1)) == TILETYPES.WALL:
+				pass
+			elif get_cellv(spawnCords - Vector2(2,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(-2,0)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,2)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(0,-2)) == TILETYPES.DOOR || get_cellv(spawnCords - Vector2(1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(-1,0)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,1)) == TILETYPES.UNLOCKEDDOOR || get_cellv(spawnCords - Vector2(0,-1)) == TILETYPES.UNLOCKEDDOOR:
+				pass
+			elif spawnCellArray.has(spawnCell):
+				pass
+			else:
+				calculateSpawnAgain = false
+				spawnCellArray.append(spawnCell)
+		var newCountingBlock = CountingBlock.instance()
+		newCountingBlock.set_z_index(2)
+		newCountingBlock.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(spawnCellX, spawnCellY))
+		add_child(newCountingBlock)
+		set_cellv(world_to_map(newCountingBlock.position), get_tileset().find_tile_by_name("COUNTINGBLOCK"))
+		unlockedDoor.countingBlocksInRoom.append(newCountingBlock)
 
 func play_puzzlepiece_pattern():
 	print("Play puzzle pattern")
@@ -1132,6 +1175,8 @@ func cancel_magic_in_puzzle_room():
 			if !puzzlePiece.isBarrier:
 				puzzlePiece.get_node("AnimationPlayer").play("Idle")
 				puzzlePiece.get_node("Sprite").set_self_modulate(puzzlePiece.baseModulation)
+		for countBlock in activeRoom.countingBlocksInRoom:
+			countBlock.reset_count()
 	set_cellv(world_to_map(mainPlayer.position), get_tileset().find_tile_by_name("PLAYER"))
 	GlobalVariables.turnController.stop_power_projectiles()
 	
