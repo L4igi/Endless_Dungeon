@@ -266,6 +266,7 @@ func request_move(pawn, direction):
 				return pawn.position
 			TILETYPES.DOOR:
 				var object_pawn = get_cell_pawn(cell_target)
+				mainPlayer.playerWalkedThroughDoorPosition = object_pawn.position
 				var requestDoorUnlockResult = object_pawn.request_door_unlock(pawn.itemsInPosession)
 				if(requestDoorUnlockResult):
 					if requestDoorUnlockResult is preload("res://GameObjects/Item/Item.gd"):
@@ -277,6 +278,7 @@ func request_move(pawn, direction):
 					GlobalVariables.turnController.playerMovedDoor = true
 					return update_pawn_position(pawn, cell_start, cell_target)
 			TILETYPES.UNLOCKEDDOOR:
+				mainPlayer.playerWalkedThroughDoorPosition = get_cell_pawn(cell_target).position
 				GlobalVariables.turnController.playerMovedDoor = true
 				return update_pawn_position(pawn, cell_start, cell_target)
 			TILETYPES.MAGICPROJECTILE:
@@ -724,6 +726,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					for element in activeRoom.enemiesInRoom:
 						element.isDisabled = false
 						element.enemyTurnDone=true
+						element.calc_mage_towards()
 					if GlobalVariables.turnController.inRoomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 						GlobalVariables.turnController.puzzlePiecesToPattern += activeRoom.puzzlePiecesInRoom
 						print(GlobalVariables.turnController.puzzlePiecesToPattern.size())
@@ -760,6 +763,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					#print ("Player in Room " + str(pawn.inRoomType))
 					for element in activeRoom.enemiesInRoom:
 						element.isDisabled = false
+						element.calc_mage_towards()
 					if !activeRoom.enemiesInRoom.empty():
 						activeRoom.enemiesInRoom[0].calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW,activeRoom,0)
 					if !activeRoom.roomCleared && GlobalVariables.turnController.inRoomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
@@ -1031,11 +1035,11 @@ func get_enemy_move_mage_pattern(enemy, movementdirection, rommToCalc):
 		GlobalVariables.DIRECTION.MIDDLE:
 			return world_to_map(rommToCalc.doorRoomLeftMostCorner)+ Vector2(int(rommToCalc.roomSize.x/2), int(rommToCalc.roomSize.y/2))
 		GlobalVariables.DIRECTION.RIGHT:
-			return world_to_map(rommToCalc.doorRoomLeftMostCorner)+ Vector2(rommToCalc.roomSize.x-2,1)
+			return world_to_map(rommToCalc.doorRoomLeftMostCorner)+ Vector2(int(rommToCalc.roomSize.x-2),1)
 		GlobalVariables.DIRECTION.DOWN:
-			return world_to_map(rommToCalc.doorRoomLeftMostCorner)+ Vector2(rommToCalc.roomSize.x-2,rommToCalc.roomSize.y-2)
+			return world_to_map(rommToCalc.doorRoomLeftMostCorner)+ Vector2(int(rommToCalc.roomSize.x-2),int(rommToCalc.roomSize.y-2))
 		GlobalVariables.DIRECTION.LEFT:
-			return world_to_map(rommToCalc.doorRoomLeftMostCorner)+ Vector2(1,rommToCalc.roomSize.y-2)
+			return world_to_map(rommToCalc.doorRoomLeftMostCorner)+ Vector2(1,int(rommToCalc.roomSize.y-2))
 		GlobalVariables.DIRECTION.UP:
 			return world_to_map(rommToCalc.doorRoomLeftMostCorner)+ Vector2(1,1)
 	return Vector2.ZERO
@@ -1691,16 +1695,17 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage, attackCellA
 				newMagicProjectile.get_node("Sprite").set_frame(0)
 				newMagicProjectile.connect("playerEnemieProjectileMadeMove", GlobalVariables.turnController, "enemy_projectiles_turn_done")
 				newMagicProjectile.position = map_to_world(attackCell)+GlobalVariables.tileOffset
-				var movementDirectionRandom = 0
-				match movementDirectionRandom:
-					0:
-						newMagicProjectile.movementDirection = Vector2(1,0)
-					1:
-						newMagicProjectile.movementDirection = Vector2(-1,0)
-					2:
-						newMagicProjectile.movementDirection = Vector2(0,1)
-					3:
-						newMagicProjectile.movementDirection = Vector2(0,-1)
+#				newMagicProjectile.movementDirection = enemy.mageTowardsDirection
+				newMagicProjectile.movementDirection = Vector2(0,0)
+#				match movementDirectionRandom:
+#					0:
+#						newMagicProjectile.movementDirection = Vector2(1,0)
+#					1:
+#						newMagicProjectile.movementDirection = Vector2(-1,0)
+#					2:
+#						newMagicProjectile.movementDirection = Vector2(0,1)
+#					3:
+#						newMagicProjectile.movementDirection = Vector2(0,-1)
 				newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.ENEMY
 				add_child(newMagicProjectile)
 				projectilesInActiveRoom.append(newMagicProjectile)

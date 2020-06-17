@@ -7,6 +7,8 @@ export(CELL_TYPES) var type = CELL_TYPES.ENEMY
 
 var dangerFieldTexture = preload("res://GameObjects/Enemy/EnemyAttackRange.png")
 
+var highLightEnemy = preload("res://GameObjects/Enemy/selectedEnemyHighLight.png")
+
 var maxTurnActions = 2
 
 var movementCount = 0
@@ -95,6 +97,8 @@ var playSavedAnimation = false
 
 onready var healthBar = $HealthBar
 
+var mageTowardsDirection = Vector2(1,0)
+
 func _ready():
 	var player = Grid.get_node("Player")
 	player.connect("toggleDangerArea", self, "on_toggle_danger_area")
@@ -123,14 +127,14 @@ func on_toggle_danger_area(enemyToToggleArea, toggleAll=false):
 		if !isDisabled && toggleAll:
 			if dangerFieldsVisible:
 				for child in attackRangeNode.get_children():
-						child.set_visible(false)
-						dangerFieldsVisible = false
-						individualDangerFieldVisible = false
+					child.set_visible(false)
+					dangerFieldsVisible = false
+					individualDangerFieldVisible = false
 			else:
 				for child in attackRangeNode.get_children():
-						child.set_visible(true)
-						dangerFieldsVisible = true
-						individualDangerFieldVisible = true
+					child.set_visible(true)
+					dangerFieldsVisible = true
+					individualDangerFieldVisible = true
 		elif !isDisabled && enemyToToggleArea != null:
 			if dangerFieldsVisible:
 				if self != Grid.activeRoom.enemiesInRoom[enemyToToggleArea]:
@@ -153,6 +157,13 @@ func turn_off_danger_fields_on_exit_room():
 		dangerFieldsVisible = false
 		individualDangerFieldVisible = false
 			
+func calc_mage_towards():
+	var distance = Grid.world_to_map(Grid.mainPlayer.playerWalkedThroughDoorPosition) - Grid.world_to_map(position)
+	if abs(distance.x) >= abs(distance.y):
+		mageTowardsDirection = Vector2(distance.x/abs(distance.x),0)
+	else:
+		mageTowardsDirection = Vector2(0,distance.y/abs(distance.y))
+				
 func calc_enemy_move_to(calcMode, activeRoom, count):
 	var cell_target = Vector2.ZERO
 	var movementdirectionVector = Vector2.ZERO
@@ -184,7 +195,7 @@ func calc_enemy_move_to(calcMode, activeRoom, count):
 #					movementdirection = GlobalVariables.DIRECTION.UP
 #			movementdirectionVector = Grid.get_enemy_move_mage_pattern(self, movementdirection, activeRoom)
 			movementdirectionVector = Grid.get_enemy_move_towards_player(self)
-			cell_target = Grid.world_to_map(position)+ movementdirectionVector
+			cell_target = movementdirectionVector
 					
 
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
@@ -491,6 +502,13 @@ func adjust_enemy_attack_range_enable_attack(calcMode, activeRoom):
 			if !individualDangerFieldVisible:
 				dangerField.set_visible(false)
 			attackRangeNode.add_child(dangerField)
+	if !helpEnemy:
+		var enemyHighLight = TextureRect.new()
+		enemyHighLight.set_texture(highLightEnemy)
+		enemyHighLight._set_position(position-GlobalVariables.tileOffset)
+		if !individualDangerFieldVisible:
+			enemyHighLight.set_visible(false)
+		attackRangeNode.add_child(enemyHighLight)
 	if !attackToSet:
 		attackTo = Vector2.ZERO
 		attackCell.clear()
@@ -527,7 +545,7 @@ func make_enemy_turn():
 func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = randi()%4
+	var enemieToGenerate = GlobalVariables.ENEMYTYPE.MAGEENEMY
 #	if randi()%4 == 1:
 #		enemieToGenerate = 2
 	match enemieToGenerate:
@@ -608,20 +626,36 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 			enemyType = GlobalVariables.ENEMYTYPE.MAGEENEMY
 			attackType = GlobalVariables.ATTACKTYPE.MAGIC
 			get_node("SpriteMageEnemy").set_visible(true)
+			calc_mage_towards()
 			lifePoints = 1
 			attackDamage = 0.5
 			var attackRange = 5
 			for count in attackRange:
 				attackRangeArray.append([])
-			attackRangeArray[0] = [0,1,2]
-			attackRangeArray[1] = [0,1,2]
+			attackRangeArray[0] = [0,1,2,4]
+			attackRangeArray[1] = [0,1,2,4]
+			attackRangeArray[2] = [0,1,2,4]
+			attackRangeArray[3] = [0,1,2,4]
+			attackRangeArray[4] = [0,1,2,4]
 			mirrorBaseDirection = true
-			attackRangeInitDirection = GlobalVariables.DIRECTION.RIGHT
+			match mageTowardsDirection:
+				Vector2(1,0):
+					attackRangeInitDirection = GlobalVariables.DIRECTION.RIGHT
+				Vector2(-1,0):
+					attackRangeInitDirection = GlobalVariables.DIRECTION.LEFT
+				Vector2(0,1):
+					attackRangeInitDirection = GlobalVariables.DIRECTION.DOWN
+				Vector2(0,-1):
+					attackRangeInitDirection = GlobalVariables.DIRECTION.UP
+					
+			mirrorDirectionsArray = [GlobalVariables.DIRECTION.RIGHT, GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN]
 #			mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN]
 			if mirrorBaseDirection:
 				mirror_base_direction()
 			if !mirrorDirectionsArray.has(attackRangeInitDirection):
 				mirrorDirectionsArray.append(attackRangeInitDirection)
+			
+			
 	
 	#set health bar stats 
 	healthBar.set_max(lifePoints*10)

@@ -92,6 +92,8 @@ var enemyToToggleArea = null
 
 var checkNextAction = true
 
+var playerWalkedThroughDoorPosition = Vector2.ZERO
+
 signal toggleDangerArea (enemyToToggleArea, toggleAll)
 
 signal puzzleBlockInteractionSignal (player, puzzleBlockDirection)
