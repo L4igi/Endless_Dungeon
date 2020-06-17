@@ -15,6 +15,7 @@ var coin = preload("res://GameObjects/Item/Coin_Item.png")
 var exit = preload("res://GameObjects/Item/exit_item.png")
 var dropFullHeart = preload("res://GameObjects/Item/FillUpHealth.png")
 var dropHalfHeart = preload("res://GameObjects/Item/FillUpHealthHalf.png")
+var nickel = preload("res://GameObjects/Item/Nickel_item.png")
 
 var keyValue 
 
@@ -61,6 +62,8 @@ func setTexture(textureType):
 			itemType = GlobalVariables.ITEMTYPE.FILLUPHALFHEART
 			
 func make_nickel():
+	get_node("Sprite").set_texture(nickel)
+	itemType = GlobalVariables.ITEMTYPE.COIN
 	coinValue = 5
 
 func on_item_pickUp(newPosition):

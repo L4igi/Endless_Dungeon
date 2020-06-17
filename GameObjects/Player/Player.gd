@@ -30,7 +30,7 @@ var magicAttackDamage = 0.5
 
 var powerBlockAttackDamage = 1.0
 
-var coinCount = 99
+var coinCount = 70
 
 var maxLifePoints = 10
 

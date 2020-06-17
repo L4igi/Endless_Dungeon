@@ -7,15 +7,18 @@ var activationDelay = 0
 
 onready var countLabel = $Sprite/Count
 
+onready var Grid = get_parent()
+
 func _ready():
 	currentCount = baseCount
 	countLabel.set_text(str(baseCount))
 
 
 func decrease_count():
-	interActed = true
-	currentCount-=1
-	countLabel.set_text(str(currentCount))
+	if !Grid.cancelMagicPuzzleRoom:
+		interActed = true
+		currentCount-=1
+		countLabel.set_text(str(currentCount))
 	
 func reset_count():
 	interActed = false
@@ -40,10 +43,10 @@ func checkLootDrop():
 func playAnimation(animationType):
 	match animationType:
 		"penny":
-			pass
+			$AnimationPlayer.play("penny")
 		"nickel":
-			pass
+			$AnimationPlayer.play("nickel")
 		"nothing":
-			pass
-	#yield animation done 
+			$AnimationPlayer.play("nothing")
+	yield($AnimationPlayer, "animation_finished")
 	GlobalVariables.turnController.on_counting_block_delete(self, true)

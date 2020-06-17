@@ -1111,9 +1111,9 @@ func _on_puzzle_piece_activated():
 						countBlock.playAnimation("penny")
 					elif countBlock.checkLootDrop() == "nickel":
 						var bonusCoin = Item.instance()
-						bonusCoin.make_nickel()
 						bonusCoin.position = countBlock.position
 						bonusLootArray.append(bonusCoin)
+						bonusCoin.make_nickel()
 						countBlock.playAnimation("nickel")
 					else:
 						countBlock.playAnimation("nothing")
@@ -1122,6 +1122,8 @@ func _on_puzzle_piece_activated():
 					puzzlePiece.playWrongWriteAnimation(true)
 				GlobalVariables.turnController.queueDropLoot = true
 			cancelMagicPuzzleRoom = true
+			for projectile in projectilesInActiveRoom:
+				projectile.get_node("Sprite").set_visible(false)
 			#cancel_magic_in_puzzle_room()
 		else:
 			if !activeRoom.roomCleared:
@@ -1213,11 +1215,9 @@ func cancel_magic_in_puzzle_room():
 	GlobalVariables.turnController.stop_power_projectiles()
 	
 func _on_projectiles_made_move(projectile=null):
-	print(projectile)
 	if projectile!=null:
 		puzzleProjectilesToMove.erase(projectile)
 		if projectile.deleteProjectilePlayAnimation != null:
-			print("in here after projectile made move")
 			GlobalVariables.turnController.on_projectile_interaction(projectile, true)
 		#print("Projectiles made move " + str(projectilesMadeMoveCounter) + " projectiles in puzzleProjectilesToMove " + str(puzzleProjectilesToMove.size())) 
 
@@ -1504,7 +1504,12 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 			player.position = player.position + map_to_world(attack_direction)
 			set_cellv(world_to_map(puzzlePieceToSwap.position), get_tileset().find_tile_by_name("PUZZLEPIECE"))
 			set_cellv(world_to_map(player.position), get_tileset().find_tile_by_name("PLAYER"))
-			
+		elif get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.COUNTINGBLOCK:
+			var puzzlePieceToSwap = get_cell_pawn(world_to_map(player.position) + attack_direction)
+			puzzlePieceToSwap.position = player.position
+			player.position = player.position + map_to_world(attack_direction)
+			set_cellv(world_to_map(puzzlePieceToSwap.position), get_tileset().find_tile_by_name("COUNTINGBLOCK"))
+			set_cellv(world_to_map(player.position), get_tileset().find_tile_by_name("PLAYER"))
 			
 func on_puzzle_Block_interaction(player, puzzleBlockDirection):
 	activatedPuzzleBlock.interactPowerBlock(puzzleBlockDirection, activeRoom.roomType)
@@ -1828,7 +1833,10 @@ func dropBonusLoot():
 		object.get_node("Sprite").set_scale(Vector2(0.5,0.5))
 		object.get_node("Sprite").set_offset(Vector2(0,10))
 		object.keyValue = str(0)
-		object.setTexture(GlobalVariables.ITEMTYPE.COIN)
+		if object.coinValue == 5:
+			object.make_nickel()
+		else:
+			object.setTexture(GlobalVariables.ITEMTYPE.COIN)
 		add_child(object)
 		set_cellv(world_to_map(object.position), get_tileset().find_tile_by_name("ITEM"))
 		
