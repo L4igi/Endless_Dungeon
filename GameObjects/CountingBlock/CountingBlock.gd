@@ -3,6 +3,7 @@ extends Node2D
 var baseCount = 2
 var currentCount = 0
 var interActed = false
+var activationDelay = 0
 
 onready var countLabel = $Sprite/Count
 

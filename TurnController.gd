@@ -190,6 +190,7 @@ func puzzle_pattern_turn_done(puzzlePiece):
 func on_counting_block_delete(countingBlock, delete):
 	countingBlocksToDelete.erase(countingBlock)
 	if delete:
+		Grid.set_cellv(Grid.world_to_map(countingBlock.position),Grid.get_tileset().find_tile_by_name("FLOOR")) 
 		countingBlock.queue_free()
 	check_turn_progress()
 	

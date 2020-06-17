@@ -69,6 +69,8 @@ var spawnBlockProjectileNextTurn = []
 
 var activatePuzzlePieceNextTurn = []
 
+var activateCountingBlockNextTurn = []
+
 var activatedPuzzleBlock 
 
 var magicProjectileLoopLevel = 0
@@ -574,7 +576,18 @@ func request_move(pawn, direction):
 				pawn.deleteProjectilePlayAnimation = "delete"
 				pawn.hitObstacleOnDelete = true
 				set_cellv(world_to_map(pawn.position),get_tileset().find_tile_by_name("FLOOR")) 
-				get_cell_pawn(cell_target).decrease_count()
+				if pawn.projectileType == GlobalVariables.PROJECTILETYPE.POWERBLOCK:
+					var activatedCountingBlock = get_cell_pawn(cell_target)
+					if !activateCountingBlockNextTurn.has(get_cell_pawn(cell_target)):
+						get_cell_pawn(cell_target).activationDelay = 1
+						activateCountingBlockNextTurn.append(get_cell_pawn(cell_target))
+					pawn.deleteProjectilePlayAnimation = "delete"
+				elif GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
+					pawn.deleteProjectilePlayAnimation = "delete"
+				elif GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE:
+					pawn.deleteProjectilePlayAnimation = "delete"
+				else:
+					pawn.play_projectile_animation(false,"delete")
 			_:
 				projectilesInActiveRoom.erase(pawn)
 				if GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
@@ -1108,7 +1121,8 @@ func _on_puzzle_piece_activated():
 				for puzzlePiece in activatedPuzzlePieces:
 					puzzlePiece.playWrongWriteAnimation(true)
 				GlobalVariables.turnController.queueDropLoot = true
-			cancel_magic_in_puzzle_room()
+			cancelMagicPuzzleRoom = true
+			#cancel_magic_in_puzzle_room()
 		else:
 			if !activeRoom.roomCleared:
 				if puzzlePieceIsBarrier:
@@ -1177,6 +1191,7 @@ func cancel_magic_in_puzzle_room():
 	cancelMagicPuzzleRoom = false
 	spawnBlockProjectileNextTurn.clear()
 	activatePuzzlePieceNextTurn.clear()
+	activateCountingBlockNextTurn.clear()
 	var tempProjectiles = projectilesInActiveRoom.duplicate()
 	for projectile in tempProjectiles:
 		set_cellv(world_to_map(projectile.position),get_tileset().find_tile_by_name("FLOOR")) 
@@ -1198,9 +1213,11 @@ func cancel_magic_in_puzzle_room():
 	GlobalVariables.turnController.stop_power_projectiles()
 	
 func _on_projectiles_made_move(projectile=null):
+	print(projectile)
 	if projectile!=null:
 		puzzleProjectilesToMove.erase(projectile)
 		if projectile.deleteProjectilePlayAnimation != null:
+			print("in here after projectile made move")
 			GlobalVariables.turnController.on_projectile_interaction(projectile, true)
 		#print("Projectiles made move " + str(projectilesMadeMoveCounter) + " projectiles in puzzleProjectilesToMove " + str(puzzleProjectilesToMove.size())) 
 
@@ -1223,6 +1240,16 @@ func _on_projectiles_made_move(projectile=null):
 						else:
 							puzzlePiece.activationDelay-=1
 					activatePuzzlePieceNextTurnTemp.clear()
+
+				if !activateCountingBlockNextTurn.empty():
+					var activateCountingBlockNextTurnTemp = activateCountingBlockNextTurn.duplicate()
+					for countBlock in activateCountingBlockNextTurnTemp:
+						if countBlock.activationDelay == 0:
+							countBlock.decrease_count()
+							activateCountingBlockNextTurn.erase(countBlock)
+						else:
+							countBlock.activationDelay-=1
+					activateCountingBlockNextTurnTemp.clear()
 				
 				for boxProjectile in spawnBlockProjectileNextTurnTempCopy:
 					if boxProjectile.shootDelay == 0:
@@ -1255,6 +1282,25 @@ func _on_projectiles_made_move(projectile=null):
 					else:
 						puzzlePiece.activationDelay-=1
 				activatePuzzlePieceNextTurnTemp.clear()
+				if !activateCountingBlockNextTurn.empty():
+									var activateCountingBlockNextTurnTemp = activateCountingBlockNextTurn.duplicate()
+									for countBlock in activateCountingBlockNextTurnTemp:
+										if countBlock.activationDelay == 0:
+											countBlock.decrease_count()
+											activateCountingBlockNextTurn.erase(countBlock)
+										else:
+											countBlock.activationDelay-=1
+									activateCountingBlockNextTurnTemp.clear()
+			elif !activateCountingBlockNextTurn.empty():
+					var activateCountingBlockNextTurnTemp = activateCountingBlockNextTurn.duplicate()
+					for countBlock in activateCountingBlockNextTurnTemp:
+						if countBlock.activationDelay == 0:
+							countBlock.decrease_count()
+							activateCountingBlockNextTurn.erase(countBlock)
+						else:
+							countBlock.activationDelay-=1
+					activateCountingBlockNextTurnTemp.clear()
+					
 		if tickingProjectile != null:
 			tickingProjectile.move_projectile(GlobalVariables.PROJECTILETYPE.TICKERPROJECTILE)
 #	elif activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && projectilesInActiveRoom.empty() && spawnBlockProjectileNextTurn.empty():
@@ -1560,7 +1606,30 @@ func on_powerBlock_spawn_magic(powerBlock, signalSpawnMagic):
 				else:
 					blockHit.shootDelay = 1
 			newMagicProjectile.deleteProjectilePlayAnimation="delete"
-
+		
+		elif get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("COUNTINGBLOCK"):
+			var activatedCountBlock = get_cell_pawn(world_to_map(newMagicProjectile.position))
+			if !activateCountingBlockNextTurn.has(activatedCountBlock):
+				activateCountingBlockNextTurn.append(activatedCountBlock)
+				if !projectilesInActiveRoom.empty():
+					activatedCountBlock.activationDelay = 0
+				else:
+					activatedCountBlock.activationDelay = 0
+			#newMagicProjectile.play_projectile_animation(false, "delete")
+			newMagicProjectile.queue_free()
+			
+		elif get_cellv(world_to_map(newMagicProjectile.position)+newMagicProjectile.movementDirection) == get_tileset().find_tile_by_name("COUNTINGBLOCK"):
+			projectilesInActiveRoom.append(newMagicProjectile)
+			var activatedCountBlock = get_cell_pawn(world_to_map(newMagicProjectile.position)+newMagicProjectile.movementDirection)
+			if !activateCountingBlockNextTurn.has(activatedCountBlock):
+				activateCountingBlockNextTurn.append(activatedCountBlock)
+				if !projectilesInActiveRoom.empty():
+					activatedCountBlock.activationDelay = 1
+				else:
+					activatedCountBlock.activationDelay = 1
+			#newMagicProjectile.play_projectile_animation(false, "delete")
+			newMagicProjectile.deleteProjectilePlayAnimation="delete"
+			
 		elif get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("FLOOR") || get_cellv(world_to_map(newMagicProjectile.position)) == get_tileset().find_tile_by_name("PLAYER"):
 			projectilesInActiveRoom.append(newMagicProjectile)
 			#set_cellv(world_to_map(newMagicProjectile.position), get_tileset().find_tile_by_name("MAGICPROJECTILE"))
