@@ -22,6 +22,8 @@ var itemType
 
 var modulation 
 
+var coinValue = 1
+
 func _ready():
 	pass # Replace with function body.
 
@@ -57,6 +59,9 @@ func setTexture(textureType):
 		GlobalVariables.ITEMTYPE.FILLUPHALFHEART:
 			get_node("Sprite").set_texture(dropHalfHeart)
 			itemType = GlobalVariables.ITEMTYPE.FILLUPHALFHEART
+			
+func make_nickel():
+	coinValue = 5
 
 func on_item_pickUp(newPosition):
 	$AnimationPlayer.play("itemPickUp")

@@ -13,6 +13,7 @@ var enemiesToMove = []
 var playerProjectilesToMove = []
 var enemyProjectilesToMove = []
 var puzzlePiecesToPattern = []
+var countingBlocksToDelete = []
 var playerDefeatStop = false
 var playerMovedDoor = false
 var inRoomType = null
@@ -31,7 +32,7 @@ func check_turn_done_conditions():
 #	print("projectileSpawned " + str(projectileSpawned.size()))
 #	print("projectileInteraction " + str(projectileInteraction.size()))
 #	print("currentTurnWaiting " + str(currentTurnWaiting))
-	if playerTakeDamage.empty() && enemyTakeDamage.empty() && projectileSpawned.empty() && projectileInteraction.empty() && blocksExploding.empty() && puzzlePiecesToPattern.empty() && enemiesAttacking.empty():
+	if playerTakeDamage.empty() && enemyTakeDamage.empty() && projectileSpawned.empty() && projectileInteraction.empty() && blocksExploding.empty() && puzzlePiecesToPattern.empty() && enemiesAttacking.empty() && countingBlocksToDelete.empty():
 		match currentTurnWaiting:
 			GlobalVariables.CURRENTPHASE.PLAYER:
 				if Grid.mainPlayer.get_actions_left() == 0 && !playerMovedDoor:
@@ -184,6 +185,12 @@ func stop_power_projectiles():
 	
 func puzzle_pattern_turn_done(puzzlePiece):
 	puzzlePiecesToPattern.erase(puzzlePiece)
+	check_turn_progress()
+	
+func on_counting_block_delete(countingBlock, delete):
+	countingBlocksToDelete.erase(countingBlock)
+	if delete:
+		countingBlock.queue_free()
 	check_turn_progress()
 	
 func on_block_exploding(powerBlock):

@@ -1,6 +1,6 @@
 extends Node2D
 
-var baseCount = 5
+var baseCount = 2
 var currentCount = 0
 var interActed = false
 
@@ -24,14 +24,25 @@ func reset_count():
 func checkLootDrop():
 	if interActed:
 		if currentCount == 0: 
-			pass
+			return str("nickel")
 			#drop nickel
 		elif currentCount == 1 || currentCount == -1:
-			pass
+			return str("penny")
 			#drop penny
 		else:
-			pass
+			return null
 			#drop nothing
 	else:
-		pass
+		return null
 		#drop nothing
+
+func playAnimation(animationType):
+	match animationType:
+		"penny":
+			pass
+		"nickel":
+			pass
+		"nothing":
+			pass
+	#yield animation done 
+	GlobalVariables.turnController.on_counting_block_delete(self, true)

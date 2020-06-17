@@ -397,14 +397,14 @@ func inflict_damage_playerDefeated(attackDamageVar, attackTypeVar):
 		set_process(true)
 		GlobalVariables.turnController.player_defeat()
 
-func add_nonkey_items(itemtype):
+func add_nonkey_items(itemtype, coinValue = 1):
 	match itemtype:
 		GlobalVariables.ITEMTYPE.POTION:
 			if currentPotions < maxPotions:
 				currentPotions+=1
 				guiElements.fill_potions(currentPotions)
 		GlobalVariables.ITEMTYPE.COIN:
-			coinCount += 1
+			coinCount += coinValue
 			guiElements.add_coin(coinCount)
 		GlobalVariables.ITEMTYPE.FILLUPHALFHEART:
 			if lifePoints < maxLifePoints:

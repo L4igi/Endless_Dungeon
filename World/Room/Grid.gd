@@ -247,7 +247,7 @@ func request_move(pawn, direction):
 					save_game()
 					get_tree().reload_current_scene()
 				elif object_pawn.itemType == GlobalVariables.ITEMTYPE.COIN:
-					pawn.add_nonkey_items(object_pawn.itemType)
+					pawn.add_nonkey_items(object_pawn.itemType, object_pawn.coinValue)
 				elif object_pawn.itemType == GlobalVariables.ITEMTYPE.FILLUPHALFHEART:
 					pawn.add_nonkey_items(object_pawn.itemType)
 				elif object_pawn.itemType == GlobalVariables.ITEMTYPE.FILLUPHEART:
@@ -298,7 +298,6 @@ func request_move(pawn, direction):
 			TILETYPES.UPGRADECONTAINER:
 				return 
 			TILETYPES.COUNTINGBLOCK:
-				print("HERE")
 				return
 					
 				
@@ -793,7 +792,8 @@ func enablePlayerAttack(player):
 func create_puzzle_room(unlockedDoor):
 	randomize()
 	#minimum 4 maximum 6
-	var puzzlePiecesToSpwan = randi()%3+4
+	var puzzlePiecesToSpwan = 1
+#	var puzzlePiecesToSpwan = randi()%3+4
 	print("Random rolled result : " + str(puzzlePiecesToSpwan))
 	var calculateSpawnAgain = true
 	var alreadyUsedColors = []
@@ -1083,15 +1083,32 @@ func _on_puzzle_piece_activated():
 				puzzlePieceIsBarrier = true
 		if activatedPuzzlePieces == activeRoom.puzzlePiecesInRoom && !activeRoom.roomCleared && !puzzlePieceIsBarrier:
 			print("Activated in right order")
-			cancel_magic_in_puzzle_room()
-			emit_signal("enemyTurnDoneSignal")
+#			cancelMagicPuzzleRoom = true
 			activeRoom.roomCleared=true
 			mainPlayer.inClearedRoom = true
 			#delete all projectiles 
 			if activeRoom.dropLoot():
+				var tempCountingBlocks = activeRoom.countingBlocksInRoom.duplicate()
+				for countBlock in activeRoom.countingBlocksInRoom:
+					GlobalVariables.turnController.countingBlocksToDelete.append(countBlock)
+					if countBlock.checkLootDrop() == "penny":
+						var bonusCoin = Item.instance()
+						bonusCoin.position = countBlock.position
+						bonusLootArray.append(bonusCoin)
+						countBlock.playAnimation("penny")
+					elif countBlock.checkLootDrop() == "nickel":
+						var bonusCoin = Item.instance()
+						bonusCoin.make_nickel()
+						bonusCoin.position = countBlock.position
+						bonusLootArray.append(bonusCoin)
+						countBlock.playAnimation("nickel")
+					else:
+						countBlock.playAnimation("nothing")
+				tempCountingBlocks.clear()
 				for puzzlePiece in activatedPuzzlePieces:
 					puzzlePiece.playWrongWriteAnimation(true)
-				dropLootInActiveRoom()
+				GlobalVariables.turnController.queueDropLoot = true
+			cancel_magic_in_puzzle_room()
 		else:
 			if !activeRoom.roomCleared:
 				if puzzlePieceIsBarrier:
