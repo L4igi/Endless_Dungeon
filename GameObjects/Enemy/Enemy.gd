@@ -224,7 +224,22 @@ func calc_enemy_move_to(calcMode, activeRoom, count):
 					movementdirectionVector = Vector2(0,1)
 				4:
 					movementdirectionVector = Vector2(0,-1)
-			cell_target = Grid.world_to_map(position)+ movementdirectionVector
+			cell_target = Grid.world_to_map(position)
+			var walkTry = 4
+			while walkTry >= 0:
+				if Grid.get_cellv(Grid.world_to_map(position)+ movementdirectionVector) == Grid.TILETYPES.FLOOR:
+					cell_target = Grid.world_to_map(position)+ movementdirectionVector
+					walkTry = -1
+					break
+				if movementdirectionVector == Vector2(1,0):
+					movementdirectionVector = Vector2(-1,0)
+				elif movementdirectionVector == Vector2(-1,0):
+					movementdirectionVector = Vector2(0,1)
+				elif movementdirectionVector == Vector2(0,1):
+					movementdirectionVector = Vector2(0,-1)
+				elif movementdirectionVector == Vector2(0,-1):
+					movementdirectionVector = Vector2(1,0)
+				walkTry-=1
 
 	if calcMode == GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW:
 		var target_position = Grid.map_to_world(cell_target) + Grid.cell_size / GlobalVariables.isometricFactor
@@ -737,7 +752,7 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 	randomize()
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = GlobalVariables.ENEMYTYPE.WARRIROENEMY
+	var enemieToGenerate = GlobalVariables.ENEMYTYPE.BARRIERENEMY
 #	if randi()%4 == 1:
 #		enemieToGenerate = 2
 	match enemieToGenerate:
@@ -748,7 +763,7 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 			baseLifePoints = 1
 			baseAttackDamage = 1
 			baseAttackRange = 1
-			baseMovementCount = 1
+			baseMovementCount = 3
 			get_node("Sprite").set_visible(true)
 			#randomly make to save enemy 
 			if !isBarrier && randi()%2:
@@ -769,7 +784,7 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 			baseLifePoints = 1
 			baseAttackDamage = 1
 			baseAttackRange = 1
-			baseMovementCount = 5
+			baseMovementCount = 2
 			get_node("SpriteNinjaEnemy").set_visible(true)
 			adapt_difficulty(GlobalVariables.enemyNinjaDifficulty)
 			
@@ -779,7 +794,7 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 			baseLifePoints = 1
 			baseAttackDamage = 1
 			baseAttackRange = 1
-			baseMovementCount = 3
+			baseMovementCount = 1
 			get_node("SpriteWarriorEnemy").set_visible(true)
 			adapt_difficulty(GlobalVariables.enemyWarriorDifficulty)
 				
