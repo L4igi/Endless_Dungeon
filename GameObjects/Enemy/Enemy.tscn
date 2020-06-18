@@ -786,7 +786,7 @@ visible = false
 position = Vector2( -1.69407e-21, -8 )
 scale = Vector2( 0.625, 0.625 )
 frames = SubResource( 37 )
-frame = 1
+frame = 4
 playing = true
 
 [node name="Light2D" type="Light2D" parent="."]

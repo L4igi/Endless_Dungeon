@@ -585,10 +585,49 @@ func adapt_difficulty(difficultyLevel):
 	attackRangeArray.clear()
 	for count in attackRange:
 		attackRangeArray.append([])
-	var attackPatternMode = 0
+	var attackPatternMode = 1
 	match enemyType:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
-			pass
+			mirrorBaseDirection = false
+			if attackPatternMode == 1:
+				attackRangeArray[0] = [0]
+				attackRangeInitDirection = GlobalVariables.DIRECTION.UP
+				mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT]
+				if attackRangeArray.size() >=2:
+					#mirrorBaseDirection = true
+					#mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN, GlobalVariables.DIRECTION.RIGHT]
+					attackRangeArray[1].append(0)
+				if attackRangeArray.size() >= 3:
+					mirrorBaseDirection = true
+					attackRangeArray[2].append(1)
+					attackRangeArray[2].append(2)
+				if attackRangeArray.size() >= 4:
+					mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN, GlobalVariables.DIRECTION.RIGHT]
+				if attackRangeArray.size() >=5:
+					attackRangeArray[2].append(0)
+					attackRangeArray[3].append(1)
+				if attackRangeArray.size()>=6:
+					pass
+			elif attackPatternMode == 0:
+				attackRangeArray[0] = [0]
+				attackRangeInitDirection = GlobalVariables.DIRECTION.DOWN
+				mirrorDirectionsArray = [GlobalVariables.DIRECTION.RIGHT]
+				if attackRangeArray.size() >=2:
+					#mirrorBaseDirection = true
+					#mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN, GlobalVariables.DIRECTION.RIGHT]
+					attackRangeArray[1].append(0)
+				if attackRangeArray.size() >= 3:
+					mirrorBaseDirection = true
+					attackRangeArray[2].append(1)
+					attackRangeArray[2].append(2)
+					#mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT,GlobalVariables.DIRECTION.RIGHT]
+				if attackRangeArray.size() >= 4:
+					mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN, GlobalVariables.DIRECTION.RIGHT]
+				if attackRangeArray.size() >=5:
+					attackRangeArray[3].append(0)
+					attackRangeArray[3].append(1)
+				if attackRangeArray.size()>=6:
+					pass
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			pass
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
@@ -683,7 +722,7 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 	randomize()
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = GlobalVariables.ENEMYTYPE.NINJAENEMY
+	var enemieToGenerate = GlobalVariables.ENEMYTYPE.BARRIERENEMY
 #	if randi()%4 == 1:
 #		enemieToGenerate = 2
 	match enemieToGenerate:
@@ -693,11 +732,13 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 			attackType = GlobalVariables.ATTACKTYPE.SWORD
 			baseLifePoints = 1
 			baseAttackDamage = 1
-			baseAttackRange = 1
+			baseAttackRange = 5
 			baseMovementCount = 1
 			get_node("Sprite").set_visible(true)
 			#randomly make to save enemy 
 			if !isBarrier && randi()%2:
+				lifePoints = 1
+				movementCount = 1
 				attackRange = 0
 				helpEnemy = true
 				get_node("HelpSign").set_visible(true)
@@ -705,11 +746,6 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 				get_node("Sprite").set_scale(Vector2(0.5,0.5))
 				get_node("Sprite").set_offset(Vector2(0,14))
 			else:
-				for count in attackRange:
-					attackRangeArray.append([])
-				attackRangeArray[0] = [0]
-				mirrorBaseDirection = true
-				attackRangeInitDirection = GlobalVariables.DIRECTION.RIGHT
 				adapt_difficulty(GlobalVariables.enemyBarrierDifficulty)
 			
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
