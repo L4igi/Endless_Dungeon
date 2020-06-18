@@ -479,7 +479,7 @@ func on_upgradeContainer_interaction(upgradeType, addAmount, spentAmount):
 			swordAttackDamage+=addAmount
 	
 func _on_enemy_turn_done_signal():
-	print("Player turn again ")
+	#print("Player turn again ")
 	checkNextAction = true
 	if movementCount + attackCount == maxTurnActions:
 		movementCount = 0

@@ -1007,27 +1007,50 @@ func get_enemy_move_towards_player(enemy):
 		return Vector2(0,distance.y/abs(distance.y))
 
 func get_enemy_move_ninja_pattern(enemy, movementdirection, moveCellCount):
+	print("NINJA Position " + str(world_to_map(enemy.position)))
+	print("NINJA moveCellCount " + str(moveCellCount))
+	print("enemy.ninjaEnemyCheckedDirections" + str(enemy.ninjaEnemyCheckedDirections))
 	match movementdirection:
 		GlobalVariables.DIRECTION.LEFT:
-			if get_cellv(world_to_map(enemy.position) - Vector2(moveCellCount,0)) == TILETYPES.WALL || get_cellv(world_to_map(enemy.position) - Vector2(1,0)) == TILETYPES.WALL:
-				enemy.movementdirection = GlobalVariables.DIRECTION.RIGHT
-				return Vector2(moveCellCount,0)
-			return Vector2(-moveCellCount,0)
+			if get_cellv(world_to_map(enemy.position) + Vector2(-moveCellCount,-moveCellCount)) == TILETYPES.FLOOR && (world_to_map(enemy.position) + Vector2(-moveCellCount,-moveCellCount)).x > world_to_map(activeRoom.doorRoomLeftMostCorner).x && (world_to_map(enemy.position) + Vector2(-moveCellCount,-moveCellCount)).y > world_to_map(activeRoom.doorRoomLeftMostCorner).y:
+				return Vector2(-moveCellCount,-moveCellCount)
+			if get_cellv(world_to_map(enemy.position) + Vector2(-moveCellCount,moveCellCount)) == TILETYPES.FLOOR && (world_to_map(enemy.position) + Vector2(-moveCellCount,moveCellCount)).x > world_to_map(activeRoom.doorRoomLeftMostCorner).x && (world_to_map(enemy.position) + Vector2(-moveCellCount,moveCellCount)).y > world_to_map(activeRoom.doorRoomLeftMostCorner).y:
+				return Vector2(-moveCellCount,moveCellCount)
+			if enemy.ninjaEnemyCheckedDirections == 1:
+				return Vector2.ZERO
+			enemy.ninjaEnemyCheckedDirections+=1
+			enemy.movementdirection = GlobalVariables.DIRECTION.RIGHT
+			return get_enemy_move_ninja_pattern(enemy,enemy.movementdirection,moveCellCount)
 		GlobalVariables.DIRECTION.RIGHT:
-			if get_cellv(world_to_map(enemy.position) + Vector2(moveCellCount,0)) == TILETYPES.WALL || get_cellv(world_to_map(enemy.position) + Vector2(1,0)) == TILETYPES.WALL:
-				enemy.movementdirection = GlobalVariables.DIRECTION.LEFT
-				return Vector2(-moveCellCount,0)
-			return Vector2(moveCellCount,0)
+			if get_cellv(world_to_map(enemy.position) + Vector2(moveCellCount,moveCellCount)) == TILETYPES.FLOOR && (world_to_map(enemy.position) + Vector2(moveCellCount,moveCellCount)).x > world_to_map(activeRoom.doorRoomLeftMostCorner).x && (world_to_map(enemy.position) + Vector2(moveCellCount,moveCellCount)).y > world_to_map(activeRoom.doorRoomLeftMostCorner).y:
+				return Vector2(moveCellCount,moveCellCount)
+			if get_cellv(world_to_map(enemy.position) + Vector2(moveCellCount,-moveCellCount)) == TILETYPES.FLOOR && (world_to_map(enemy.position) + Vector2(moveCellCount,-moveCellCount)).x > world_to_map(activeRoom.doorRoomLeftMostCorner).x && (world_to_map(enemy.position) + Vector2(moveCellCount,-moveCellCount)).y > world_to_map(activeRoom.doorRoomLeftMostCorner).y:
+				return Vector2(moveCellCount,-moveCellCount)
+			if enemy.ninjaEnemyCheckedDirections == 1:
+				return Vector2.ZERO
+			enemy.ninjaEnemyCheckedDirections+=1
+			enemy.movementdirection = GlobalVariables.DIRECTION.LEFT
+			return get_enemy_move_ninja_pattern(enemy,enemy.movementdirection,moveCellCount)
 		GlobalVariables.DIRECTION.UP:
-			if get_cellv(world_to_map(enemy.position) - Vector2(0,moveCellCount)) == TILETYPES.WALL || get_cellv(world_to_map(enemy.position) - Vector2(0,1)) == TILETYPES.WALL:
-				enemy.movementdirection = GlobalVariables.DIRECTION.DOWN
-				return Vector2(0,moveCellCount)
-			return Vector2(0,-moveCellCount)
+			if get_cellv(world_to_map(enemy.position) + Vector2(moveCellCount,-moveCellCount)) == TILETYPES.FLOOR && (world_to_map(enemy.position) + Vector2(moveCellCount,-moveCellCount)).x > world_to_map(activeRoom.doorRoomLeftMostCorner).x && (world_to_map(enemy.position) + Vector2(moveCellCount,-moveCellCount)).y > world_to_map(activeRoom.doorRoomLeftMostCorner).y:
+				return Vector2(moveCellCount,-moveCellCount)
+			if get_cellv(world_to_map(enemy.position) + Vector2(-moveCellCount,-moveCellCount)) == TILETYPES.FLOOR && (world_to_map(enemy.position) + Vector2(-moveCellCount,-moveCellCount)).x > world_to_map(activeRoom.doorRoomLeftMostCorner).x && (world_to_map(enemy.position) + Vector2(-moveCellCount,-moveCellCount)).y > world_to_map(activeRoom.doorRoomLeftMostCorner).y:
+				return Vector2(-moveCellCount,-moveCellCount)
+			if enemy.ninjaEnemyCheckedDirections == 1:
+				return Vector2.ZERO
+			enemy.ninjaEnemyCheckedDirections+=1
+			enemy.movementdirection = GlobalVariables.DIRECTION.DOWN
+			return get_enemy_move_ninja_pattern(enemy,enemy.movementdirection,moveCellCount)
 		GlobalVariables.DIRECTION.DOWN:
-			if get_cellv(world_to_map(enemy.position) + Vector2(0,moveCellCount)) == TILETYPES.WALL || get_cellv(world_to_map(enemy.position) + Vector2(0,1)) == TILETYPES.WALL:
-				enemy.movementdirection = GlobalVariables.DIRECTION.UP
-				return Vector2(0,-moveCellCount)
-			return Vector2(0,moveCellCount)
+			if get_cellv(world_to_map(enemy.position) + Vector2(-moveCellCount,moveCellCount)) == TILETYPES.FLOOR && (world_to_map(enemy.position) + Vector2(-moveCellCount,moveCellCount)).x > world_to_map(activeRoom.doorRoomLeftMostCorner).x && (world_to_map(enemy.position) + Vector2(-moveCellCount,moveCellCount)).y > world_to_map(activeRoom.doorRoomLeftMostCorner).y:
+				return Vector2(-moveCellCount,moveCellCount)
+			if get_cellv(world_to_map(enemy.position) + Vector2(moveCellCount,moveCellCount)) == TILETYPES.FLOOR && (world_to_map(enemy.position) + Vector2(moveCellCount,moveCellCount)).x > world_to_map(activeRoom.doorRoomLeftMostCorner).x && (world_to_map(enemy.position) + Vector2(moveCellCount,moveCellCount)).y > world_to_map(activeRoom.doorRoomLeftMostCorner).y:
+				return Vector2(moveCellCount,moveCellCount)
+			if enemy.ninjaEnemyCheckedDirections == 1:
+				return Vector2.ZERO
+			enemy.ninjaEnemyCheckedDirections+=1
+			enemy.movementdirection = GlobalVariables.DIRECTION.UP
+			return get_enemy_move_ninja_pattern(enemy,enemy.movementdirection,moveCellCount)
 	
 func get_enemy_move_mage_pattern(enemy, movementdirection, rommToCalc):
 	#return corner of the room according to movementdirection
@@ -1156,7 +1179,7 @@ func on_enemy_projectile_turn_done_request_confirmed():
 		for enemy in tempEnenmyToAttack:
 			enemy.make_enemy_turn()
 		GlobalVariables.turnController.enemiesAttacking[0].calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION,activeRoom, 0)
-		print("making enemy attack")
+		#print("making enemy attack")
 		for enemy in tempEnenmyToAttack:
 			enemy.enemyAttack()
 	tempEnenmyToAttack.clear()
