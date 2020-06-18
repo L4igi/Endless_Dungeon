@@ -179,7 +179,7 @@ func calc_enemy_move_to(calcMode, activeRoom, count):
 	var movementdirectionVector = Vector2.ZERO
 	match enemyType:
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
-			movementdirectionVector = Grid.get_enemy_move_towards_player(self) 
+			movementdirectionVector = Grid.get_enemy_move_towards_player(self, movementCount)
 			cell_target = Grid.world_to_map(position)+ movementdirectionVector
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 #			if mageMoveCount == 6:
@@ -574,6 +574,8 @@ func adapt_difficulty(difficultyLevel):
 				lifePoints = baseLifePoints + baseLifePoints*(difficultyLevel*0.2)
 			elif statToAdapt == 2:
 				movementCount += movementCount*0.5
+				if movementCount == 5:
+					movementCount = randi()%3+2
 	attackRangeArray.clear()
 	for count in attackRange:
 		attackRangeArray.append([])
@@ -735,7 +737,7 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 	randomize()
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = GlobalVariables.ENEMYTYPE.NINJAENEMY
+	var enemieToGenerate = GlobalVariables.ENEMYTYPE.WARRIROENEMY
 #	if randi()%4 == 1:
 #		enemieToGenerate = 2
 	match enemieToGenerate:
@@ -767,7 +769,7 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 			baseLifePoints = 1
 			baseAttackDamage = 1
 			baseAttackRange = 1
-			baseMovementCount = 2
+			baseMovementCount = 5
 			get_node("SpriteNinjaEnemy").set_visible(true)
 			adapt_difficulty(GlobalVariables.enemyNinjaDifficulty)
 			
@@ -777,7 +779,7 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 			baseLifePoints = 1
 			baseAttackDamage = 1
 			baseAttackRange = 1
-			baseMovementCount = 1
+			baseMovementCount = 3
 			get_node("SpriteWarriorEnemy").set_visible(true)
 			adapt_difficulty(GlobalVariables.enemyWarriorDifficulty)
 				
