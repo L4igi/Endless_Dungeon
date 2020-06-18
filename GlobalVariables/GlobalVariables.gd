@@ -1,6 +1,6 @@
 extends Node
 
-var roomDimensions = 9
+var roomDimensions = 13
 
 var maxNumberRooms = 15
 
@@ -49,3 +49,8 @@ var isometricFactor = 2
 var turnController = preload("res://TurnController.gd").new()
 
 var firstCall = true
+
+var enemyWarriorDifficulty = 0
+var enemyNinjaDifficulty = 0
+var enemyBarrierDifficulty = 0
+var enemyMageDifficulty = 0
