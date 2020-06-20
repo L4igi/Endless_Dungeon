@@ -78,12 +78,16 @@ func changeOptionValue():
 func match_difficulty_enum(value):
 	match value:
 		GlobalVariables.DIFFICULTYLEVELS.AUTO:
+			GlobalVariables.globalDifficultyMultiplier = 1.0
 			return "Auto"
 		GlobalVariables.DIFFICULTYLEVELS.EASY:
+			GlobalVariables.globalDifficultyMultiplier = 0.5
 			return "Easy"
 		GlobalVariables.DIFFICULTYLEVELS.NORMAL:
+			GlobalVariables.globalDifficultyMultiplier = 1.0
 			return "Norm"
 		GlobalVariables.DIFFICULTYLEVELS.HARD:
+			GlobalVariables.globalDifficultyMultiplier = 1.5
 			return "Hard"
 			
 func start_new_game():

@@ -2,7 +2,7 @@ extends Node
 
 var roomDimensions = 7
 
-var maxNumberRooms = 15
+var maxNumberRooms = 2
 
 enum BARRIERTYPE {DOOR = 0, ENEMY = 1, PUZZLE = 2}
 
@@ -50,7 +50,24 @@ var turnController = preload("res://TurnController.gd").new()
 
 var firstCall = true
 
-var enemyWarriorDifficulty = 0
-var enemyNinjaDifficulty = 0
-var enemyBarrierDifficulty = 0
-var enemyMageDifficulty = 0
+var globalDifficultyMultiplier = 1.0
+
+var enemyWarriorDifficulty = 10
+var enemyNinjaDifficulty = 10
+var enemyBarrierDifficulty = 10
+var enemyMageDifficulty = 10
+
+var hitByWarrior = 0
+var hitByNinja = 0
+var hitByMage = 0
+var hitByBarrier = 0
+
+var timesActivatedPuzzleWrong = 0
+
+var turnsTakenInEnemyRoom = 0
+var turnsTakenInPuzzleRoom = 0 
+
+var puzzleBonusLootDropped = 0
+var enemyBonusLootDropped = 0
+
+var currentFloor = 0

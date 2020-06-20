@@ -107,6 +107,8 @@ var allEnemiesAlreadySaved = false
 
 var bonusLootArray = []
 
+var exitSpawned = false
+
 func match_Enum(var index):
 	match index:
 		0:
@@ -247,6 +249,7 @@ func request_move(pawn, direction):
 					emit_signal("puzzleBarrierDisableSignal", object_pawn, mainPlayer)
 				elif object_pawn.itemType == GlobalVariables.ITEMTYPE.EXIT:
 					save_game()
+					GlobalVariables.currentFloor+=1
 					get_tree().reload_current_scene()
 				elif object_pawn.itemType == GlobalVariables.ITEMTYPE.COIN:
 					pawn.add_nonkey_items(object_pawn.itemType, object_pawn.coinValue)
@@ -294,6 +297,7 @@ func request_move(pawn, direction):
 					#pawn.inflict_damage_playerDefeated(object_pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC)
 					GlobalVariables.turnController.playerTakeDamage.append(mainPlayer)
 					pawn.queueInflictDamage=true
+					pawn.queueInflictEnemyType=GlobalVariables.ENEMYTYPE.MAGEENEMY
 					pawn.enemyQueueAttackDamage = object_pawn.attackDamage
 					pawn.enemyQueueAttackType = GlobalVariables.ATTACKTYPE.MAGIC
 					return update_pawn_position(pawn, cell_start, cell_target)
@@ -426,7 +430,7 @@ func request_move(pawn, direction):
 				var tempPlayer = get_cell_pawn(cell_target)
 				if pawn.projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
 #					GlobalVariables.turnController.playerTakeDamage.append(mainPlayer)
-					tempPlayer.inflict_damage_playerDefeated(pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC)
+					tempPlayer.inflict_damage_playerDefeated(pawn.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, GlobalVariables.ENEMYTYPE.MAGEENEMY)
 					projectilesInActiveRoom.erase(pawn)
 					if GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE:
 						projectilesInActiveRoom.erase(pawn)
@@ -954,6 +958,23 @@ func create_enemy_room(unlockedDoor):
 	#add adjustment for enemy amount 
 	#-2 because of walls on both sides
 	var enemiesToSpawn = 1
+	var mixEnemies = false
+	var mixEnemiesAndMage = false
+	var multipleMages = 0
+	var totalDifficultyLevel = GlobalVariables.enemyBarrierDifficulty + GlobalVariables.enemyMageDifficulty + GlobalVariables.enemyNinjaDifficulty + GlobalVariables.enemyWarriorDifficulty
+	if totalDifficultyLevel >= 15:
+		enemiesToSpawn = int(totalDifficultyLevel/15)
+	if totalDifficultyLevel >=20:
+		mixEnemies = true
+	if GlobalVariables.enemyMageDifficulty >= 15:
+		multipleMages += GlobalVariables.enemyMageDifficulty/15
+	if totalDifficultyLevel >=40:
+		mixEnemiesAndMage = true
+	var enemyType = randi()%4
+	print(enemyType)
+	if enemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY && multipleMages!= 0:
+		enemiesToSpawn += randi()%(multipleMages+1)+1
+		mixEnemies = false
 #	if unlockedDoor.roomSizeMultiplier == Vector2(1,1):
 #		enemiesToSpawn = randi()%3+1
 #	elif unlockedDoor.roomSizeMultiplier == Vector2(2,2):
@@ -965,7 +986,7 @@ func create_enemy_room(unlockedDoor):
 	var spawnCellY
 	var spawnCell 
 	var calculateSpawnAgain = true
-	for enemie in enemiesToSpawn: 
+	while enemiesToSpawn != 0: 
 		calculateSpawnAgain = true
 		while(calculateSpawnAgain == true):
 			spawnCellX = randi()%(int(unlockedDoor.roomSize.x-2))+1
@@ -990,15 +1011,18 @@ func create_enemy_room(unlockedDoor):
 		newEnemy.set_z_index(2)
 		#create enemy typ here (enemy. createEnemyType
 		newEnemy.position = unlockedDoor.doorRoomLeftMostCorner + map_to_world(Vector2(spawnCellX, spawnCellY))
-		var generatedEnemyType = newEnemy.generateEnemy(mageEnemyCount, self, unlockedDoor)
-		if(generatedEnemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY):
-			mageEnemyCount += 1
+		var generatedEnemyType = newEnemy.generateEnemy(enemyType, self, unlockedDoor)
 		newEnemy.connect("enemyMadeMove", GlobalVariables.turnController, "enemy_turn_done")
 		newEnemy.connect("enemyAttacked", self, "_on_enemy_attacked")
 		newEnemy.connect("enemyDefeated", self, "_on_enemy_defeated")
 #		newEnemy.calc_enemy_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW, unlockedDoor,0)
 		set_cellv(world_to_map(newEnemy.position), get_tileset().find_tile_by_name(match_Enum(newEnemy.type)))
 		unlockedDoor.enemiesInRoom.append(newEnemy)
+		if newEnemy.helpEnemy:
+			enemiesToSpawn += 1
+		if mixEnemies || mixEnemiesAndMage:
+			enemyType = randi()%4
+		enemiesToSpawn -= 1
 	if unlockedDoor != null && !unlockedDoor.enemiesInRoom.empty():
 		unlockedDoor.enemiesInRoom[0].calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW, unlockedDoor, 0)
 
@@ -1140,6 +1164,7 @@ func on_enemy_turn_done_confirmed():
 		playerProjectilesToMoveCopy.clear()
 
 func on_player_turn_done_confirmed_puzzle_room():
+	GlobalVariables.turnsTakenInPuzzleRoom+=1
 	GlobalVariables.turnController.currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
 	emit_signal("enemyTurnDoneSignal")
 	
@@ -1149,6 +1174,7 @@ func on_player_turn_done_confirmed_empty_treasure_room():
 #	emit_signal("enemyTurnDoneSignal")
 	
 func on_player_turn_done_confirmed_enemy_room():
+	GlobalVariables.turnsTakenInEnemyRoom += 1
 #	if movedThroughDoor:
 #		return
 	mainPlayer.playerBackupPosition = mainPlayer.position
@@ -1187,11 +1213,13 @@ func _on_puzzle_piece_activated():
 						var bonusCoin = Item.instance()
 						bonusCoin.position = countBlock.position
 						bonusLootArray.append(bonusCoin)
+						GlobalVariables.puzzleBonusLootDropped+=1
 						countBlock.playAnimation("penny")
 					elif countBlock.checkLootDrop() == "nickel":
 						var bonusCoin = Item.instance()
 						bonusCoin.position = countBlock.position
 						bonusLootArray.append(bonusCoin)
+						GlobalVariables.puzzleBonusLootDropped+=2
 						bonusCoin.make_nickel()
 						countBlock.playAnimation("nickel")
 					else:
@@ -1206,6 +1234,7 @@ func _on_puzzle_piece_activated():
 			#cancel_magic_in_puzzle_room()
 		else:
 			if !activeRoom.roomCleared:
+				GlobalVariables.timesActivatedPuzzleWrong+=1
 				if puzzlePieceIsBarrier:
 					print("try again after activating puzzle piece barrier")
 				else:
@@ -1757,7 +1786,7 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage, attackCellA
 		var attackedNode = get_cell_pawn(attackCellSingleAttack)
 		print(attackedNode)
 		if get_cellv(attackCellSingleAttack) == TILETYPES.PLAYER:
-			attackedNode.inflict_damage_playerDefeated(attackDamage, attackType)
+			attackedNode.inflict_damage_playerDefeated(attackDamage, attackType, enemy.enemyType)
 		elif get_cellv(attackCellSingleAttack) == TILETYPES.ENEMY && get_cell_pawn(attackCellSingleAttack).helpEnemy:
 			print("ATTACKING HELP ENEMY no Magic")
 			attackedNode.inflictDamage(attackDamage, attackType, attackCellSingleAttack, mainPlayer, GlobalVariables.CURRENTPHASE.ENEMYATTACK)
@@ -1775,7 +1804,7 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage, attackCellA
 			newMagicProjectile.play_projectile_animation(true, "attack")
 			attackCellArray.erase(cell)
 			if get_cellv(cell) == TILETYPES.PLAYER:
-				attackedNode.inflict_damage_playerDefeated(attackDamage, attackType)
+				attackedNode.inflict_damage_playerDefeated(attackDamage, attackType, enemy.enemyType)
 			elif get_cellv(cell) == TILETYPES.ENEMY && attackedNode.helpEnemy:
 				print("ATTACKING HELP ENEMY Magic")
 				attackedNode.inflictDamage(attackDamage, attackType, cell, mainPlayer, GlobalVariables.CURRENTPHASE.ENEMYATTACK)
@@ -1859,6 +1888,7 @@ func _on_enemy_defeated(enemy):
 				var bonusCoin = Item.instance()
 				bonusCoin.position = enemy.position
 				bonusLootArray.append(bonusCoin)
+				GlobalVariables.enemyBonusLootDropped+=1
 				GlobalVariables.turnController.enemyTakeDamage.append(enemy)
 				enemy.inflictDamage(100, GlobalVariables.ATTACKTYPE.SAVED, world_to_map(enemy.position), mainPlayer, GlobalVariables.turnController.currentTurnWaiting)
 	GlobalVariables.turnController.on_enemy_taken_damage(enemy, true)
@@ -1915,8 +1945,13 @@ func dropLootInActiveRoom():
 		if  get_cellv(world_to_map(newItemPosition)) == TILETYPES.ENEMY:
 			get_cell_pawn(world_to_map(newItem.position)).queue_free()
 		newItem.keyValue = str(0)
-		if numberRoomsCleared == GlobalVariables.maxNumberRooms:
+		if numberRoomsCleared == GlobalVariables.maxNumberRooms && !exitSpawned:
 			newItem.setTexture(GlobalVariables.ITEMTYPE.EXIT)
+			exitSpawned = true
+		elif numberRoomsCleared >= GlobalVariables.maxNumberRooms*0.7 && !exitSpawned:
+			if randi()%(GlobalVariables.maxNumberRooms - numberRoomsCleared) == 0:
+				newItem.setTexture(GlobalVariables.ITEMTYPE.EXIT)
+				exitSpawned = true
 		else:
 			var nonKeyItemToDrop = randi()%100
 			if nonKeyItemToDrop < 50:

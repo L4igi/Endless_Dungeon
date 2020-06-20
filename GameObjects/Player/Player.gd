@@ -80,6 +80,8 @@ var playerPassingDoor = false
 
 var queueInflictDamage = false
 
+var queueInflictEnemyType = null
+
 var enemyQueueAttackDamage = 0
 
 var enemyQueueAttackType = null
@@ -169,7 +171,7 @@ func player_movement(movementDirection):
 			yield($AnimationPlayer, "animation_finished")
 			$AnimationPlayer.play("Idle")
 			if queueInflictDamage == true:
-				inflict_damage_playerDefeated(enemyQueueAttackDamage, enemyQueueAttackType)
+				inflict_damage_playerDefeated(enemyQueueAttackDamage, enemyQueueAttackType, queueInflictEnemyType)
 				queueInflictDamage = false
 				enemyQueueAttackDamage = 0
 				enemyQueueAttackType = null
@@ -369,7 +371,16 @@ func toggle_enemy_danger_areas():
 						break
 			emit_signal("toggleDangerArea", enemyToToggleArea)
 		
-func inflict_damage_playerDefeated(attackDamageVar, attackTypeVar):
+func inflict_damage_playerDefeated(attackDamageVar, attackTypeVar, enemyType):
+	match enemyType:
+		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
+			GlobalVariables.hitByBarrier += 1
+		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
+			GlobalVariables.hitByWarrior += 1
+		GlobalVariables.ENEMYTYPE.MAGEENEMY:
+			GlobalVariables.hitByMage += 1
+		GlobalVariables.ENEMYTYPE.NINJAENEMY:
+			GlobalVariables.hitByNinja += 1
 	if !GlobalVariables.turnController.playerTakeDamage.has(self):
 		GlobalVariables.turnController.playerTakeDamage.append(self)
 	lifePoints -= attackDamageVar

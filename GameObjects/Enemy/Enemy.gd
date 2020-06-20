@@ -501,6 +501,7 @@ func enemyAttack():
 
 #todo check if cell target is free or used calcmode active
 func adjust_enemy_attack_range_enable_attack(calcMode, activeRoom):
+	print("CALCULATING")
 	if !attackCellArray.empty():
 		attackCellArray.clear()
 	if !attackCell.empty():
@@ -622,52 +623,51 @@ func make_enemy_turn():
 		enemyTurnDone = false
 			
 func adapt_difficulty(difficultyLevel):
-	var statToAdapt = difficultyLevel%3
 	if difficultyLevel == 0:
-		statToAdapt = -1
 		attackDamage = baseAttackDamage
 		lifePoints = baseLifePoints
 		attackRange = baseAttackRange
 		movementCount = baseMovementCount
-	match enemyType:
-		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
-			if statToAdapt == 0:
-				attackRange += 1
-			elif statToAdapt == 1:
-				attackDamage = baseAttackDamage + baseAttackDamage*(difficultyLevel*0.2)
-				lifePoints = baseLifePoints + baseLifePoints*(difficultyLevel*0.2)
-			elif statToAdapt == 2:
-				movementCount += 1
-		GlobalVariables.ENEMYTYPE.MAGEENEMY:
-			if statToAdapt == 0:
-				attackRange += 1
-			elif statToAdapt == 1:
-				attackDamage = baseAttackDamage + baseAttackDamage*(difficultyLevel*0.2)
-				lifePoints = baseLifePoints + baseLifePoints*(difficultyLevel*0.2)
-			elif statToAdapt == 2:
-				movementCount += 1
-		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
-			if statToAdapt == 0:
-				attackRange += 1
-			elif statToAdapt == 1:
-				attackDamage = baseAttackDamage + baseAttackDamage*(difficultyLevel*0.2)
-				lifePoints = baseLifePoints + baseLifePoints*(difficultyLevel*0.2)
-			elif statToAdapt == 2:
-				movementCount += 1
-		GlobalVariables.ENEMYTYPE.NINJAENEMY:
-			if statToAdapt == 0:
-				attackRange += 1
-			elif statToAdapt == 1:
-				attackDamage = baseAttackDamage + baseAttackDamage*(difficultyLevel*0.2)
-				lifePoints = baseLifePoints + baseLifePoints*(difficultyLevel*0.2)
-			elif statToAdapt == 2:
-				movementCount += movementCount*0.5
-				if movementCount == 5:
-					movementCount = randi()%3+2
+	for step in difficultyLevel:
+		match enemyType:
+			GlobalVariables.ENEMYTYPE.BARRIERENEMY:
+				if step == 0:
+					attackRange += 1
+				elif step == 1:
+					attackDamage = baseAttackDamage + baseAttackDamage*(difficultyLevel*0.1)
+					lifePoints = baseLifePoints + baseLifePoints*(difficultyLevel*0.1)
+				elif step == 2:
+					movementCount += 1
+			GlobalVariables.ENEMYTYPE.MAGEENEMY:
+				if step == 0:
+					attackRange += 1
+				elif step == 1:
+					attackDamage = baseAttackDamage + baseAttackDamage*(difficultyLevel*0.1)
+					lifePoints = baseLifePoints + baseLifePoints*(difficultyLevel*0.05)
+				elif step == 2:
+					movementCount += 1
+			GlobalVariables.ENEMYTYPE.WARRIROENEMY:
+				if step == 0:
+					attackRange += 1
+				elif step == 1:
+					attackDamage = baseAttackDamage + baseAttackDamage*(difficultyLevel*0.2)
+					lifePoints = baseLifePoints + baseLifePoints*(difficultyLevel*0.1)
+				elif step == 2:
+					movementCount += 1
+			GlobalVariables.ENEMYTYPE.NINJAENEMY:
+				if step == 0:
+					attackRange+= 1
+				elif step == 1:
+					attackDamage = baseAttackDamage + baseAttackDamage*(difficultyLevel*0.1)
+					lifePoints = baseLifePoints + baseLifePoints*(difficultyLevel*0.1)
+				elif step == 2:
+					movementCount += 1
+					if movementCount == 5:
+						movementCount = randi()%3+2
 	attackRangeArray.clear()
 	for count in attackRange:
 		attackRangeArray.append([])
-	var attackPatternMode = 0
+	var attackPatternMode = randi()%2
 	match enemyType:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			mirrorBaseDirection = false
@@ -821,11 +821,9 @@ func adapt_difficulty(difficultyLevel):
 	if !mirrorDirectionsArray.has(attackRangeInitDirection):
 		mirrorDirectionsArray.append(attackRangeInitDirection)
 				
-func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor): 
-	randomize()
+func generateEnemy(enemieToGenerate, currentGrid, unlockedDoor): 
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = GlobalVariables.ENEMYTYPE.MAGEENEMY
 #	if randi()%4 == 1:
 #		enemieToGenerate = 2
 	match enemieToGenerate:
@@ -836,7 +834,7 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 			baseLifePoints = 1
 			baseAttackDamage = 1
 			baseAttackRange = 1
-			baseMovementCount = 3
+			baseMovementCount = 1
 			attackDamage = baseAttackDamage
 			lifePoints = baseLifePoints
 			attackRange = baseAttackRange
@@ -890,7 +888,7 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 			calc_mage_towards()
 			baseLifePoints = 1
 			baseAttackDamage = 1
-			baseAttackRange = 5
+			baseAttackRange = 2
 			baseMovementCount = 1
 			attackDamage = baseAttackDamage
 			lifePoints = baseLifePoints
@@ -992,6 +990,7 @@ func play_taken_damage_animation(inflictattackType, mainPlayer):
 			if !movedMage:
 				if move_mage_after_hit():
 					yield($MageAnimationPlayer, "animation_finished")
+					adjust_enemy_attack_range_enable_attack(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW, Grid.activeRoom)
 			else:
 				movedMage = false
 			set_process(true)
