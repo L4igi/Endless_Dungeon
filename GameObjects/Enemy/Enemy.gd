@@ -174,6 +174,54 @@ func calc_mage_towards():
 	else:
 		mageTowardsDirection = Vector2(0,distance.y/abs(distance.y))
 				
+func move_mage_after_hit():
+	var moveTryCount = 0
+	var cell_target = Vector2.ZERO
+	var mageMovement = 0
+	match mageMovement:
+		GlobalVariables.DIRECTION.LEFT:
+			cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(1,1)
+			cell_target = cell_target-Grid.world_to_map(position)
+		GlobalVariables.DIRECTION.RIGHT:
+			cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Grid.activeRoom.roomSize + Vector2(-2,-2)
+			cell_target = cell_target-Grid.world_to_map(position)
+		GlobalVariables.DIRECTION.UP:
+			cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(Grid.activeRoom.roomSize.x,0) + Vector2(-1,1)
+			
+		GlobalVariables.DIRECTION.DOWN:
+			cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(0,Grid.activeRoom.roomSize.y) + Vector2(1,-1)
+		GlobalVariables.DIRECTION.MIDDLE:
+			cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+ int((Grid.activeRoom.roomSize + Vector2(-2,-2))/2)
+		GlobalVariables.DIRECTION.RIGHTDOWN:
+			pass
+		GlobalVariables.DIRECTION.RIGHTUP:
+			pass
+		GlobalVariables.DIRECTION.LEFTDOWN:
+			pass
+		GlobalVariables.DIRECTION.LEFTUP:
+			pass
+	print(cell_target)
+	print(Grid.world_to_map(position))
+	print(cell_target-Grid.world_to_map(position))
+	var target_position = Grid.request_move(self, cell_target)
+	#print("target position "+ str(target_position))
+	if target_position:
+		moveTo = target_position
+	else:
+		moveTo = null
+		
+	if moveTo:
+		set_process(false)
+		#play defeat animation 
+		$MageAnimationPlayer.play("walk", -1, 4.5)
+		$Tween.interpolate_property(self, "position", position, moveTo, $MageAnimationPlayer.current_animation_length/4.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
+		$Tween.start()
+		return true
+	else:
+		return false
+		
+
+			
 func calc_enemy_move_to(calcMode, activeRoom, count):
 	var cell_target = Vector2.ZERO
 	var movementdirectionVector = Vector2.ZERO
@@ -203,8 +251,8 @@ func calc_enemy_move_to(calcMode, activeRoom, count):
 #					#moves to left top corner 
 #					movementdirection = GlobalVariables.DIRECTION.UP
 #			movementdirectionVector = Grid.get_enemy_move_mage_pattern(self, movementdirection, activeRoom)
-			movementdirectionVector = Grid.get_enemy_move_towards_player(self)
-			cell_target = movementdirectionVector
+			movementdirectionVector = Vector2(0,0)
+			cell_target = Grid.world_to_map(position)+movementdirectionVector
 					
 
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
@@ -752,7 +800,7 @@ func generateEnemy(mageEnemyCount, currentGrid, unlockedDoor):
 	randomize()
 #	var enemieToGenerate = randi()%4
 #generate warrior for testing purposes
-	var enemieToGenerate = GlobalVariables.ENEMYTYPE.BARRIERENEMY
+	var enemieToGenerate = GlobalVariables.ENEMYTYPE.MAGEENEMY
 #	if randi()%4 == 1:
 #		enemieToGenerate = 2
 	match enemieToGenerate:
@@ -896,9 +944,14 @@ func play_taken_damage_animation(inflictattackType, mainPlayer):
 			set_process(true)
 
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
+			#move mage enmy after being hit 
 			set_process(false)
 			$MageAnimationPlayer.play(animationToPlay, -1, 2.0)
 			yield($MageAnimationPlayer, "animation_finished")
+			set_process(true)
+			if move_mage_after_hit():
+				print("IN here")
+				yield($MageAnimationPlayer, "animation_finished")
 			$MageAnimationPlayer.play("idle")
 			set_process(true)
 
@@ -917,6 +970,7 @@ func play_taken_damage_animation(inflictattackType, mainPlayer):
 			set_process(true)
 	print("Played taken damage animation")
 	GlobalVariables.turnController.on_enemy_taken_damage(self)
+	check_inflicted_damage()
 
 func play_defeat_animation(mainPlayer, CURRENTPHASE):
 	if attackRangeNode != null:

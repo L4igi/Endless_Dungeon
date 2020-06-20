@@ -24,7 +24,7 @@ var attackCount = 0
 
 var attackDamage = 0.5
 
-var swordAttackDamage = 1.0
+var swordAttackDamage = 0.5
 
 var magicAttackDamage = 0.5
 

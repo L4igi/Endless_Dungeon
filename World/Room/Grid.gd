@@ -348,7 +348,10 @@ func request_move(pawn, direction):
 					set_cellv(world_to_map(tempMagicProjectile.position),get_tileset().find_tile_by_name("FLOOR"))
 					tempMagicProjectile.play_projectile_animation(true, "attack")
 					GlobalVariables.turnController.enemyTakeDamage.append(pawn)
-					pawn.inflictDamage(tempMagicProjectile.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, map_to_world(cell_target), mainPlayer, GlobalVariables.CURRENTPHASE.ENEMY)
+					if GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYER:
+						pawn.inflictDamage(tempMagicProjectile.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, map_to_world(cell_target), mainPlayer, GlobalVariables.CURRENTPHASE.ENEMY)
+					else:
+						pawn.inflictDamage(tempMagicProjectile.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, map_to_world(cell_target), mainPlayer, GlobalVariables.turnController.currentTurnWaiting)
 #					if pawn.enemyDefeated:
 #						#print("Enemy defeated")
 #						return update_pawn_position(pawn, cell_start, cell_target)
@@ -364,7 +367,7 @@ func request_move(pawn, direction):
 					set_cellv(world_to_map(tempMagicProjectile.position), get_tileset().find_tile_by_name("ENEMY"))
 					tempMagicProjectile.play_projectile_animation(true, "attack")
 					GlobalVariables.turnController.enemyTakeDamage.append(pawn)
-					pawn.inflictDamage(tempMagicProjectile.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, cell_target, mainPlayer, GlobalVariables.CURRENTPHASE.ENEMY)
+					pawn.inflictDamage(tempMagicProjectile.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, cell_target, mainPlayer, GlobalVariables.turnController.currentTurnWaiting)
 					return update_pawn_position(pawn, cell_start, cell_target)
 				else:
 					tempMagicProjectile.play_projectile_animation(true,"delete")
