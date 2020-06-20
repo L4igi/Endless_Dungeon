@@ -53,4 +53,4 @@ var firstCall = true
 var enemyWarriorDifficulty = 0
 var enemyNinjaDifficulty = 0
 var enemyBarrierDifficulty = 0
-var enemyMageDifficulty = 0
+var enemyMageDifficulty = 10

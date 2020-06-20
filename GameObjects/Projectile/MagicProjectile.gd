@@ -146,7 +146,7 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack",project
 		#print("Phase2")
 	else:
 		animationMode = 3
-		print("Phase3")
+		#print("Phase3")
 	
 	var animationToPlay = projectileAnimation
 	match projectileAnimation : 
@@ -219,7 +219,8 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack",project
 	elif animationMode == 1:
 		Grid.projectilesInActiveRoom.erase(self)
 		if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYER:
-			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
+#			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
+			pass
 		elif projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMYATTACK:
 			pass
 			#Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))

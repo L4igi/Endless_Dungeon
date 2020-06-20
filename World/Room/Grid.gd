@@ -677,6 +677,7 @@ func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile
 
 
 func update_pawn_position(pawn, cell_start, cell_target):
+	print("Setting cell target ")
 	var oldCellTargetType = get_cellv(cell_target)
 	var oldCellTargetNode = get_cell_pawn(cell_target)
 	set_cellv(cell_target, get_tileset().find_tile_by_name(match_Enum(pawn.type)))
