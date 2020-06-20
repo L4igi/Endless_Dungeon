@@ -18,7 +18,7 @@ var playerPassedDoor = Vector2.ZERO
 
 var movementCount = 0
 
-var maxTurnActions = 10
+var maxTurnActions = 25
 
 var attackCount = 0
 

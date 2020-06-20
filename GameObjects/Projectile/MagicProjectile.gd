@@ -44,13 +44,16 @@ func calc_projectiles_move_to(calcMode, count, playerEnemy = "player"):
 			else:
 				calcArray[count].calc_projectiles_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW, count)
 		elif calcMode == GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION:
-			var target_position = Grid.request_move(self, movementDirection)
-			
-			if target_position && deleteProjectilePlayAnimation==null:
-				#print("target position " + str(Grid.world_to_map(target_position)) + " deleteProjectilePlayAnimation " +str(deleteProjectilePlayAnimation))
-				moveTo = target_position
+			if movementDirection != Vector2(0,0):
+				var target_position = Grid.request_move(self, movementDirection)
+				
+				if target_position && deleteProjectilePlayAnimation==null:
+					#print("target position " + str(Grid.world_to_map(target_position)) + " deleteProjectilePlayAnimation " +str(deleteProjectilePlayAnimation))
+					moveTo = target_position
+				else:
+					#print("projectiles cant move to targt position " +str(deleteProjectilePlayAnimation))
+					moveTo = null
 			else:
-				#print("projectiles cant move to targt position " +str(deleteProjectilePlayAnimation))
 				moveTo = null
 			count+=1
 			if count >= calcArray.size():

@@ -490,7 +490,7 @@ func request_move(pawn, direction):
 			TILETYPES.MAGICPROJECTILE:
 				var targetProjectile = get_cell_pawn(cell_target)
 				if pawn == null && targetProjectile == null:
-					print("NUUUUUUULLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL")
+					print("null encountered in magicProjectile MagicProjectile Interaction")
 				if pawn != null && targetProjectile!= null:
 #					if pawn.projectileType != GlobalVariables.PROJECTILETYPE.ENEMY || targetProjectile.projectileType != GlobalVariables.PROJECTILETYPE.ENEMY:
 						if magicProjectileMagicProjectileInteraction(pawn, targetProjectile):
@@ -677,7 +677,6 @@ func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile
 
 
 func update_pawn_position(pawn, cell_start, cell_target):
-	print("Setting cell target ")
 	var oldCellTargetType = get_cellv(cell_target)
 	var oldCellTargetNode = get_cell_pawn(cell_target)
 	set_cellv(cell_target, get_tileset().find_tile_by_name(match_Enum(pawn.type)))
@@ -1162,7 +1161,7 @@ func on_player_turn_done_confirmed_enemy_room():
 	else:
 		GlobalVariables.turnController.enemyProjectilesToMove[0].calc_projectiles_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, 0, "enemy")
 		var tempEnenmyProjectiles = GlobalVariables.turnController.enemyProjectilesToMove.duplicate()
-		print("tempEnenmyProjectiles size " +  str(tempEnenmyProjectiles.size()))
+		print("enemyProjectilesToMove size " +  str(GlobalVariables.turnController.enemyProjectilesToMove.size()))
 		for projectile in tempEnenmyProjectiles:
 			projectile.move_projectile()
 		tempEnenmyProjectiles.clear()

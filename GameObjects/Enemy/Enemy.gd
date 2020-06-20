@@ -177,54 +177,66 @@ func calc_mage_towards():
 		mageTowardsDirection = Vector2(0,distance.y/abs(distance.y))
 				
 func move_mage_after_hit():
+	randomize()
+	print("move mage in move mage after hit")
 	movedMage = true
-	var moveTryCount = 0
+	var possibleLocations = []
 	var cell_target = Vector2.ZERO
 	var difficultFactor = GlobalVariables.enemyMageDifficulty
 	if difficultFactor > 4:
 		difficultFactor = 4
-	var mageMovement = 0
-#	var mageMovement = randi()%(4+difficultFactor)
-	print("mageMovement " + str(mageMovement))
-	match mageMovement:
-		GlobalVariables.DIRECTION.LEFT:
-			cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(1,1)
-			cell_target = cell_target-Grid.world_to_map(position)
-		GlobalVariables.DIRECTION.RIGHT:
-			cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Grid.activeRoom.roomSize + Vector2(-2,-2)
-			cell_target = cell_target-Grid.world_to_map(position)
-		GlobalVariables.DIRECTION.UP:
-			cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(Grid.activeRoom.roomSize.x,0) + Vector2(-2,1)
-			cell_target = (cell_target-Grid.world_to_map(position))
-		GlobalVariables.DIRECTION.DOWN:
-			cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(0,Grid.activeRoom.roomSize.y) + Vector2(1,-2)
-			cell_target = (cell_target-Grid.world_to_map(position))
-		GlobalVariables.DIRECTION.MIDDLE:
-			cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+ Vector2(int(ceil(((Grid.activeRoom.roomSize + Vector2(-2,-2))/2).x)), int(ceil(((Grid.activeRoom.roomSize + Vector2(-2,-2))/2).y)))
-			cell_target = (cell_target-Grid.world_to_map(position))
-		GlobalVariables.DIRECTION.RIGHTDOWN:
-			cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(Grid.activeRoom.roomSize.x-2,int(ceil(((Grid.activeRoom.roomSize + Vector2(-2,-2))/2).y)))
-			cell_target = (cell_target-Grid.world_to_map(position))
-		GlobalVariables.DIRECTION.RIGHTUP:
-			cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(int(ceil(((Grid.activeRoom.roomSize + Vector2(-2,-2))/2).x)),1)
-			cell_target = (cell_target-Grid.world_to_map(position))
-		GlobalVariables.DIRECTION.LEFTDOWN:
-			cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(int(ceil(((Grid.activeRoom.roomSize + Vector2(-2,-2))/2).x)),Grid.activeRoom.roomSize.y-2)
-			cell_target = (cell_target-Grid.world_to_map(position))
-		GlobalVariables.DIRECTION.LEFTUP:
-			cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(1,int(ceil(((Grid.activeRoom.roomSize + Vector2(-2,-2))/2).y)))
-			cell_target = (cell_target-Grid.world_to_map(position))
-	print(cell_target)
-	print("Requesting move")
-	var target_position = Grid.request_move(self, cell_target)
-	#print("target position "+ str(target_position))
-	if target_position:
-		moveTo = target_position
-	else:
-		moveTo = null
+	for location in (4+difficultFactor):
+		possibleLocations.append(location)
+	while(!possibleLocations.empty()):
+		var mageMovement = possibleLocations[randi()%(possibleLocations.size())]
+		match mageMovement:
+			GlobalVariables.DIRECTION.LEFT:
+				cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(1,1)
+				cell_target = cell_target-Grid.world_to_map(position)
+				possibleLocations.erase(GlobalVariables.DIRECTION.LEFT)
+			GlobalVariables.DIRECTION.RIGHT:
+				cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Grid.activeRoom.roomSize + Vector2(-2,-2)
+				cell_target = cell_target-Grid.world_to_map(position)
+				possibleLocations.erase(GlobalVariables.DIRECTION.RIGHT)
+			GlobalVariables.DIRECTION.UP:
+				cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(Grid.activeRoom.roomSize.x,0) + Vector2(-2,1)
+				cell_target = (cell_target-Grid.world_to_map(position))
+				possibleLocations.erase(GlobalVariables.DIRECTION.UP)
+			GlobalVariables.DIRECTION.DOWN:
+				cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(0,Grid.activeRoom.roomSize.y) + Vector2(1,-2)
+				cell_target = (cell_target-Grid.world_to_map(position))
+				possibleLocations.erase(GlobalVariables.DIRECTION.DOWN)
+			GlobalVariables.DIRECTION.MIDDLE:
+				cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+ Vector2(int(ceil(((Grid.activeRoom.roomSize + Vector2(-2,-2))/2).x)), int(ceil(((Grid.activeRoom.roomSize + Vector2(-2,-2))/2).y)))
+				cell_target = (cell_target-Grid.world_to_map(position))
+				possibleLocations.erase(GlobalVariables.DIRECTION.MIDDLE)
+			GlobalVariables.DIRECTION.RIGHTDOWN:
+				cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(Grid.activeRoom.roomSize.x-2,int(ceil(((Grid.activeRoom.roomSize + Vector2(-2,-2))/2).y)))
+				cell_target = (cell_target-Grid.world_to_map(position))
+				possibleLocations.erase(GlobalVariables.DIRECTION.RIGHTDOWN)
+			GlobalVariables.DIRECTION.RIGHTUP:
+				cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(int(ceil(((Grid.activeRoom.roomSize + Vector2(-2,-2))/2).x)),1)
+				cell_target = (cell_target-Grid.world_to_map(position))
+				possibleLocations.erase(GlobalVariables.DIRECTION.RIGHTUP)
+			GlobalVariables.DIRECTION.LEFTDOWN:
+				cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(int(ceil(((Grid.activeRoom.roomSize + Vector2(-2,-2))/2).x)),Grid.activeRoom.roomSize.y-2)
+				cell_target = (cell_target-Grid.world_to_map(position))
+				possibleLocations.erase(GlobalVariables.DIRECTION.LEFTDOWN)
+			GlobalVariables.DIRECTION.LEFTUP:
+				cell_target = Grid.world_to_map(Grid.activeRoom.doorRoomLeftMostCorner)+Vector2(1,int(ceil(((Grid.activeRoom.roomSize + Vector2(-2,-2))/2).y)))
+				cell_target = (cell_target-Grid.world_to_map(position))
+				possibleLocations.erase(GlobalVariables.DIRECTION.LEFTUP)
+
+		print("Possible location size " + str(possibleLocations.size()))
+		var target_position = Grid.request_move(self, cell_target)
+		if target_position && target_position!=position:
+			moveTo = target_position
+			possibleLocations.clear()
+			break
+		else:
+			moveTo = null
 		
 	if moveTo:
-		set_process(false)
 		#play defeat animation 
 		$MageAnimationPlayer.play("walk", -1, 4.5)
 		$Tween.interpolate_property(self, "position", position, moveTo, $MageAnimationPlayer.current_animation_length/4.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
@@ -973,18 +985,17 @@ func play_taken_damage_animation(inflictattackType, mainPlayer):
 			set_process(true)
 
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
-			#move mage enmy after being hit 
+			print("Mage play hit animation")
 			set_process(false)
 			$MageAnimationPlayer.play(animationToPlay, -1, 2.0)
 			yield($MageAnimationPlayer, "animation_finished")
-			set_process(true)
 			if !movedMage:
 				if move_mage_after_hit():
 					yield($MageAnimationPlayer, "animation_finished")
 			else:
 				movedMage = false
-			$MageAnimationPlayer.play("idle")
 			set_process(true)
+			$MageAnimationPlayer.play("idle")
 
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			set_process(false)

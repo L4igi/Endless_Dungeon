@@ -1,6 +1,6 @@
 extends Node
 
-var roomDimensions = 9
+var roomDimensions = 7
 
 var maxNumberRooms = 15
 
@@ -53,4 +53,4 @@ var firstCall = true
 var enemyWarriorDifficulty = 0
 var enemyNinjaDifficulty = 0
 var enemyBarrierDifficulty = 0
-var enemyMageDifficulty = 10
+var enemyMageDifficulty = 0
