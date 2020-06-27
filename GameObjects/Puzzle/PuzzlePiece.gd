@@ -26,10 +26,10 @@ func _ready():
 	Grid.connect("puzzleBarrierDisableSignal", self, "_on_puzzlepiece_barrier_disable")
 
 	
-func playColor(puzzlePieceArray, count):
+func playColor(puzzlePieceArray, count, onRoomEnter):
 	set_process(false)
 	var playDuration = 1.1
-	if count == 0:
+	if count == 0 && onRoomEnter:
 		playDuration = 0.55
 	if isBarrier:
 		get_node("Sprite").set_self_modulate(baseModulation)
@@ -47,7 +47,7 @@ func playColor(puzzlePieceArray, count):
 	emit_signal("puzzlePlayedAnimation", self)
 	count += 1
 	if count < puzzlePieceArray.size():
-		puzzlePieceArray[count].playColor(puzzlePieceArray, count)
+		puzzlePieceArray[count].playColor(puzzlePieceArray, count, onRoomEnter)
 
 func activatePuzzlePiece():
 	if !isActivated && !Grid.activeRoom.roomCleared:

@@ -96,6 +96,8 @@ var checkNextAction = true
 
 var playerWalkedThroughDoorPosition = Vector2.ZERO
 
+var canRepeatPuzzlePattern = true
+
 signal toggleDangerArea (enemyToToggleArea, toggleAll)
 
 signal puzzleBlockInteractionSignal (player, puzzleBlockDirection)
@@ -334,42 +336,48 @@ func get_use_nonkey_items():
 					guiElements.change_health(-5)
 
 func toggle_enemy_danger_areas():
-	if Input.is_action_just_pressed("toggle_danger_area_next") and Input.is_action_just_pressed("toggle_danger_area_previous") || Input.is_action_pressed("toggle_danger_area_next") and Input.is_action_just_pressed("toggle_danger_area_previous") ||Input.is_action_pressed("toggle_danger_area_previous") and Input.is_action_just_pressed("toggle_danger_area_next"):
-		#print("pressed both at once")
-		if toggledDangerArea:
-			toggledDangerArea = false
-		else: 
-			toggledDangerArea = true
-		enemyToToggleArea = null
-		emit_signal("toggleDangerArea", enemyToToggleArea, true)
-	elif Input.is_action_just_pressed("toggle_danger_area_previous") && toggledDangerArea:
-		if Grid.activeRoom !=null:
-			if enemyToToggleArea == null:
-				enemyToToggleArea = Grid.activeRoom.enemiesInRoom.size()-1
-			elif enemyToToggleArea <= 0:
-				enemyToToggleArea = null
-			else:
-				enemyToToggleArea -= 1
-				while Grid.activeRoom.enemiesInRoom[enemyToToggleArea].helpEnemy:
-					enemyToToggleArea -=1
-					if enemyToToggleArea <= 0:
-						enemyToToggleArea = 0
-						break
-			emit_signal("toggleDangerArea", enemyToToggleArea)
-	elif Input.is_action_just_pressed("toggle_danger_area_next") && toggledDangerArea:
-		if Grid.activeRoom !=null:
-			if enemyToToggleArea == null:
-				enemyToToggleArea = 0
-			elif enemyToToggleArea >= Grid.activeRoom.enemiesInRoom.size()-1:
-				enemyToToggleArea = null
-			else:
-				enemyToToggleArea += 1
-				while Grid.activeRoom.enemiesInRoom[enemyToToggleArea].helpEnemy:
-					enemyToToggleArea +=1
-					if enemyToToggleArea >= Grid.activeRoom.enemiesInRoom.size():
-						enemyToToggleArea = 0
-						break
-			emit_signal("toggleDangerArea", enemyToToggleArea)
+	if Grid.activeRoom != null && !Grid.activeRoom.enemiesInRoom.empty():
+		if Input.is_action_just_pressed("toggle_danger_area_next") and Input.is_action_just_pressed("toggle_danger_area_previous") || Input.is_action_pressed("toggle_danger_area_next") and Input.is_action_just_pressed("toggle_danger_area_previous") ||Input.is_action_pressed("toggle_danger_area_previous") and Input.is_action_just_pressed("toggle_danger_area_next"):
+			#print("pressed both at once")
+			if toggledDangerArea:
+				toggledDangerArea = false
+			else: 
+				toggledDangerArea = true
+			enemyToToggleArea = null
+			emit_signal("toggleDangerArea", enemyToToggleArea, true)
+		elif Input.is_action_just_pressed("toggle_danger_area_previous") && toggledDangerArea:
+			if Grid.activeRoom !=null:
+				if enemyToToggleArea == null:
+					enemyToToggleArea = Grid.activeRoom.enemiesInRoom.size()-1
+				elif enemyToToggleArea <= 0:
+					enemyToToggleArea = null
+				else:
+					enemyToToggleArea -= 1
+					while Grid.activeRoom.enemiesInRoom[enemyToToggleArea].helpEnemy:
+						enemyToToggleArea -=1
+						if enemyToToggleArea <= 0:
+							enemyToToggleArea = 0
+							break
+				emit_signal("toggleDangerArea", enemyToToggleArea)
+		elif Input.is_action_just_pressed("toggle_danger_area_next") && toggledDangerArea:
+			if Grid.activeRoom !=null:
+				if enemyToToggleArea == null:
+					enemyToToggleArea = 0
+				elif enemyToToggleArea >= Grid.activeRoom.enemiesInRoom.size()-1:
+					enemyToToggleArea = null
+				else:
+					enemyToToggleArea += 1
+					while Grid.activeRoom.enemiesInRoom[enemyToToggleArea].helpEnemy:
+						enemyToToggleArea +=1
+						if enemyToToggleArea >= Grid.activeRoom.enemiesInRoom.size():
+							enemyToToggleArea = 0
+							break
+				emit_signal("toggleDangerArea", enemyToToggleArea)
+				
+	elif Grid.activeRoom != null && !inClearedRoom && Grid.activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && canRepeatPuzzlePattern:
+		if Input.is_action_just_pressed("toggle_danger_area_next") and Input.is_action_just_pressed("toggle_danger_area_previous") || Input.is_action_pressed("toggle_danger_area_next") and Input.is_action_just_pressed("toggle_danger_area_previous") ||Input.is_action_pressed("toggle_danger_area_previous") and Input.is_action_just_pressed("toggle_danger_area_next"):
+			Grid.play_puzzlepiece_pattern(false)
+		#repeat puzzle order
 		
 func inflict_damage_playerDefeated(attackDamageVar, attackTypeVar, enemyType):
 	match enemyType:

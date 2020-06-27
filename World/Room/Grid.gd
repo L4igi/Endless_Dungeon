@@ -816,7 +816,7 @@ func enablePlayerAttack(player):
 func create_puzzle_room(unlockedDoor):
 	randomize()
 	#minimum 4 maximum 6
-	var puzzlePiecesToSpwan = 1
+	var puzzlePiecesToSpwan = 3
 #	var puzzlePiecesToSpwan = randi()%3+4
 	print("Random rolled result : " + str(puzzlePiecesToSpwan))
 	var calculateSpawnAgain = true
@@ -893,9 +893,9 @@ func create_puzzle_room(unlockedDoor):
 		set_cellv(world_to_map(newCountingBlock.position), get_tileset().find_tile_by_name("COUNTINGBLOCK"))
 		unlockedDoor.countingBlocksInRoom.append(newCountingBlock)
 
-func play_puzzlepiece_pattern():
+func play_puzzlepiece_pattern(onRoomEnter = true):
 	print("Play puzzle pattern")
-	activeRoom.puzzlePiecesInRoom[0].playColor(activeRoom.puzzlePiecesInRoom, 0)
+	activeRoom.puzzlePiecesInRoom[0].playColor(activeRoom.puzzlePiecesInRoom, 0, onRoomEnter)
 
 func create_empty_treasure_room(unlockedDoor):
 	var upgradeContainers = []
@@ -1299,6 +1299,7 @@ func _on_ticking_projectile_made_move(projectile, projectileType):
 
 func cancel_magic_in_puzzle_room():
 	cancelMagicPuzzleRoom = false
+	mainPlayer.canRepeatPuzzlePattern = true
 	spawnBlockProjectileNextTurn.clear()
 	activatePuzzlePieceNextTurn.clear()
 	activateCountingBlockNextTurn.clear()
@@ -1443,6 +1444,7 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 	#use wand on block in puzzle room 
 	if  activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM && get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.BLOCK && attackType == GlobalVariables.ATTACKTYPE.MAGIC:
 		player.end_player_turn()
+		player.canRepeatPuzzlePattern = false
 		GlobalVariables.turnController.start_power_projectiles()
 		for projectile in projectilesInActiveRoom:
 			set_cellv(world_to_map(projectile.position),get_tileset().find_tile_by_name("FLOOR")) 
@@ -1899,7 +1901,7 @@ func dropLootInActiveRoom():
 	#calculating chance of dropping key item 
 	var dropKeyItem = false
 	print("currentNumberRoomsgenerated-numberRoomsCleared " + str(currentNumberRoomsgenerated-numberRoomsCleared))
-	if currentNumberRoomsgenerated-numberRoomsCleared == 0:
+	if currentNumberRoomsgenerated-numberRoomsCleared >= 1:
 		dropKeyItem = true
 	elif currentNumberRoomsgenerated-numberRoomsCleared > 0:
 		if randi()%100 > randi()%30+20:

@@ -1050,6 +1050,15 @@ func play_defeat_animation(mainPlayer, CURRENTPHASE):
 			yield($AnimationPlayer, "animation_finished")
 			set_process(true)
 	print("Played defeat animation")
+	match enemyType:
+		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
+			GlobalVariables.enemyBarrierDifficulty += 0.5
+		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
+			GlobalVariables.enemyWarriorDifficulty += 0.5
+		GlobalVariables.ENEMYTYPE.MAGEENEMY:
+			GlobalVariables.enemyMageDifficulty += 0.5
+		GlobalVariables.ENEMYTYPE.NINJAENEMY:
+			GlobalVariables.enemyNinjaDifficulty += 0.5
 	emit_signal("enemyDefeated", self)
 		
 func makeEnemyBarrier(currentGrid, unlockedDoor):
