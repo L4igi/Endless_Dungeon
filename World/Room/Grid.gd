@@ -727,6 +727,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					#remove rojectiles in old room
 				activeRoom = oldCellTargetNode
 				if activeRoom != null:
+					adapt_game_difficulty()
 					pawn.inRoomType = activeRoom.roomType
 					GlobalVariables.turnController.inRoomType = activeRoom.roomType
 					print (activeRoom.enemiesInRoom)
@@ -816,8 +817,16 @@ func enablePlayerAttack(player):
 func create_puzzle_room(unlockedDoor):
 	randomize()
 	#minimum 4 maximum 6
-	var puzzlePiecesToSpwan = 3
-#	var puzzlePiecesToSpwan = randi()%3+4
+	var randPieces = int(GlobalVariables.countPuzzleRoomsCleared/3-GlobalVariables.timesActivatedPuzzleWrong/5)
+	if  randPieces >= int(4* GlobalVariables.globalDifficultyMultiplier):
+		randPieces = int(4* GlobalVariables.globalDifficultyMultiplier)
+	var puzzlePiecesToSpwan = randi()%(randPieces+1)+2
+	if unlockedDoor.roomSizeMultiplier == Vector2(1,2) || unlockedDoor.roomSizeMultiplier == Vector2(2,1):
+		puzzlePiecesToSpwan = int(puzzlePiecesToSpwan*1.5)
+	elif unlockedDoor.roomSizeMultiplier == Vector2(2,2):
+		puzzlePiecesToSpwan = int(puzzlePiecesToSpwan*2.0)
+	if puzzlePiecesToSpwan >= 9: 
+		puzzlePiecesToSpwan = 9
 	print("Random rolled result : " + str(puzzlePiecesToSpwan))
 	var calculateSpawnAgain = true
 	var alreadyUsedColors = []
@@ -865,7 +874,16 @@ func create_puzzle_room(unlockedDoor):
 		set_cellv(world_to_map(newPuzzlePiece.position), get_tileset().find_tile_by_name("PUZZLEPIECE"))
 		unlockedDoor.puzzlePiecesInRoom.append(newPuzzlePiece)
 		#spawn additional counting blocks for bonus loot
-	var countingBlocksRand = randi()%3
+	
+	var countingBlocksRand = randi()%100
+	if countingBlocksRand < 50-int(GlobalVariables.puzzleBonusLootDropped*2): 
+		countingBlocksRand = 0
+	elif countingBlocksRand < 80-int(GlobalVariables.puzzleBonusLootDropped*2):
+		countingBlocksRand = 1
+	elif countingBlocksRand < 100-int(GlobalVariables.puzzleBonusLootDropped*2):
+		countingBlocksRand = 2
+	else:
+		countingBlocksRand = 3
 	for countingBlock in countingBlocksRand:
 		#print("generatig puzzle pieces")
 		calculateSpawnAgain = true
@@ -975,10 +993,10 @@ func create_enemy_room(unlockedDoor):
 	if enemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY && multipleMages!= 0:
 		enemiesToSpawn += randi()%(multipleMages+1)+1
 		mixEnemies = false
-#	if unlockedDoor.roomSizeMultiplier == Vector2(1,1):
-#		enemiesToSpawn = randi()%3+1
-#	elif unlockedDoor.roomSizeMultiplier == Vector2(2,2):
-#		enemiesToSpawn = randi()%5+1
+	if unlockedDoor.roomSizeMultiplier == Vector2(1,2) || unlockedDoor.roomSizeMultiplier == Vector2(2,1):
+		enemiesToSpawn = int(enemiesToSpawn*1.5)
+	elif unlockedDoor.roomSizeMultiplier == Vector2(2,2):
+		enemiesToSpawn = int(enemiesToSpawn*2.0)
 	var sizecounter = 0
 	var mageEnemyCount = 0
 	var spawnCellArray = []
@@ -1165,6 +1183,7 @@ func on_enemy_turn_done_confirmed():
 
 func on_player_turn_done_confirmed_puzzle_room():
 	GlobalVariables.turnsTakenInPuzzleRoom+=1
+	#print(GlobalVariables.turnsTakenInPuzzleRoom)
 	GlobalVariables.turnController.currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
 	emit_signal("enemyTurnDoneSignal")
 	
@@ -1204,6 +1223,7 @@ func _on_puzzle_piece_activated():
 #			cancelMagicPuzzleRoom = true
 			activeRoom.roomCleared=true
 			mainPlayer.inClearedRoom = true
+			GlobalVariables.countPuzzleRoomsCleared += 1
 			#delete all projectiles 
 			if activeRoom.dropLoot():
 				var tempCountingBlocks = activeRoom.countingBlocksInRoom.duplicate()
@@ -1956,7 +1976,12 @@ func dropLootInActiveRoom():
 				exitSpawned = true
 		else:
 			var nonKeyItemToDrop = randi()%100
-			if nonKeyItemToDrop < 50:
+			if nonKeyItemToDrop < 5:
+				newItem.setTexture(GlobalVariables.ITEMTYPE.COIN)
+				newItem.make_nickel()
+			elif nonKeyItemToDrop < (15*GlobalVariables.globalDifficultyMultiplier):
+				newItem.setTexture(GlobalVariables.ITEMTYPE.COIN)
+			elif nonKeyItemToDrop < 60:
 				newItem.setTexture(GlobalVariables.ITEMTYPE.FILLUPHALFHEART)
 			elif nonKeyItemToDrop < 85:
 				newItem.setTexture(GlobalVariables.ITEMTYPE.FILLUPHEART)
@@ -2554,8 +2579,6 @@ func remove_opposite_doorlocation(doorLocationDirectionsArray, direction):
 			pass
 	return doorLocationDirectionsArray
 
-
-
 func manage_barrier_creation(barrierType):
 	#make it one considering this one wants to become a barrier 
 	var countLockedDoors = 0
@@ -2573,6 +2596,12 @@ func manage_barrier_creation(barrierType):
 		return true
 	return false
 
+#called on move through unlockedDoor 
+#on player turn done adjust enemy difficulty
+func adapt_game_difficulty():
+	if activeRoom != null && !activeRoom.enemiesInRoom.empty():
+		for enemy in activeRoom.enemiesInRoom:
+			enemy.adapt_difficulty()
 
 # Note: This can be called from anywhere inside the tree. This function is
 # path independent.

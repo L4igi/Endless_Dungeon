@@ -1,6 +1,6 @@
 extends Node
 
-var roomDimensions = 7
+var roomDimensions = 8
 
 var maxNumberRooms = 2
 
@@ -34,7 +34,7 @@ var chosenDifficulty = DIFFICULTYLEVELS.AUTO
 
 var upgradeCosts = [3,3,4,6,1,2,6,2]
 
-var upgradeAmount = [1,1,1,1,1,1,1,1]
+var upgradeAmount = [0.25,0.15,2,1,2,1,1,0.3]
 
 var moveAllEnemiesAtOnce = true
 
@@ -52,10 +52,10 @@ var firstCall = true
 
 var globalDifficultyMultiplier = 1.0
 
-var enemyWarriorDifficulty = 10
-var enemyNinjaDifficulty = 10
-var enemyBarrierDifficulty = 10
-var enemyMageDifficulty = 10
+var enemyWarriorDifficulty = 5
+var enemyNinjaDifficulty = 5
+var enemyBarrierDifficulty = 5
+var enemyMageDifficulty = 5
 
 var hitByWarrior = 0
 var hitByNinja = 0
@@ -63,6 +63,7 @@ var hitByMage = 0
 var hitByBarrier = 0
 
 var timesActivatedPuzzleWrong = 0
+var countPuzzleRoomsCleared = 0
 
 var turnsTakenInEnemyRoom = 0
 var turnsTakenInPuzzleRoom = 0 

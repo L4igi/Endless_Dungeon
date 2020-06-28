@@ -57,20 +57,36 @@ func do_upgrade(player):
 		match upgradeType:
 			GlobalVariables.UPGRADETYPE.ACTIONSUP:
 				GlobalVariables.upgradeCosts[upgradeType-1]*=1.5
+				if GlobalVariables.upgradeCosts[upgradeType-1] >= int(20 * GlobalVariables.globalDifficultyMultiplier):
+					GlobalVariables.upgradeCosts[upgradeType-1] = int(20 * GlobalVariables.globalDifficultyMultiplier)
 			GlobalVariables.UPGRADETYPE.FILLFLASK:
 				GlobalVariables.upgradeCosts[upgradeType-1]*=1.5
+				if GlobalVariables.upgradeCosts[upgradeType-1] >= int(10 * GlobalVariables.globalDifficultyMultiplier):
+					GlobalVariables.upgradeCosts[upgradeType-1] = int(10 * GlobalVariables.globalDifficultyMultiplier)
 			GlobalVariables.UPGRADETYPE.FILLHEART:
 				GlobalVariables.upgradeCosts[upgradeType-1]*=1.5
+				if GlobalVariables.upgradeCosts[upgradeType-1] >= int(3 * GlobalVariables.globalDifficultyMultiplier):
+					GlobalVariables.upgradeCosts[upgradeType-1] = int(3 * GlobalVariables.globalDifficultyMultiplier)
 			GlobalVariables.UPGRADETYPE.BOMB:
 				GlobalVariables.upgradeCosts[upgradeType-1]*=1.5
+				if GlobalVariables.upgradeCosts[upgradeType-1] >= int(7 * GlobalVariables.globalDifficultyMultiplier):
+					GlobalVariables.upgradeCosts[upgradeType-1] = int(7 * GlobalVariables.globalDifficultyMultiplier)
 			GlobalVariables.UPGRADETYPE.FLASK:
 				GlobalVariables.upgradeCosts[upgradeType-1]*=1.5
+				if GlobalVariables.upgradeCosts[upgradeType-1] >= int(15 * GlobalVariables.globalDifficultyMultiplier):
+					GlobalVariables.upgradeCosts[upgradeType-1] = int(15 * GlobalVariables.globalDifficultyMultiplier)
 			GlobalVariables.UPGRADETYPE.HEART:
 				GlobalVariables.upgradeCosts[upgradeType-1]*=1.5
+				if GlobalVariables.upgradeCosts[upgradeType-1] >= int(12 * GlobalVariables.globalDifficultyMultiplier):
+					GlobalVariables.upgradeCosts[upgradeType-1] = int(12 * GlobalVariables.globalDifficultyMultiplier)
 			GlobalVariables.UPGRADETYPE.MAGIC:
 				GlobalVariables.upgradeCosts[upgradeType-1]*=1.5
+				if GlobalVariables.upgradeCosts[upgradeType-1] >= int(20 * GlobalVariables.globalDifficultyMultiplier):
+					GlobalVariables.upgradeCosts[upgradeType-1] = int(20 * GlobalVariables.globalDifficultyMultiplier)
 			GlobalVariables.UPGRADETYPE.SWORD:
 				GlobalVariables.upgradeCosts[upgradeType-1]*=1.5
+				if GlobalVariables.upgradeCosts[upgradeType-1] >= int(8 * GlobalVariables.globalDifficultyMultiplier):
+					GlobalVariables.upgradeCosts[upgradeType-1] = int(8 * GlobalVariables.globalDifficultyMultiplier)
 		updatePrice()
 	else:
 		$AnimationPlayer.play("NotEnoughMoney", -1, 1.0)

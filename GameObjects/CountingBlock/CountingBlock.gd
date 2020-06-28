@@ -10,10 +10,16 @@ onready var countLabel = $Sprite/Count
 onready var Grid = get_parent()
 
 func _ready():
+	adjust_base_count()
 	currentCount = baseCount
 	countLabel.set_text(str(baseCount))
 
-
+func adjust_base_count():
+	var adjustCount = int(GlobalVariables.puzzleBonusLootDropped/3)
+	if adjustCount >= 6: 
+		adjustCount = 6
+	baseCount = int((randi()%(adjustCount+1)+2)* GlobalVariables.globalDifficultyMultiplier)
+	
 func decrease_count():
 	if !Grid.cancelMagicPuzzleRoom:
 		interActed = true

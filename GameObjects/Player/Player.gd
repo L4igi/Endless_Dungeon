@@ -18,7 +18,7 @@ var playerPassedDoor = Vector2.ZERO
 
 var movementCount = 0
 
-var maxTurnActions = 25
+var maxTurnActions = 5
 
 var attackCount = 0
 
@@ -383,12 +383,24 @@ func inflict_damage_playerDefeated(attackDamageVar, attackTypeVar, enemyType):
 	match enemyType:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			GlobalVariables.hitByBarrier += 1
+			if GlobalVariables.hitByBarrier%(5* GlobalVariables.globalDifficultyMultiplier):
+				if GlobalVariables.enemyBarrierDifficulty > 1:
+					GlobalVariables.enemyBarrierDifficulty -= 1
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
 			GlobalVariables.hitByWarrior += 1
+			if GlobalVariables.hitByWarrior%(5* GlobalVariables.globalDifficultyMultiplier):
+				if GlobalVariables.enemyWarriorDifficulty > 1:
+					GlobalVariables.enemyWarriorDifficulty -= 1
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			GlobalVariables.hitByMage += 1
+			if GlobalVariables.hitByMage%(5* GlobalVariables.globalDifficultyMultiplier):
+				if GlobalVariables.enemyMageDifficulty > 1:
+					GlobalVariables.enemyMageDifficulty -= 1
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			GlobalVariables.hitByNinja += 1
+			if GlobalVariables.hitByNinja%(5* GlobalVariables.globalDifficultyMultiplier):
+				if GlobalVariables.enemyNinjaDifficulty > 1:
+					GlobalVariables.enemyNinjaDifficulty -= 1
 	if !GlobalVariables.turnController.playerTakeDamage.has(self):
 		GlobalVariables.turnController.playerTakeDamage.append(self)
 	lifePoints -= attackDamageVar

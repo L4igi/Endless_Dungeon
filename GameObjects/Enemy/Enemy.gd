@@ -622,7 +622,17 @@ func make_enemy_turn():
 	if !isDisabled:
 		enemyTurnDone = false
 			
-func adapt_difficulty(difficultyLevel):
+func adapt_difficulty():
+	var difficultyLevel = 0
+	match enemyType:
+		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
+			difficultyLevel = GlobalVariables.enemyBarrierDifficulty
+		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
+			difficultyLevel = GlobalVariables.enemyWarriorDifficulty
+		GlobalVariables.ENEMYTYPE.NINJAENEMY:
+			difficultyLevel = GlobalVariables.enemyNinjaDifficulty
+		GlobalVariables.ENEMYTYPE.MAGEENEMY:
+			difficultyLevel = GlobalVariables.enemyMageDifficulty
 	if difficultyLevel == 0:
 		attackDamage = baseAttackDamage
 		lifePoints = baseLifePoints
@@ -851,7 +861,7 @@ func generateEnemy(enemieToGenerate, currentGrid, unlockedDoor):
 				get_node("Sprite").set_scale(Vector2(0.5,0.5))
 				get_node("Sprite").set_offset(Vector2(0,14))
 			else:
-				adapt_difficulty(GlobalVariables.enemyBarrierDifficulty)
+				adapt_difficulty()
 			
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.NINJAENEMY
@@ -865,7 +875,7 @@ func generateEnemy(enemieToGenerate, currentGrid, unlockedDoor):
 			attackRange = baseAttackRange
 			movementCount = baseMovementCount
 			get_node("SpriteNinjaEnemy").set_visible(true)
-			adapt_difficulty(GlobalVariables.enemyNinjaDifficulty)
+			adapt_difficulty()
 			
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.WARRIROENEMY
@@ -879,7 +889,7 @@ func generateEnemy(enemieToGenerate, currentGrid, unlockedDoor):
 			attackRange = baseAttackRange
 			movementCount = baseMovementCount
 			get_node("SpriteWarriorEnemy").set_visible(true)
-			adapt_difficulty(GlobalVariables.enemyWarriorDifficulty)
+			adapt_difficulty()
 				
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			enemyType = GlobalVariables.ENEMYTYPE.MAGEENEMY
@@ -918,7 +928,7 @@ func generateEnemy(enemieToGenerate, currentGrid, unlockedDoor):
 #				mirror_base_direction()
 #			if !mirrorDirectionsArray.has(attackRangeInitDirection):
 #				mirrorDirectionsArray.append(attackRangeInitDirection)
-			adapt_difficulty(GlobalVariables.enemyMageDifficulty)
+			adapt_difficulty()
 			
 			
 	
@@ -1052,13 +1062,13 @@ func play_defeat_animation(mainPlayer, CURRENTPHASE):
 	print("Played defeat animation")
 	match enemyType:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
-			GlobalVariables.enemyBarrierDifficulty += 0.5
+			GlobalVariables.enemyBarrierDifficulty += 0.5 * GlobalVariables.globalDifficultyMultiplier
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
-			GlobalVariables.enemyWarriorDifficulty += 0.5
+			GlobalVariables.enemyWarriorDifficulty += 0.5 * GlobalVariables.globalDifficultyMultiplier
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
-			GlobalVariables.enemyMageDifficulty += 0.5
+			GlobalVariables.enemyMageDifficulty += 0.5 * GlobalVariables.globalDifficultyMultiplier
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
-			GlobalVariables.enemyNinjaDifficulty += 0.5
+			GlobalVariables.enemyNinjaDifficulty += 0.5 * GlobalVariables.globalDifficultyMultiplier
 	emit_signal("enemyDefeated", self)
 		
 func makeEnemyBarrier(currentGrid, unlockedDoor):
