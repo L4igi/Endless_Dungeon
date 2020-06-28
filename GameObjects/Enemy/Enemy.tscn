@@ -773,7 +773,7 @@ margin_top = -18.0
 margin_right = 304.0
 margin_bottom = 14.0
 rect_scale = Vector2( 0.1, 0.2 )
-step = 10.0
+step = 0.1
 value = 10.0
 texture_under = ExtResource( 3 )
 texture_progress = ExtResource( 7 )
@@ -786,7 +786,7 @@ visible = false
 position = Vector2( -1.69407e-21, -8 )
 scale = Vector2( 0.625, 0.625 )
 frames = SubResource( 37 )
-frame = 2
+frame = 3
 playing = true
 
 [node name="Light2D" type="Light2D" parent="."]

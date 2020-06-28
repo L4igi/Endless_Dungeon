@@ -52,10 +52,14 @@ var firstCall = true
 
 var globalDifficultyMultiplier = 1.0
 
-var enemyWarriorDifficulty = 5
-var enemyNinjaDifficulty = 5
-var enemyBarrierDifficulty = 5
-var enemyMageDifficulty = 5
+var minDifficulty = 0.5 
+
+var maxDifficulty = 1.5
+
+var enemyWarriorDifficulty = 1
+var enemyNinjaDifficulty = 1
+var enemyBarrierDifficulty = 1
+var enemyMageDifficulty = 1
 
 var hitByWarrior = 0
 var hitByNinja = 0
@@ -70,5 +74,9 @@ var turnsTakenInPuzzleRoom = 0
 
 var puzzleBonusLootDropped = 0
 var enemyBonusLootDropped = 0
+
+var enemyRoomChance = 65
+var puzzleRoomChance = 20
+var emptyTreasureRoomChance = 15
 
 var currentFloor = 0

@@ -39,10 +39,6 @@ var activeRoom = null
 
 var movedThroughDoor = false
 
-var enemyRoomChance = 33
-var puzzleRoomChance = 33
-var emptyTreasureRoomChance = 34
-
 var projectilesInActiveRoom = []
 
 var enemiesMadeMoveCounter = 0
@@ -248,6 +244,7 @@ func request_move(pawn, direction):
 				elif object_pawn.itemType == GlobalVariables.ITEMTYPE.PUZZLESWITCH:
 					emit_signal("puzzleBarrierDisableSignal", object_pawn, mainPlayer)
 				elif object_pawn.itemType == GlobalVariables.ITEMTYPE.EXIT:
+					GlobalVariables.maxDifficulty += 1
 					save_game()
 					GlobalVariables.currentFloor+=1
 					get_tree().reload_current_scene()
@@ -276,7 +273,7 @@ func request_move(pawn, direction):
 						object_pawn.on_use_key_item(requestDoorUnlockResult)
 						mainPlayer.remove_key_item_from_inventory(requestDoorUnlockResult)
 					#see if any other rooms are compleatly blocked by walls 
-					object_pawn.unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance)
+					object_pawn.unlock_Door()
 					numberRoomsBeenTo += 1
 					GlobalVariables.turnController.playerMovedDoor = true
 					return update_pawn_position(pawn, cell_start, cell_target)
@@ -623,7 +620,7 @@ func magicProjectileMagicProjectileInteraction(magicProjectile1, magicProjectile
 			magicProjectile1.play_projectile_animation(false,"delete")
 			magicProjectile2.play_projectile_animation(true,"delete")
 		else:
-			magicProjectile1.play_projectile_animation(true,"delete")
+			magicProjectile1.play_projectile_animation(false,"delete")
 			magicProjectile2.play_projectile_animation(true,"delete")
 		return false
 
@@ -727,7 +724,6 @@ func update_pawn_position(pawn, cell_start, cell_target):
 					#remove rojectiles in old room
 				activeRoom = oldCellTargetNode
 				if activeRoom != null:
-					adapt_game_difficulty()
 					pawn.inRoomType = activeRoom.roomType
 					GlobalVariables.turnController.inRoomType = activeRoom.roomType
 					print (activeRoom.enemiesInRoom)
@@ -754,6 +750,7 @@ func update_pawn_position(pawn, cell_start, cell_target):
 				projectilesInActiveRoom.clear()
 				tempProjectiles.clear()
 				if(activeRoom != null):
+					adapt_game_difficulty()
 					#disable elements in room just left
 					if !activeRoom.enemiesInRoom.empty():
 						for element in activeRoom.enemiesInRoom:
@@ -989,6 +986,7 @@ func create_enemy_room(unlockedDoor):
 	if totalDifficultyLevel >=40:
 		mixEnemiesAndMage = true
 	var enemyType = randi()%4
+	enemyType = 1
 	print(enemyType)
 	if enemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY && multipleMages!= 0:
 		enemiesToSpawn += randi()%(multipleMages+1)+1
@@ -1640,6 +1638,12 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 			player.position = player.position + map_to_world(attack_direction)
 			set_cellv(world_to_map(puzzlePieceToSwap.position), get_tileset().find_tile_by_name("COUNTINGBLOCK"))
 			set_cellv(world_to_map(player.position), get_tileset().find_tile_by_name("PLAYER"))
+		elif get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.MAGICPROJECTILE:
+			var magicProjectileToSwap = get_cell_pawn(world_to_map(player.position) + attack_direction)
+			magicProjectileToSwap.position = player.position
+			player.position = player.position + map_to_world(attack_direction)
+			set_cellv(world_to_map(magicProjectileToSwap.position), get_tileset().find_tile_by_name("MAGICPROJECTILE"))
+			set_cellv(world_to_map(player.position), get_tileset().find_tile_by_name("PLAYER"))
 			
 func on_puzzle_Block_interaction(player, puzzleBlockDirection):
 	activatedPuzzleBlock.interactPowerBlock(puzzleBlockDirection, activeRoom.roomType)
@@ -1978,9 +1982,15 @@ func dropLootInActiveRoom():
 			var nonKeyItemToDrop = randi()%100
 			if nonKeyItemToDrop < 5:
 				newItem.setTexture(GlobalVariables.ITEMTYPE.COIN)
+				newItem.get_node("Sprite").set_scale(Vector2(0.5,0.5))
+				newItem.get_node("Sprite").set_offset(Vector2(0,10))
+				newItem.keyValue = str(0)
 				newItem.make_nickel()
 			elif nonKeyItemToDrop < (15*GlobalVariables.globalDifficultyMultiplier):
 				newItem.setTexture(GlobalVariables.ITEMTYPE.COIN)
+				newItem.get_node("Sprite").set_scale(Vector2(0.5,0.5))
+				newItem.get_node("Sprite").set_offset(Vector2(0,10))
+				newItem.keyValue = str(0)
 			elif nonKeyItemToDrop < 60:
 				newItem.setTexture(GlobalVariables.ITEMTYPE.FILLUPHALFHEART)
 			elif nonKeyItemToDrop < 85:
@@ -2599,6 +2609,18 @@ func manage_barrier_creation(barrierType):
 #called on move through unlockedDoor 
 #on player turn done adjust enemy difficulty
 func adapt_game_difficulty():
+	if GlobalVariables.DIFFICULTYLEVELS.AUTO:
+		#adjust globalDifficultyMultiplyer accordingly
+		var totalHitCount = GlobalVariables.hitByBarrier + GlobalVariables.hitByMage + GlobalVariables.hitByWarrior + GlobalVariables.hitByNinja
+		var totalEnemiesDefeatesCount = GlobalVariables.enemyBarrierDifficulty + GlobalVariables.enemyWarriorDifficulty + GlobalVariables.enemyMageDifficulty + GlobalVariables.enemyNinjaDifficulty
+		if totalHitCount > (totalEnemiesDefeatesCount+10):
+			GlobalVariables.globalDifficultyMultiplier = 1.0 - (totalHitCount - totalEnemiesDefeatesCount)/100
+			if GlobalVariables.globalDifficultyMultiplier < GlobalVariables.minDifficulty:
+				GlobalVariables.globalDifficultyMultiplier = GlobalVariables.minDifficulty
+		elif totalEnemiesDefeatesCount > (totalHitCount+10):
+			GlobalVariables.globalDifficultyMultiplier = 1.0 + (totalHitCount - totalEnemiesDefeatesCount)/100
+			if GlobalVariables.globalDifficultyMultiplier > GlobalVariables.maxDifficulty:
+				GlobalVariables.globalDifficultyMultiplier = GlobalVariables.maxDifficulty
 	if activeRoom != null && !activeRoom.enemiesInRoom.empty():
 		for enemy in activeRoom.enemiesInRoom:
 			enemy.adapt_difficulty()

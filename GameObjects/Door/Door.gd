@@ -91,24 +91,24 @@ func request_door_unlock(playerItemsInPosession):
 	return true
 	
 # warning-ignore:unused_argument
-func unlock_Door(enemyRoomChance, puzzleRoomChance, emptyTreasureRoomChance):
+func unlock_Door():
 	isUnlocked=true
 
 	Grid.create_doors(doorRoomLeftMostCorner, false, roomSize.x, roomSize.y, roomSizeMultiplier, doorLocationDirection)
 
-	var randRoomType = 90
+	var randRoomType = 20
 #		randRoomType = 90
-	if(randRoomType < enemyRoomChance):
+	if(randRoomType < GlobalVariables.enemyRoomChance):
 		#print("create enemy room " + str(randRoomType))
 		roomType = ROOM_TYPE.ENEMYROOM
 		GlobalVariables.turnController.inRoomType = ROOM_TYPE.ENEMYROOM
 		Grid.create_enemy_room(self)
-	elif(randRoomType > enemyRoomChance && randRoomType < (enemyRoomChance+puzzleRoomChance)):
+	elif(randRoomType > GlobalVariables.enemyRoomChance && randRoomType < (GlobalVariables.enemyRoomChance+GlobalVariables.puzzleRoomChance)):
 		#print("creating puzzle room " + str(randRoomType))
 		roomType = ROOM_TYPE.PUZZLEROOM
 		GlobalVariables.turnController.inRoomType = ROOM_TYPE.PUZZLEROOM
 		Grid.create_puzzle_room(self)
-	elif(randRoomType > (enemyRoomChance+puzzleRoomChance)):
+	elif(randRoomType > (GlobalVariables.enemyRoomChance+GlobalVariables.puzzleRoomChance)):
 		#print("creating empty/Treasure room " + str(randRoomType))
 		GlobalVariables.turnController.inRoomType = ROOM_TYPE.EMPTYTREASUREROOM
 		roomType = ROOM_TYPE.EMPTYTREASUREROOM

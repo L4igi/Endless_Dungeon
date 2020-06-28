@@ -501,7 +501,6 @@ func enemyAttack():
 
 #todo check if cell target is free or used calcmode active
 func adjust_enemy_attack_range_enable_attack(calcMode, activeRoom):
-	print("CALCULATING")
 	if !attackCellArray.empty():
 		attackCellArray.clear()
 	if !attackCell.empty():
@@ -633,44 +632,47 @@ func adapt_difficulty():
 			difficultyLevel = GlobalVariables.enemyNinjaDifficulty
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			difficultyLevel = GlobalVariables.enemyMageDifficulty
-	if difficultyLevel == 0:
-		attackDamage = baseAttackDamage
-		lifePoints = baseLifePoints
-		attackRange = baseAttackRange
-		movementCount = baseMovementCount
+	attackDamage = baseAttackDamage
+	lifePoints = baseLifePoints
+	attackRange = baseAttackRange
+	movementCount = baseMovementCount
 	for step in difficultyLevel:
 		match enemyType:
 			GlobalVariables.ENEMYTYPE.BARRIERENEMY:
-				if step == 0:
+				if step%3 == 0:
 					attackRange += 1
-				elif step == 1:
+				elif step%3 == 1:
 					attackDamage = baseAttackDamage + baseAttackDamage*(difficultyLevel*0.1)
 					lifePoints = baseLifePoints + baseLifePoints*(difficultyLevel*0.1)
-				elif step == 2:
+				elif step%3 == 2:
 					movementCount += 1
 			GlobalVariables.ENEMYTYPE.MAGEENEMY:
-				if step == 0:
+				if step%3 == 0:
 					attackRange += 1
-				elif step == 1:
+				elif step%3 == 1:
 					attackDamage = baseAttackDamage + baseAttackDamage*(difficultyLevel*0.1)
-					lifePoints = baseLifePoints + baseLifePoints*(difficultyLevel*0.05)
-				elif step == 2:
+					lifePoints = baseLifePoints + baseLifePoints*(difficultyLevel*0.1)
+				elif step%3 == 2:
 					movementCount += 1
 			GlobalVariables.ENEMYTYPE.WARRIROENEMY:
-				if step == 0:
+				if step%3 == 0:
+					print("Current ataackrange " + str(attackRange))
+					print("Current difficultyLevel " + str(difficultyLevel))
+					print("Current step " + str(step))
+					
 					attackRange += 1
-				elif step == 1:
+				elif step%3 == 1:
 					attackDamage = baseAttackDamage + baseAttackDamage*(difficultyLevel*0.2)
 					lifePoints = baseLifePoints + baseLifePoints*(difficultyLevel*0.1)
-				elif step == 2:
+				elif step%3 == 2:
 					movementCount += 1
 			GlobalVariables.ENEMYTYPE.NINJAENEMY:
-				if step == 0:
+				if step%3 == 0:
 					attackRange+= 1
-				elif step == 1:
+				elif step%3 == 1:
 					attackDamage = baseAttackDamage + baseAttackDamage*(difficultyLevel*0.1)
 					lifePoints = baseLifePoints + baseLifePoints*(difficultyLevel*0.1)
-				elif step == 2:
+				elif step%3 == 2:
 					movementCount += 1
 					if movementCount == 5:
 						movementCount = randi()%3+2
@@ -898,7 +900,7 @@ func generateEnemy(enemieToGenerate, currentGrid, unlockedDoor):
 			calc_mage_towards()
 			baseLifePoints = 1
 			baseAttackDamage = 1
-			baseAttackRange = 2
+			baseAttackRange = 1
 			baseMovementCount = 1
 			attackDamage = baseAttackDamage
 			lifePoints = baseLifePoints
@@ -935,6 +937,7 @@ func generateEnemy(enemieToGenerate, currentGrid, unlockedDoor):
 	#set health bar stats 
 	healthBar.set_max(lifePoints*10)
 	healthBar.set_value(lifePoints*10)
+	print("Setting LifePoints " + str(lifePoints))
 	healthBar.set_step(1)
 	return enemyType
 
