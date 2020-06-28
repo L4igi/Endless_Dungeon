@@ -619,6 +619,7 @@ func check_if_cell_valid_position(checkCell, activeRoom):
 	
 func make_enemy_turn():
 	if !isDisabled:
+		movedMage = false
 		enemyTurnDone = false
 			
 func adapt_difficulty():
