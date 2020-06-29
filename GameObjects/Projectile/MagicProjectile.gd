@@ -133,7 +133,7 @@ func play_enemy_projectile_animation():
 func play_powerBlock_projectile_animation():
 	$AnimationPlayer.play("powerblock_shoot")
 
-func play_projectile_animation(onSpot=true, projectileAnimation="attack",projectileInteraction = false):
+func play_projectile_animation(onSpot=true, projectileAnimation="attack",projectileInteraction = false, setTileEnemy= false):
 	if !GlobalVariables.turnController.projectileInteraction.has(self):
 		GlobalVariables.turnController.projectileInteraction.append(self)
 	#print("ProjectileAnimation " + str(projectileAnimation) + ( " current node ") + str(self))
@@ -222,7 +222,8 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack",project
 	elif animationMode == 1:
 		Grid.projectilesInActiveRoom.erase(self)
 		if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYER:
-			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
+			if !setTileEnemy:
+				Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
 			pass
 		elif projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMYATTACK:
 			pass

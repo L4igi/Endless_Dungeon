@@ -435,6 +435,8 @@ func add_nonkey_items(itemtype, coinValue = 1):
 		GlobalVariables.ITEMTYPE.POTION:
 			if currentPotions < maxPotions:
 				currentPotions+=1
+				if currentPotions > maxPotions:
+					currentPotions = maxPotions
 				guiElements.fill_potions(currentPotions)
 		GlobalVariables.ITEMTYPE.COIN:
 			coinCount += coinValue
@@ -442,10 +444,14 @@ func add_nonkey_items(itemtype, coinValue = 1):
 		GlobalVariables.ITEMTYPE.FILLUPHALFHEART:
 			if lifePoints < maxLifePoints:
 				lifePoints+=1
+				if lifePoints > maxLifePoints:
+					lifePoints = maxLifePoints
 				guiElements.set_health(lifePoints)
 		GlobalVariables.ITEMTYPE.FILLUPHEART:
 			if lifePoints < maxLifePoints:
 				lifePoints+=2
+				if lifePoints > maxLifePoints:
+					lifePoints = maxLifePoints
 				guiElements.set_health(lifePoints)
 
 func add_key_item_to_inventory(item):

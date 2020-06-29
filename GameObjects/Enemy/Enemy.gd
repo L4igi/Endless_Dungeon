@@ -237,7 +237,6 @@ func move_mage_after_hit():
 			moveTo = null
 		
 	if moveTo:
-		#play defeat animation 
 		$MageAnimationPlayer.play("walk", -1, 4.5)
 		$Tween.interpolate_property(self, "position", position, moveTo, $MageAnimationPlayer.current_animation_length/4.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
 		$Tween.start()
@@ -1004,6 +1003,7 @@ func play_taken_damage_animation(inflictattackType, mainPlayer):
 			if !movedMage:
 				if move_mage_after_hit():
 					yield($MageAnimationPlayer, "animation_finished")
+					Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("ENEMY"))
 					adjust_enemy_attack_range_enable_attack(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW, Grid.activeRoom)
 			else:
 				movedMage = false

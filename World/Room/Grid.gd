@@ -2,7 +2,6 @@ extends TileMap
 
 enum TILETYPES { EMPTY, PLAYER, WALL, ENEMY, PUZZLEPIECE, ITEM, DOOR, UNLOCKEDDOOR, MAGICPROJECTILE, BLOCK, FLOOR, UPGRADECONTAINER, COUNTINGBLOCK}
 
-
 var Enemy = preload("res://GameObjects/Enemy/Enemy.tscn")
 
 var Wall = preload("res://GameObjects/Wall/Wall.tscn")
@@ -347,7 +346,7 @@ func request_move(pawn, direction):
 				if tempMagicProjectile.projectileType == GlobalVariables.PROJECTILETYPE.PLAYER :
 					projectilesInActiveRoom.erase(tempMagicProjectile)
 					set_cellv(world_to_map(tempMagicProjectile.position),get_tileset().find_tile_by_name("FLOOR"))
-					tempMagicProjectile.play_projectile_animation(true, "attack")
+					tempMagicProjectile.play_projectile_animation(true, "attack", false, true)
 					GlobalVariables.turnController.enemyTakeDamage.append(pawn)
 					if GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYER:
 						pawn.inflictDamage(tempMagicProjectile.attackDamage, GlobalVariables.ATTACKTYPE.MAGIC, map_to_world(cell_target), mainPlayer, GlobalVariables.CURRENTPHASE.ENEMY)
@@ -986,7 +985,7 @@ func create_enemy_room(unlockedDoor):
 	if totalDifficultyLevel >=40:
 		mixEnemiesAndMage = true
 	var enemyType = randi()%4
-	enemyType = 1
+	enemyType = 3
 	print(enemyType)
 	if enemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY && multipleMages!= 0:
 		enemiesToSpawn += randi()%(multipleMages+1)+1
