@@ -1,9 +1,11 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://GUI/pixelFont.tres" type="DynamicFont" id=1]
 [ext_resource path="res://UpgradeContainer.gd" type="Script" id=2]
 [ext_resource path="res://GameObjects/Item/Heart_Item.png" type="Texture" id=3]
 [ext_resource path="res://GameObjects/UpgradeContainer/UpgradeContainer.png" type="Texture" id=4]
+[ext_resource path="res://GameObjects/UpgradeContainer/upgrade.wav" type="AudioStream" id=5]
+[ext_resource path="res://GameObjects/UpgradeContainer/notEnoughMoney.wav" type="AudioStream" id=6]
 
 [sub_resource type="Animation" id=1]
 resource_name = "ActivateUpgrade"
@@ -20,6 +22,24 @@ tracks/0/keys = {
 "update": 0,
 "values": [ Vector2( 0.5, 0.5 ), Vector2( 0.35, 0.35 ), Vector2( 0.6, 0.6 ), Vector2( 0.35, 0.35 ), Vector2( 0.5, 0.5 ) ]
 }
+tracks/1/type = "audio"
+tracks/1/path = NodePath("AudioStreamPlayer2D")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"clips": [ {
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": ExtResource( 5 )
+}, {
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": ExtResource( 5 )
+} ],
+"times": PoolRealArray( 0.4, 1 )
+}
 
 [sub_resource type="Animation" id=2]
 resource_name = "NotEnoughMoney"
@@ -34,6 +54,20 @@ tracks/0/keys = {
 "transitions": PoolRealArray( 1, 1, 1 ),
 "update": 0,
 "values": [ Color( 1, 1, 1, 1 ), Color( 0, 0, 0, 1 ), Color( 1, 1, 1, 1 ) ]
+}
+tracks/1/type = "audio"
+tracks/1/path = NodePath("AudioStreamPlayer2D")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"clips": [ {
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": ExtResource( 6 )
+} ],
+"times": PoolRealArray( 0.3 )
 }
 
 [node name="UpgradeContainer" type="Node2D"]
@@ -73,3 +107,6 @@ __meta__ = {
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 anims/ActivateUpgrade = SubResource( 1 )
 anims/NotEnoughMoney = SubResource( 2 )
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource( 6 )

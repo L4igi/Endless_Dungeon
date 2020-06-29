@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://GameObjects/Item/Key_Item.png" type="Texture" id=1]
 [ext_resource path="res://GameObjects/Item/Item.gd" type="Script" id=2]
+[ext_resource path="res://GameObjects/Item/Item_Pickup.wav" type="AudioStream" id=3]
 
 [sub_resource type="Animation" id=1]
 resource_name = "itemPickUp"
@@ -42,6 +43,20 @@ tracks/2/keys = {
 "update": 0,
 "values": [ Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0.301961 ) ]
 }
+tracks/3/type = "audio"
+tracks/3/path = NodePath("AudioStreamPlayer2D")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/keys = {
+"clips": [ {
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": ExtResource( 3 )
+} ],
+"times": PoolRealArray( 0 )
+}
 
 [node name="Item" type="Node2D"]
 script = ExtResource( 2 )
@@ -53,3 +68,4 @@ texture = ExtResource( 1 )
 anims/itemPickUp = SubResource( 1 )
 
 [node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource( 3 )

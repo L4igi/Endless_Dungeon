@@ -2,6 +2,8 @@ extends Node2D
 
 onready var Grid = get_parent()
 
+var activateSound = preload("res://GameObjects/Puzzle/activate_puzzle.wav")
+
 var color 
 
 var baseModulation 
@@ -55,6 +57,8 @@ func activatePuzzlePiece():
 		if !isBarrier:
 			print("recoloring")
 			get_node("Sprite").set_self_modulate(color)
+			get_node("AudioStreamPlayer2D").stream = activateSound
+			get_node("AudioStreamPlayer2D").play()
 		emit_signal("puzzlePieceActivated")
 	
 func playWrongWriteAnimation(right = true):

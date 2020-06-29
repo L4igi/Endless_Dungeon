@@ -22,6 +22,8 @@ var UpgradeContainer = preload("res://GameObjects/UpgradeContainer/UpgradeContai
 
 var CountingBlock = preload("res://GameObjects/CountingBlock/CountingBlock.tscn")
 
+var unlockDoorAudio = preload("res://World/WorldSprites/sfx_movement_dooropen2.wav")
+
 var roomDimensions = GlobalVariables.roomDimensions
 
 var evenOddModifier = 0 
@@ -187,7 +189,7 @@ func _ready():
 	else:
 		load_game()
 	for child in get_children():
-		if !child is Camera2D:
+		if !child is Camera2D && !child is AudioStreamPlayer2D:
 			set_cellv(world_to_map(child.position), get_tileset().find_tile_by_name(match_Enum(child.type)))
 	for element in TILETYPES:
 		set_enum_index(element, get_tileset().find_tile_by_name(element))
@@ -702,6 +704,8 @@ func update_pawn_position(pawn, cell_start, cell_target):
 				direction = "DOWN"
 				pawn.movedThroughDoorDirection = Vector2(0,1)
 			if(oldCellTargetType == get_tileset().find_tile_by_name("DOOR")):
+				get_node("AudioStreamPlayer2D").stream = unlockDoorAudio
+				get_node("AudioStreamPlayer2D").play()
 				oldCellTargetNode.set_other_adjacent_room(activeRoom, direction)
 				if !projectilesInActiveRoom.empty():
 					#print("projectiles in active room not empty")
@@ -985,7 +989,7 @@ func create_enemy_room(unlockedDoor):
 	if totalDifficultyLevel >=40:
 		mixEnemiesAndMage = true
 	var enemyType = randi()%4
-	enemyType = 3
+	#enemyType = 3
 	print(enemyType)
 	if enemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY && multipleMages!= 0:
 		enemiesToSpawn += randi()%(multipleMages+1)+1

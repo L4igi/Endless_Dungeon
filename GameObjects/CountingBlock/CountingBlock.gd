@@ -4,7 +4,7 @@ var baseCount = 2
 var currentCount = 0
 var interActed = false
 var activationDelay = 0
-
+var countSound = preload("res://GameObjects/CountingBlock/countingSound.wav")
 onready var countLabel = $Sprite/Count
 
 onready var Grid = get_parent()
@@ -22,6 +22,8 @@ func adjust_base_count():
 	
 func decrease_count():
 	if !Grid.cancelMagicPuzzleRoom:
+		get_node("AudioStreamPlayer2D").stream = countSound
+		get_node("AudioStreamPlayer2D").play()
 		interActed = true
 		currentCount-=1
 		countLabel.set_text(str(currentCount))
