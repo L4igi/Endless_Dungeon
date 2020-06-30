@@ -221,8 +221,8 @@ func on_enemy_taken_damage(enemy, deleting = false):
 			enemy.queue_free()
 		else:
 			deleteHelpEnemy.append(enemy)
-	print("ON enemy taken damage/defeated enemyTakeDamage size " + str(enemyTakeDamage.size()))
-	print("ON enemy taken damage/defeated currentTurnWaiting " + str(currentTurnWaiting))
+	#print("ON enemy taken damage/defeated enemyTakeDamage size " + str(enemyTakeDamage.size()))
+	#print("ON enemy taken damage/defeated currentTurnWaiting " + str(currentTurnWaiting))
 	check_turn_progress()
 
 func on_projectile_spawned(projecitle):

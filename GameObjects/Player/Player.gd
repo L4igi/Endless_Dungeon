@@ -102,6 +102,8 @@ signal toggleDangerArea (enemyToToggleArea, toggleAll)
 
 signal puzzleBlockInteractionSignal (player, puzzleBlockDirection)
 
+var restMovesAttack = false
+
 func _ready():
 	guiElements = GUI.instance()
 	add_child(guiElements)
@@ -211,14 +213,23 @@ func player_attack(attackDirection):
 		yield($AnimationPlayer, "animation_finished")
 		$AnimationPlayer.play("Idle")
 		set_process(true)
+		var restMultiplier = 1
+		if restMovesAttack:
+			restMultiplier = maxTurnActions-movementCount-attackCount
+		print("sowrddamage " + str(swordAttackDamage*restMultiplier))
 		if attackType == GlobalVariables.ATTACKTYPE.MAGIC:
-			emit_signal("playerAttacked", self, attackDirection, magicAttackDamage, attackType)
+			emit_signal("playerAttacked", self, attackDirection, magicAttackDamage*restMultiplier, attackType)
 		elif attackType == GlobalVariables.ATTACKTYPE.SWORD:
-			emit_signal("playerAttacked", self, attackDirection, swordAttackDamage, attackType)
+			emit_signal("playerAttacked", self, attackDirection, swordAttackDamage*restMultiplier, attackType)
 		else:
-			emit_signal("playerAttacked", self, attackDirection, 0, attackType)
+			emit_signal("playerAttacked", self, attackDirection, restMultiplier, attackType)
 		attackCount += 1
-		guiElements.update_current_turns()
+		if restMovesAttack:
+			restMovesAttack = false
+			attackCount = maxTurnActions-movementCount
+			guiElements.update_current_turns(false, attackCount)
+		else:
+			guiElements.update_current_turns()
 		GlobalVariables.turnController.player_turn_done(self)
 	
 func player_passed_door():
@@ -290,6 +301,19 @@ func get_movement_direction():
 		return Vector2(1,0)
 
 func get_attack_direction():
+	if attackType == GlobalVariables.ATTACKTYPE.SWORD || attackType == GlobalVariables.ATTACKTYPE.MAGIC ||attackType == GlobalVariables.ATTACKTYPE.HAND:
+		if Input.is_action_pressed("restActionsAction") && Input.is_action_just_pressed("Attack_Right"):
+			restMovesAttack = true
+			return Vector2(1,0)
+		if Input.is_action_pressed("restActionsAction") && Input.is_action_just_pressed("Attack_Left"):
+			restMovesAttack = true
+			return Vector2(-1,0)
+		if Input.is_action_pressed("restActionsAction") && Input.is_action_just_pressed("Attack_Up"):
+			restMovesAttack = true
+			return Vector2(0,-1)
+		if Input.is_action_pressed("restActionsAction") && Input.is_action_just_pressed("Attack_Down"):
+			restMovesAttack = true
+			return Vector2(0,1)
 	if Input.is_action_just_pressed("Attack_Up"):
 		return Vector2(0,-1)
 	if Input.is_action_just_pressed("Attack_Down"):

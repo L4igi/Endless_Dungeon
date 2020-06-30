@@ -570,7 +570,7 @@ func adjust_enemy_attack_range_enable_attack(calcMode, activeRoom):
 			for enemy in attackedEnemy:
 				if !GlobalVariables.turnController.enemyTakeDamage.has(enemy):
 					GlobalVariables.turnController.enemyTakeDamage.append(enemy)
-	print(cellsToColor.size())
+	#print(cellsToColor.size())
 	for cell in cellsToColor:
 		var alreadyColored = false
 		for child in attackRangeNode.get_children():
@@ -892,7 +892,7 @@ func generateEnemy(enemieToGenerate, currentGrid, unlockedDoor):
 			baseLifePoints = 1
 			baseAttackDamage = 1
 			baseAttackRange = 1
-			baseMovementCount = 1
+			baseMovementCount = 3
 			attackDamage = baseAttackDamage
 			lifePoints = baseLifePoints
 			attackRange = baseAttackRange

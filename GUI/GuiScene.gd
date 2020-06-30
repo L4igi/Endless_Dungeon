@@ -44,11 +44,11 @@ func setUpGUI(maxTurnActions, maxLifePoints, lifePoints, coinCount, maxPotions, 
 func set_maxturn_actions(maxTurnActions):
 	maxTurnActionsText.set_text(str(maxTurnActions))
 		
-func update_current_turns(reset = false):
+func update_current_turns(reset = false, addAmount = 1):
 	if reset:
 		currentTurnActionCount = 0
 	else:
-		currentTurnActionCount += 1
+		currentTurnActionCount += addAmount
 	currentTurnActionsText.set_text(str(currentTurnActionCount))
 	
 func change_health(attackDamage):

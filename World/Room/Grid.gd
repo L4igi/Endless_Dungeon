@@ -980,16 +980,18 @@ func create_enemy_room(unlockedDoor):
 	var mixEnemiesAndMage = false
 	var multipleMages = 0
 	var totalDifficultyLevel = GlobalVariables.enemyBarrierDifficulty + GlobalVariables.enemyMageDifficulty + GlobalVariables.enemyNinjaDifficulty + GlobalVariables.enemyWarriorDifficulty
-	if totalDifficultyLevel >= 15:
-		enemiesToSpawn = int(totalDifficultyLevel/15)
+	if totalDifficultyLevel >= 7:
+		enemiesToSpawn = int(totalDifficultyLevel/7)
+		if enemiesToSpawn >= 4:
+			enemiesToSpawn = 4
 	if totalDifficultyLevel >=20:
 		mixEnemies = true
-	if GlobalVariables.enemyMageDifficulty >= 15:
-		multipleMages += GlobalVariables.enemyMageDifficulty/15
+	if GlobalVariables.enemyMageDifficulty >= 10:
+		multipleMages += GlobalVariables.enemyMageDifficulty/10
 	if totalDifficultyLevel >=40:
 		mixEnemiesAndMage = true
 	var enemyType = randi()%4
-	#enemyType = 3
+	#enemyType = 2
 	print(enemyType)
 	if enemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY && multipleMages!= 0:
 		enemiesToSpawn += randi()%(multipleMages+1)+1
@@ -1046,6 +1048,8 @@ func create_enemy_room(unlockedDoor):
 		unlockedDoor.enemiesInRoom[0].calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW, unlockedDoor, 0)
 
 func get_enemy_move_towards_player(enemy, movementCount):
+	if movementCount > 3:
+		movementCount = 3
 	var stepsSet = false
 	var distance = world_to_map(mainPlayer.position) - world_to_map(enemy.position)
 	var returnVector = Vector2.ZERO
@@ -1065,6 +1069,8 @@ func get_enemy_move_towards_player(enemy, movementCount):
 	for steps in movementCount-1:
 		if get_cellv(world_to_map(enemy.position)+(steps+1)*returnVector) == TILETYPES.PLAYER:
 			return steps*returnVector
+		if get_cellv(world_to_map(enemy.position)+(steps+1)*returnVector) == TILETYPES.MAGICPROJECTILE && get_cell_pawn(world_to_map(enemy.position)+(steps+1)*returnVector).projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
+			return (steps+1)*returnVector
 		if get_cellv(world_to_map(enemy.position)+(steps+1)*returnVector) != TILETYPES.FLOOR:
 			if steps != 0: 
 				return steps*returnVector
@@ -1074,6 +1080,7 @@ func get_enemy_move_towards_player(enemy, movementCount):
 	if !stepsSet:
 		var count = movementCount
 		while count >= 0:
+			print("COUNT " + str(count))
 			if get_cellv(world_to_map(enemy.position) + returnVector*count) == TILETYPES.FLOOR:
 				return returnVector*count
 			count -=1
@@ -1207,7 +1214,7 @@ func on_player_turn_done_confirmed_enemy_room():
 	else:
 		GlobalVariables.turnController.enemyProjectilesToMove[0].calc_projectiles_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, 0, "enemy")
 		var tempEnenmyProjectiles = GlobalVariables.turnController.enemyProjectilesToMove.duplicate()
-		print("enemyProjectilesToMove size " +  str(GlobalVariables.turnController.enemyProjectilesToMove.size()))
+		#print("enemyProjectilesToMove size " +  str(GlobalVariables.turnController.enemyProjectilesToMove.size()))
 		for projectile in tempEnenmyProjectiles:
 			projectile.move_projectile()
 		tempEnenmyProjectiles.clear()
@@ -1616,7 +1623,8 @@ func _on_Player_Attacked(player, attack_direction, attackDamage, attackType):
 		if get_cellv(world_to_map(player.position) + attack_direction) == TILETYPES.BLOCK:
 			var interactionBlock = get_cell_pawn(world_to_map(player.position) + attack_direction)
 			if activeRoom == null || activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.ENEMYROOM || activeRoom != null && activeRoom.roomType == GlobalVariables.ROOM_TYPE.EMPTYTREASUREROOM:
-				interactionBlock.addCount()
+				for restCount in attackDamage:
+					interactionBlock.addCount()
 			elif activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 				player.puzzleBlockInteraction = true
 				activatedPuzzleBlock = interactionBlock
@@ -1811,23 +1819,23 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage, attackCellA
 				attackCellSingleAttack = cell
 		
 	if attackCellSingleAttack != null && attackType != GlobalVariables.ATTACKTYPE.MAGIC:
-		print("Woosh ENEMY Attack hit")
+		#print("Woosh ENEMY Attack hit")
 		var attackedNode = get_cell_pawn(attackCellSingleAttack)
 		print(attackedNode)
 		if get_cellv(attackCellSingleAttack) == TILETYPES.PLAYER:
 			attackedNode.inflict_damage_playerDefeated(attackDamage, attackType, enemy.enemyType)
 		elif get_cellv(attackCellSingleAttack) == TILETYPES.ENEMY && get_cell_pawn(attackCellSingleAttack).helpEnemy:
-			print("ATTACKING HELP ENEMY no Magic")
+			#print("ATTACKING HELP ENEMY no Magic")
 			attackedNode.inflictDamage(attackDamage, attackType, attackCellSingleAttack, mainPlayer, GlobalVariables.CURRENTPHASE.ENEMYATTACK)
 		else:
 			GlobalVariables.turnController.on_enemy_taken_damage(attackedNode)
 		
 	elif attackType == GlobalVariables.ATTACKTYPE.MAGIC && !attackCell.empty():
 		for cell in attackCell:
-			print("Woosh ENEMY MAGE BIG hit")
+			#print("Woosh ENEMY MAGE BIG hit")
 			var attackedNode = get_cell_pawn(cell)
 			var newMagicProjectile = MagicProjectile.instance()
-			newMagicProjectile.set_z_index(5)
+			newMagicProjectile.set_z_index(2)
 			newMagicProjectile.projectileType = GlobalVariables.PROJECTILETYPE.ENEMY
 			newMagicProjectile.get_node("Sprite").set_frame(0)
 			newMagicProjectile.position = map_to_world(cell)+GlobalVariables.tileOffset
@@ -1837,7 +1845,7 @@ func _on_enemy_attacked(enemy, attackCell, attackType, attackDamage, attackCellA
 			if get_cellv(cell) == TILETYPES.PLAYER:
 				attackedNode.inflict_damage_playerDefeated(attackDamage, attackType, enemy.enemyType)
 			elif get_cellv(cell) == TILETYPES.ENEMY && attackedNode.helpEnemy:
-				print("ATTACKING HELP ENEMY Magic")
+				#print("ATTACKING HELP ENEMY Magic")
 				attackedNode.inflictDamage(attackDamage, attackType, cell, mainPlayer, GlobalVariables.CURRENTPHASE.ENEMYATTACK)
 			else:
 				GlobalVariables.turnController.on_enemy_taken_damage(attackedNode)
