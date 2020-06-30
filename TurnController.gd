@@ -19,6 +19,7 @@ var playerMovedDoor = false
 var inRoomType = null
 var powerBlockInterActionDone = true
 var queueDropLoot = false
+var deleteHelpEnemy = []
 
 func _ready():
 	pass
@@ -165,6 +166,10 @@ func enemy_attacked_done(enemy):
 	enemiesAttacking.erase(enemy)
 	#print("after erasing enemy " + str(enemiesAttacking.size()))
 	if check_turn_done_conditions():
+		if !deleteHelpEnemy.empty():
+			for toDelete in deleteHelpEnemy:
+				toDelete.queue_free()
+			deleteHelpEnemy.clear()
 		if !playerDefeatStop:
 			currentTurnWaiting = GlobalVariables.CURRENTPHASE.ENEMY
 			Grid.on_enemy_attack_done()
@@ -211,8 +216,11 @@ func on_enemy_taken_damage(enemy, deleting = false):
 	print(enemy)
 	enemyTakeDamage.erase(enemy)
 	if deleting:
-		enemy.queue_free()
 		enemiesToMove.erase(enemy)
+		if !enemy.helpEnemy || currentTurnWaiting != GlobalVariables.CURRENTPHASE.ENEMYATTACK:
+			enemy.queue_free()
+		else:
+			deleteHelpEnemy.append(enemy)
 	print("ON enemy taken damage/defeated enemyTakeDamage size " + str(enemyTakeDamage.size()))
 	print("ON enemy taken damage/defeated currentTurnWaiting " + str(currentTurnWaiting))
 	check_turn_progress()

@@ -428,6 +428,7 @@ func inflict_damage_playerDefeated(attackDamageVar, attackTypeVar, enemyType):
 		$AnimationPlayer.play("defeat", -1, 2.0)
 		yield($AnimationPlayer, "animation_finished")
 		set_process(true)
+		get_node("Sprite").set_visible(false)
 		GlobalVariables.turnController.player_defeat()
 
 func add_nonkey_items(itemtype, coinValue = 1):

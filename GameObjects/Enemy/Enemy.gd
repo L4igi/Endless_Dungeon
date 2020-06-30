@@ -299,7 +299,7 @@ func calc_enemy_move_to(calcMode, activeRoom, count):
 			cell_target = Grid.world_to_map(position)
 			var walkTry = 4
 			while walkTry >= 0:
-				if Grid.get_cellv(Grid.world_to_map(position)+ movementdirectionVector) == Grid.TILETYPES.FLOOR:
+				if Grid.get_cellv(Grid.world_to_map(position)+ movementdirectionVector) == Grid.TILETYPES.FLOOR || Grid.get_cellv(Grid.world_to_map(position)+ movementdirectionVector) == Grid.TILETYPES.MAGICPROJECTILE:
 					cell_target = Grid.world_to_map(position)+ movementdirectionVector
 					walkTry = -1
 					break
@@ -639,13 +639,14 @@ func adapt_difficulty():
 	for step in difficultyLevel:
 		match enemyType:
 			GlobalVariables.ENEMYTYPE.BARRIERENEMY:
-				if step%3 == 0:
-					attackRange += 1
-				elif step%3 == 1:
-					attackDamage = baseAttackDamage + baseAttackDamage*(difficultyLevel*0.1)
-					lifePoints = baseLifePoints + baseLifePoints*(difficultyLevel*0.1)
-				elif step%3 == 2:
-					movementCount += 1
+				if !helpEnemy:
+					if step%3 == 0:
+						attackRange += 1
+					elif step%3 == 1:
+						attackDamage = baseAttackDamage + baseAttackDamage*(difficultyLevel*0.1)
+						lifePoints = baseLifePoints + baseLifePoints*(difficultyLevel*0.1)
+					elif step%3 == 2:
+						movementCount += 1
 			GlobalVariables.ENEMYTYPE.MAGEENEMY:
 				if step%3 == 0:
 					attackRange += 1
@@ -682,46 +683,47 @@ func adapt_difficulty():
 	var attackPatternMode = randi()%2
 	match enemyType:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
-			mirrorBaseDirection = false
-			if attackPatternMode == 1:
-				attackRangeArray[0] = [0]
-				attackRangeInitDirection = GlobalVariables.DIRECTION.UP
-				mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT]
-				if attackRangeArray.size() >=2:
-					#mirrorBaseDirection = true
-					#mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN, GlobalVariables.DIRECTION.RIGHT]
-					attackRangeArray[1].append(0)
-				if attackRangeArray.size() >= 3:
-					mirrorBaseDirection = true
-					attackRangeArray[2].append(1)
-					attackRangeArray[2].append(2)
-				if attackRangeArray.size() >= 4:
-					mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN, GlobalVariables.DIRECTION.RIGHT]
-				if attackRangeArray.size() >=5:
-					attackRangeArray[2].append(0)
-					attackRangeArray[3].append(1)
-				if attackRangeArray.size()>=6:
-					pass
-			elif attackPatternMode == 0:
-				attackRangeArray[0] = [0]
-				attackRangeInitDirection = GlobalVariables.DIRECTION.DOWN
-				mirrorDirectionsArray = [GlobalVariables.DIRECTION.RIGHT]
-				if attackRangeArray.size() >=2:
-					#mirrorBaseDirection = true
-					#mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN, GlobalVariables.DIRECTION.RIGHT]
-					attackRangeArray[1].append(0)
-				if attackRangeArray.size() >= 3:
-					mirrorBaseDirection = true
-					attackRangeArray[2].append(1)
-					attackRangeArray[2].append(2)
-					#mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT,GlobalVariables.DIRECTION.RIGHT]
-				if attackRangeArray.size() >= 4:
-					mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN, GlobalVariables.DIRECTION.RIGHT]
-				if attackRangeArray.size() >=5:
-					attackRangeArray[3].append(0)
-					attackRangeArray[3].append(1)
-				if attackRangeArray.size()>=6:
-					pass
+			if !helpEnemy:
+				mirrorBaseDirection = false
+				if attackPatternMode == 1:
+					attackRangeArray[0] = [0]
+					attackRangeInitDirection = GlobalVariables.DIRECTION.UP
+					mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT]
+					if attackRangeArray.size() >=2:
+						#mirrorBaseDirection = true
+						#mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN, GlobalVariables.DIRECTION.RIGHT]
+						attackRangeArray[1].append(0)
+					if attackRangeArray.size() >= 3:
+						mirrorBaseDirection = true
+						attackRangeArray[2].append(1)
+						attackRangeArray[2].append(2)
+					if attackRangeArray.size() >= 4:
+						mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN, GlobalVariables.DIRECTION.RIGHT]
+					if attackRangeArray.size() >=5:
+						attackRangeArray[2].append(0)
+						attackRangeArray[3].append(1)
+					if attackRangeArray.size()>=6:
+						pass
+				elif attackPatternMode == 0:
+					attackRangeArray[0] = [0]
+					attackRangeInitDirection = GlobalVariables.DIRECTION.DOWN
+					mirrorDirectionsArray = [GlobalVariables.DIRECTION.RIGHT]
+					if attackRangeArray.size() >=2:
+						#mirrorBaseDirection = true
+						#mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN, GlobalVariables.DIRECTION.RIGHT]
+						attackRangeArray[1].append(0)
+					if attackRangeArray.size() >= 3:
+						mirrorBaseDirection = true
+						attackRangeArray[2].append(1)
+						attackRangeArray[2].append(2)
+						#mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT,GlobalVariables.DIRECTION.RIGHT]
+					if attackRangeArray.size() >= 4:
+						mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN, GlobalVariables.DIRECTION.RIGHT]
+					if attackRangeArray.size() >=5:
+						attackRangeArray[3].append(0)
+						attackRangeArray[3].append(1)
+					if attackRangeArray.size()>=6:
+						pass
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			if attackPatternMode == 1:
 				attackRangeArray[0] = [0,1]
@@ -854,9 +856,14 @@ func generateEnemy(enemieToGenerate, currentGrid, unlockedDoor):
 			get_node("Sprite").set_visible(true)
 			#randomly make to save enemy 
 			if !isBarrier && randi()%2:
-				lifePoints = 1
-				movementCount = 1
-				attackRange = 0
+				baseLifePoints = 1
+				baseAttackDamage = 0
+				baseAttackRange = 0
+				baseMovementCount = 1
+				attackDamage = baseAttackDamage
+				lifePoints = baseLifePoints
+				attackRange = baseAttackRange
+				movementCount = baseMovementCount
 				helpEnemy = true
 				get_node("HelpSign").set_visible(true)
 #				get_node("HealthBar").set_visible(false)
