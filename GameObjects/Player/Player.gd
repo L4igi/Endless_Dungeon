@@ -308,6 +308,19 @@ func get_movement_direction():
 		return Vector2(1,0)
 
 func get_attack_direction():
+	if Input.is_action_just_pressed("restActionsAction"):
+		match attackType:
+			GlobalVariables.ATTACKTYPE.SWORD:
+				update_enemy_preview(swordAttackDamage*(maxTurnActions-movementCount))
+			GlobalVariables.ATTACKTYPE.MAGIC:
+				update_enemy_preview(magicAttackDamage*(maxTurnActions-movementCount))
+	if Input.is_action_just_released("restActionsAction"):
+		match attackType:
+			GlobalVariables.ATTACKTYPE.SWORD:
+				update_enemy_preview(swordAttackDamage)
+			GlobalVariables.ATTACKTYPE.MAGIC:
+				update_enemy_preview(magicAttackDamage)
+				
 	if attackType == GlobalVariables.ATTACKTYPE.SWORD || attackType == GlobalVariables.ATTACKTYPE.MAGIC ||attackType == GlobalVariables.ATTACKTYPE.HAND:
 		if Input.is_action_pressed("restActionsAction") && Input.is_action_just_pressed("Attack_Right"):
 			restMovesAttack = true
@@ -334,6 +347,7 @@ func get_attack_mode():
 	if Input.is_action_just_pressed("Mode_Sword"):
 		guiElements.change_attack_mode(GlobalVariables.ATTACKTYPE.SWORD)
 		puzzleBlockInteraction = false
+		update_enemy_preview(swordAttackDamage)
 		return GlobalVariables.ATTACKTYPE.SWORD
 		
 	if Input.is_action_just_pressed("Mode_Magic"):
@@ -343,11 +357,13 @@ func get_attack_mode():
 			if GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PUZZLEPROJECTILE:
 				Grid.cancelMagicPuzzleRoom=true
 		puzzleBlockInteraction = false
+		update_enemy_preview(magicAttackDamage)
 		return GlobalVariables.ATTACKTYPE.MAGIC
 		
 	if Input.is_action_just_pressed("Mode_Block"):
 		guiElements.change_attack_mode(GlobalVariables.ATTACKTYPE.BLOCK)
 		puzzleBlockInteraction = false
+		update_enemy_preview(powerBlockAttackDamage)
 		return GlobalVariables.ATTACKTYPE.BLOCK                     	
 		
 	if Input.is_action_just_pressed("Mode_Hand"):
@@ -586,6 +602,20 @@ func get_actions_left():
 #			for enemy in Grid.activeRoom.enemiesInRoom:
 #				enemy.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
 
+func get_equip_attack_damage():
+	match attackType:
+		GlobalVariables.ATTACKTYPE.SWORD:
+			return swordAttackDamage
+		GlobalVariables.ATTACKTYPE.MAGIC:
+			return magicAttackDamage
+		GlobalVariables.ATTACKTYPE.BLOCK:
+			return powerBlockAttackDamage
+
+func update_enemy_preview(damage):
+	if Grid.activeRoom != null:
+		for enemy in Grid.activeRoom.enemiesInRoom:
+			enemy.update_preview_healthBar(damage)
+			
 func update_gui_elements():
 	guiElements.add_coin(coinCount)
 	guiElements.change_max_health(maxLifePoints)

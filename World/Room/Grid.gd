@@ -1047,8 +1047,6 @@ func create_enemy_room(unlockedDoor):
 	if unlockedDoor != null && !unlockedDoor.enemiesInRoom.empty():
 		unlockedDoor.enemiesInRoom.sort_custom(EnemyPositionSorter, "sort_enemyArray_by_position")
 		unlockedDoor.enemiesInRoom[0].calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW, unlockedDoor, 0)
-	for enemy in unlockedDoor.enemiesInRoom:
-		print(enemy.position.x)
 
 class EnemyPositionSorter:
 	static func sort_enemyArray_by_position(a,b):

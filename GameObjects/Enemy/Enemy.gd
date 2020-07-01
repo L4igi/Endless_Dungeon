@@ -105,6 +105,8 @@ var playSavedAnimation = false
 
 onready var healthBar = $HealthBar
 
+onready var previewHealthBar = $PreviewHealthBar
+
 var mageTowardsDirection = Vector2(1,0)
 
 var ninjaEnemyCheckedDirections = 0
@@ -116,52 +118,66 @@ func _ready():
 	player.connect("toggleDangerArea", self, "on_toggle_danger_area")
 	
 	
-func toggleVisibility(makeInVisible):
-	print("changing visibility")
-	var spriteToToggle = null
-	match enemyType:
-		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
-			spriteToToggle = get_node("Sprite")
-		GlobalVariables.ENEMYTYPE.MAGEENEMY:
-			spriteToToggle = get_node("SpriteMageEnemy")
-		GlobalVariables.ENEMYTYPE.NINJAENEMY:
-			spriteToToggle = get_node("SpriteNinjaEnemy")
-		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
-			spriteToToggle = get_node("Sprite")
-	if makeInVisible:
-		spriteToToggle.set_visible(false)
-	else:
-		spriteToToggle.set_visible(true)
+#func toggleVisibility(makeInVisible):
+#	print("changing visibility")
+#	var spriteToToggle = null
+#	match enemyType:
+#		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
+#			spriteToToggle = get_node("Sprite")
+#		GlobalVariables.ENEMYTYPE.MAGEENEMY:
+#			spriteToToggle = get_node("SpriteMageEnemy")
+#		GlobalVariables.ENEMYTYPE.NINJAENEMY:
+#			spriteToToggle = get_node("SpriteNinjaEnemy")
+#		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
+#			spriteToToggle = get_node("Sprite")
+#	if makeInVisible:
+#		spriteToToggle.set_visible(false)
+#	else:
+#		spriteToToggle.set_visible(true)
+func update_preview_healthBar(damage):
+	previewHealthBar.set_value((lifePoints-damage)*10)
 			
 func on_toggle_danger_area(enemyToToggleArea, toggleAll=false):
 	#print("enemyToToggleArea " + str(enemyToToggleArea))
-	if lifePoints>0:
-		if !isDisabled && toggleAll:
-			if dangerFieldsVisible:
-				for child in attackRangeNode.get_children():
-					child.set_visible(false)
-					dangerFieldsVisible = false
-					individualDangerFieldVisible = false
-			else:
-				for child in attackRangeNode.get_children():
-					child.set_visible(true)
-					dangerFieldsVisible = true
-					individualDangerFieldVisible = true
-		elif !isDisabled && enemyToToggleArea != null:
-			if dangerFieldsVisible:
-				if self != Grid.activeRoom.enemiesInRoom[enemyToToggleArea]:
+	if !helpEnemy:
+		previewHealthBar.set_value((lifePoints-Grid.mainPlayer.get_equip_attack_damage())*10)
+		if lifePoints>0:
+			if !isDisabled && toggleAll:
+				if dangerFieldsVisible:
+					previewHealthBar.set_visible(false)
+					healthBar.set_visible(true)
 					for child in attackRangeNode.get_children():
 						child.set_visible(false)
+						dangerFieldsVisible = false
 						individualDangerFieldVisible = false
 				else:
+					healthBar.set_visible(false)
+					previewHealthBar.set_visible(true)
+					for child in attackRangeNode.get_children():
+						child.set_visible(true)
+						dangerFieldsVisible = true
+						individualDangerFieldVisible = true
+			elif !isDisabled && enemyToToggleArea != null:
+				if dangerFieldsVisible:
+					if self != Grid.activeRoom.enemiesInRoom[enemyToToggleArea]:
+						previewHealthBar.set_visible(false)
+						healthBar.set_visible(true)
+						for child in attackRangeNode.get_children():
+							child.set_visible(false)
+							individualDangerFieldVisible = false
+					else:
+						previewHealthBar.set_visible(true)
+						healthBar.set_visible(false)
+						for child in attackRangeNode.get_children():
+							child.set_visible(true)
+							individualDangerFieldVisible = true
+			elif !isDisabled && enemyToToggleArea == null:
+				if dangerFieldsVisible:
+					previewHealthBar.set_visible(true)
+					healthBar.set_visible(false)
 					for child in attackRangeNode.get_children():
 						child.set_visible(true)
 						individualDangerFieldVisible = true
-		elif !isDisabled && enemyToToggleArea == null:
-			if dangerFieldsVisible:
-				for child in attackRangeNode.get_children():
-					child.set_visible(true)
-					individualDangerFieldVisible = true
 			
 func turn_off_danger_fields_on_exit_room():
 	for child in attackRangeNode.get_children():
@@ -945,12 +961,16 @@ func generateEnemy(enemieToGenerate, currentGrid, unlockedDoor):
 	healthBar.set_max(lifePoints*10)
 	healthBar.set_value(lifePoints*10)
 	#print("Setting LifePoints " + str(lifePoints))
-	healthBar.set_step(1)
+	healthBar.set_step(0.1)
+	previewHealthBar.set_max(lifePoints*10)
+	previewHealthBar.set_value(lifePoints*10)
+	#print("Setting LifePoints " + str(lifePoints))
+	previewHealthBar.set_step(0.1)
 	return enemyType
 
 
 func inflictDamage(inflictattackDamageVar, inflictattackTypeVar, takeDamagePosition, mainPlayer = null, CURRENTPHASE = null):
-	print("IN INFLICT DAMAGE TURNCONTROLLER PHASE " + str(GlobalVariables.turnController.currentTurnWaiting))
+	#print("IN INFLICT DAMAGE TURNCONTROLLER PHASE " + str(GlobalVariables.turnController.currentTurnWaiting))
 	var barrierDefeatItem = null
 	self.inflictattackType = inflictattackTypeVar
 	if inflictattackType == GlobalVariables.ATTACKTYPE.SAVED:
@@ -973,6 +993,7 @@ func inflictDamage(inflictattackDamageVar, inflictattackTypeVar, takeDamagePosit
 	if !self.isBarrier:
 		lifePoints -= inflictattackDamageVar
 		healthBar.set_value(lifePoints*10)
+		previewHealthBar.set_value(lifePoints*10)
 	if lifePoints <= 0:
 		enemyDefeated = true
 		if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER || CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE || CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE || CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMYATTACK:
