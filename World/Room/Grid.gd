@@ -24,6 +24,8 @@ var CountingBlock = preload("res://GameObjects/CountingBlock/CountingBlock.tscn"
 
 var unlockDoorAudio = preload("res://World/WorldSprites/sfx_movement_dooropen2.wav")
 
+var puzzleRoomClearedAudio = preload("res://World/WorldSprites/puzzle_room_clear.wav")
+
 var roomDimensions = GlobalVariables.roomDimensions
 
 var evenOddModifier = 0 
@@ -1229,6 +1231,8 @@ func _on_puzzle_piece_activated():
 				puzzlePieceIsBarrier = true
 		if activatedPuzzlePieces == activeRoom.puzzlePiecesInRoom && !activeRoom.roomCleared && !puzzlePieceIsBarrier:
 			print("Activated in right order")
+			activatedPuzzlePieces[0].get_node("AudioStreamPlayer2D").stream = puzzleRoomClearedAudio
+			activatedPuzzlePieces[0].get_node("AudioStreamPlayer2D").play()
 #			cancelMagicPuzzleRoom = true
 			activeRoom.roomCleared=true
 			mainPlayer.inClearedRoom = true
@@ -2626,7 +2630,7 @@ func manage_barrier_creation(barrierType):
 #called on move through unlockedDoor 
 #on player turn done adjust enemy difficulty
 func adapt_game_difficulty():
-	if GlobalVariables.DIFFICULTYLEVELS.AUTO:
+	if GlobalVariables.chosenDifficulty == GlobalVariables.DIFFICULTYLEVELS.AUTO:
 		#adjust globalDifficultyMultiplyer accordingly
 		var totalHitCount = GlobalVariables.hitByBarrier + GlobalVariables.hitByMage + GlobalVariables.hitByWarrior + GlobalVariables.hitByNinja
 		var totalEnemiesDefeatesCount = GlobalVariables.enemyBarrierDifficulty + GlobalVariables.enemyWarriorDifficulty + GlobalVariables.enemyMageDifficulty + GlobalVariables.enemyNinjaDifficulty

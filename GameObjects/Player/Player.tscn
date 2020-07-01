@@ -473,4 +473,6 @@ anims/walk_up = SubResource( 15 )
 
 [node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
 stream = ExtResource( 4 )
-volume_db = -30.0
+volume_db = -10.0
+
+[node name="PotionPlayer" type="AudioStreamPlayer" parent="."]

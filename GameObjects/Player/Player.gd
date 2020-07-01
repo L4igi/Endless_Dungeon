@@ -38,7 +38,7 @@ var lifePoints = 10
 
 var maxPotions = 2
 
-var currentPotions = 0
+var currentPotions = 1
 
 var itemsInPosession = []
 
@@ -362,6 +362,8 @@ func get_use_nonkey_items():
 				if lifePoints + 5 > maxLifePoints:
 					lifePoints = maxLifePoints
 					guiElements.set_health(maxLifePoints)
+					get_node("PotionPlayer").stream = load("res://GameObjects/Player/use_potion.wav")
+					get_node("PotionPlayer").play()
 				else:
 					lifePoints += 5 
 					guiElements.change_health(-5)

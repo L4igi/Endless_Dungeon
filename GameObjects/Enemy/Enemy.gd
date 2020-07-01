@@ -892,7 +892,7 @@ func generateEnemy(enemieToGenerate, currentGrid, unlockedDoor):
 			baseLifePoints = 1
 			baseAttackDamage = 1
 			baseAttackRange = 1
-			baseMovementCount = 3
+			baseMovementCount = 1
 			attackDamage = baseAttackDamage
 			lifePoints = baseLifePoints
 			attackRange = baseAttackRange

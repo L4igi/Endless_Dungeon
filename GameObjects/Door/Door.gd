@@ -96,23 +96,35 @@ func unlock_Door():
 
 	Grid.create_doors(doorRoomLeftMostCorner, false, roomSize.x, roomSize.y, roomSizeMultiplier, doorLocationDirection)
 
-	var randRoomType = 20
+	var randRoomType = randi()%100
 #		randRoomType = 90
 	if(randRoomType < GlobalVariables.enemyRoomChance):
 		#print("create enemy room " + str(randRoomType))
 		roomType = ROOM_TYPE.ENEMYROOM
 		GlobalVariables.turnController.inRoomType = ROOM_TYPE.ENEMYROOM
 		Grid.create_enemy_room(self)
+		if GlobalVariables.enemyRoomChance >= 2:
+			GlobalVariables.enemyRoomChance -= 2
+			GlobalVariables.puzzleRoomChance += 1
+			GlobalVariables.emptyTreasureRoomChance += 1
 	elif(randRoomType > GlobalVariables.enemyRoomChance && randRoomType < (GlobalVariables.enemyRoomChance+GlobalVariables.puzzleRoomChance)):
 		#print("creating puzzle room " + str(randRoomType))
 		roomType = ROOM_TYPE.PUZZLEROOM
 		GlobalVariables.turnController.inRoomType = ROOM_TYPE.PUZZLEROOM
 		Grid.create_puzzle_room(self)
+		if GlobalVariables.puzzleRoomChance >= 4:
+			GlobalVariables.puzzleRoomChance -= 4
+			GlobalVariables.enemyRoomChance += 2
+			GlobalVariables.emptyTreasureRoomChance += 1
 	elif(randRoomType > (GlobalVariables.enemyRoomChance+GlobalVariables.puzzleRoomChance)):
 		#print("creating empty/Treasure room " + str(randRoomType))
 		GlobalVariables.turnController.inRoomType = ROOM_TYPE.EMPTYTREASUREROOM
 		roomType = ROOM_TYPE.EMPTYTREASUREROOM
 		Grid.create_empty_treasure_room(self)
+		if GlobalVariables.emptyTreasureRoomChance > 4:
+			GlobalVariables.emptyTreasureRoomChance -= 4
+			GlobalVariables.puzzleRoomChance += 2
+			GlobalVariables.enemyRoomChance += 2
 		#set room to cleared because its empty room
 
 
@@ -148,7 +160,7 @@ func updateContainerPrices():
 		container.updatePrice()
 	
 func makeDoorBarrier(currentGrid):
-	var barrierChance = randi()%1+1
+	var barrierChance = randi()%3
 	print("BarrierChance == " + str(barrierChance))
 	var checkBarrierPossible = currentGrid.manage_barrier_creation(GlobalVariables.BARRIERTYPE.DOOR)
 	if(barrierChance == 1 && currentGrid.currentNumberRoomsgenerated!=0 && checkBarrierPossible):

@@ -23,8 +23,8 @@ onready var newGameButton = $Menu/CenterRow/VBoxContainer/NewGameButton
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	optionsButton.grab_focus()
-	roomSizeLabel.set_text(str(currentRoomSize))
-	roomCountLabel.set_text(str(currentRoomsToGenerate))
+	roomSizeLabel.set_text(str(GlobalVariables.roomDimensions))
+	roomCountLabel.set_text(str(GlobalVariables.maxNumberRooms))
 	roomDifficultyLabel.set_text(str("Auto"))
 	
 
