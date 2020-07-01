@@ -1,7 +1,7 @@
 [gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://GUI/pixelFont.tres" type="DynamicFont" id=1]
-[ext_resource path="res://UpgradeContainer.gd" type="Script" id=2]
+[ext_resource path="res://GameObjects/UpgradeContainer/UpgradeContainer.gd" type="Script" id=2]
 [ext_resource path="res://GameObjects/Item/Heart_Item.png" type="Texture" id=3]
 [ext_resource path="res://GameObjects/UpgradeContainer/UpgradeContainer.png" type="Texture" id=4]
 [ext_resource path="res://GameObjects/UpgradeContainer/upgrade.wav" type="AudioStream" id=5]

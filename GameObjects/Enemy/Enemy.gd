@@ -657,9 +657,9 @@ func adapt_difficulty():
 					movementCount += 1
 			GlobalVariables.ENEMYTYPE.WARRIROENEMY:
 				if step%3 == 0:
-					print("Current ataackrange " + str(attackRange))
-					print("Current difficultyLevel " + str(difficultyLevel))
-					print("Current step " + str(step))
+#					print("Current ataackrange " + str(attackRange))
+#					print("Current difficultyLevel " + str(difficultyLevel))
+#					print("Current step " + str(step))
 					
 					attackRange += 1
 				elif step%3 == 1:

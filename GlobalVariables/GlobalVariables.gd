@@ -80,3 +80,13 @@ var puzzleRoomChance = 20
 var emptyTreasureRoomChance = 15
 
 var currentFloor = 0
+
+var globalAudioPlayerScene = preload("res://GlobalVariables/GlobalAudioPlayer.tscn")
+
+var globalAudioPlayer = null
+
+func _ready():
+	globalAudioPlayer = globalAudioPlayerScene.instance()
+	add_child(globalAudioPlayer)
+	globalAudioPlayer.stream = load("res://GlobalVariables/GameLoop.ogg")
+	globalAudioPlayer.play()

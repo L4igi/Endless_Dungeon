@@ -201,11 +201,6 @@ func _ready():
 		evenOddModifier = 1
 	create_starting_room(true)
 	
-
-func _process(delta):
-	pass
-			
-			
 			
 			
 func get_cell_pawn(coordinates):
@@ -1003,6 +998,8 @@ func create_enemy_room(unlockedDoor):
 		enemiesToSpawn = int(enemiesToSpawn*1.5)
 	elif unlockedDoor.roomSizeMultiplier == Vector2(2,2):
 		enemiesToSpawn = int(enemiesToSpawn*2.0)
+	if enemiesToSpawn < 1:
+		enemiesToSpawn = 1
 	var sizecounter = 0
 	var mageEnemyCount = 0
 	var spawnCellArray = []
