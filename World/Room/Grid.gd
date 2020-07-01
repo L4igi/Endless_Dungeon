@@ -1405,6 +1405,8 @@ func _on_projectiles_made_move(projectile=null):
 				
 				for boxProjectile in spawnBlockProjectileNextTurnTempCopy:
 					if boxProjectile.shootDelay == 0:
+						boxProjectile.get_node("AudioStreamPlayer2D").stream = load("res://GameObjects/PowerBlock/activatePowerBlock.wav")
+						boxProjectile.get_node("AudioStreamPlayer2D").play()
 						#print("In boxprojectile shootdelay == 0 " + str(boxProjectile))
 						if boxProjectile.get_node("PowerBlockModulate").get_modulate() == Color(0.65,0.65,1.0,1.0):
 							boxProjectile.get_node("PowerBlockModulate").set_modulate(Color(randf(),randf(),randf(),1.0))
