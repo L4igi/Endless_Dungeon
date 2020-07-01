@@ -1045,7 +1045,21 @@ func create_enemy_room(unlockedDoor):
 			enemyType = randi()%4
 		enemiesToSpawn -= 1
 	if unlockedDoor != null && !unlockedDoor.enemiesInRoom.empty():
+		unlockedDoor.enemiesInRoom.sort_custom(EnemyPositionSorter, "sort_enemyArray_by_position")
 		unlockedDoor.enemiesInRoom[0].calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW, unlockedDoor, 0)
+	for enemy in unlockedDoor.enemiesInRoom:
+		print(enemy.position.x)
+
+class EnemyPositionSorter:
+	static func sort_enemyArray_by_position(a,b):
+		if a != b:
+			if a.position.y < b.position.y:
+				return true
+			elif a.position.y == b.position.y:
+				if a.position.x < b.position.x:
+					return true
+			else:
+				return false
 
 func get_enemy_move_towards_player(enemy, movementCount):
 	if movementCount > 3:
@@ -1175,6 +1189,7 @@ func _on_Enemy_Turn_Done_Request(enemy):
 func on_enemy_turn_done_confirmed():
 	if activeRoom != null:
 		if !activeRoom.enemiesInRoom.empty():
+			activeRoom.enemiesInRoom.sort_custom(EnemyPositionSorter, "sort_enemyArray_by_position")
 			activeRoom.enemiesInRoom[0].calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW, activeRoom, 0)
 			#print("Moving " + str(currentEnemy) + " enemies left to move " + str(enemiesToMoveArray.size()))
 	for projectile in projectilesInActiveRoom:

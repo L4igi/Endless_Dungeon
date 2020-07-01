@@ -944,7 +944,7 @@ func generateEnemy(enemieToGenerate, currentGrid, unlockedDoor):
 	#set health bar stats 
 	healthBar.set_max(lifePoints*10)
 	healthBar.set_value(lifePoints*10)
-	print("Setting LifePoints " + str(lifePoints))
+	#print("Setting LifePoints " + str(lifePoints))
 	healthBar.set_step(1)
 	return enemyType
 

@@ -411,7 +411,7 @@ func toggle_enemy_danger_areas():
 		if Input.is_action_just_pressed("toggle_danger_area_next") and Input.is_action_just_pressed("toggle_danger_area_previous") || Input.is_action_pressed("toggle_danger_area_next") and Input.is_action_just_pressed("toggle_danger_area_previous") ||Input.is_action_pressed("toggle_danger_area_previous") and Input.is_action_just_pressed("toggle_danger_area_next"):
 			Grid.play_puzzlepiece_pattern(false)
 		#repeat puzzle order
-		
+			
 func inflict_damage_playerDefeated(attackDamageVar, attackTypeVar, enemyType):
 	match enemyType:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
