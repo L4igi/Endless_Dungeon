@@ -186,6 +186,7 @@ func _ready():
 		get_node("Player").connect("puzzleBlockInteractionSignal", self, "on_puzzle_Block_interaction")
 	#	get_parent().get_node("MainCamera").connect_grid_camera_signal()
 		mainPlayer = get_node("Player")
+		save_game()
 	else:
 		load_game()
 	for child in get_children():

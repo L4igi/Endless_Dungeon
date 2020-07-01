@@ -58,11 +58,15 @@ var InventoryItem = preload("res://Inventory/InventorySlot.tscn")
 
 var PlayerCamera = preload("res://Camera/Camera.tscn")
 
+var PauseMenu = preload("res://PauseMenu/PauseMenu.tscn")
+
 var mainCamera = null
 
 var guiElements = null
 
 var inventoryElements = null
+
+var pauseMenu = null
 
 var movedThroughDoorDirection = Vector2.ZERO 
 
@@ -113,6 +117,9 @@ func _ready():
 	inventoryElements = Inventory.instance()
 	inventoryElements.currentPlayerPosition = self.position
 	guiElements.add_child(inventoryElements)
+	
+	pauseMenu = PauseMenu.instance()
+	guiElements.add_child(pauseMenu)
 	
 	mainCamera = PlayerCamera.instance()
 	mainCamera.make_current()
@@ -601,3 +608,13 @@ func save():
 		"currentPotions" : currentPotions
 	}
 	return save_dict
+	
+func resetStats():
+	maxTurnActions = 5
+	attackDamage = 1
+	swordAttackDamage = 0.75
+	magicAttackDamage = 0.5
+	powerBlockAttackDamage = 1.0
+	coinCount = 0
+	lifePoints = maxLifePoints
+	currentPotions = 0 

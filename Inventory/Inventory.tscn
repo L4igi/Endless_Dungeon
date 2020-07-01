@@ -5,7 +5,7 @@
 
 [sub_resource type="Theme" id=1]
 
-[node name="Node2D" type="PopupPanel"]
+[node name="InventoryNode" type="PopupPanel"]
 pause_mode = 2
 modulate = Color( 1, 1, 1, 0.784314 )
 margin_right = 20.0

@@ -1,4 +1,4 @@
-[gd_scene load_steps=59 format=2]
+[gd_scene load_steps=58 format=2]
 
 [ext_resource path="res://GameObjects/Enemy/Enemy_spritesheet.png" type="Texture" id=1]
 [ext_resource path="res://GameObjects/Enemy/Enemy.gd" type="Script" id=2]
@@ -20,7 +20,6 @@
 [ext_resource path="res://GameObjects/Enemy/ninja_move.wav" type="AudioStream" id=18]
 [ext_resource path="res://GameObjects/Enemy/barrier_attack.wav" type="AudioStream" id=19]
 [ext_resource path="res://GameObjects/Enemy/barrier_saved.wav" type="AudioStream" id=20]
-[ext_resource path="res://GameObjects/Enemy/predicted_damage.png" type="Texture" id=21]
 
 [sub_resource type="Animation" id=1]
 resource_name = "attack"
@@ -1135,7 +1134,6 @@ rect_scale = Vector2( 0.1, 0.2 )
 step = 0.1
 value = 10.0
 texture_under = ExtResource( 3 )
-texture_over = ExtResource( 21 )
 texture_progress = ExtResource( 7 )
 __meta__ = {
 "_edit_use_anchors_": false
@@ -1146,7 +1144,7 @@ visible = false
 position = Vector2( -1.69407e-21, -8 )
 scale = Vector2( 0.625, 0.625 )
 frames = SubResource( 37 )
-frame = 1
+frame = 2
 playing = true
 
 [node name="Light2D" type="Light2D" parent="."]

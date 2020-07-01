@@ -19,7 +19,12 @@ func _process(delta):
 			self.set_visible(false)
 			mainPlayer.inInventory = false
 		else:
-			if mainPlayer.movedThroughDoorDirection == Vector2.ZERO:
+			var otherMenuPoppedUp = false
+			for child in get_parent().get_children():
+				if child is PopupPanel && child != self:
+					if child.isPoppedUp:
+						otherMenuPoppedUp = true
+			if mainPlayer.movedThroughDoorDirection == Vector2.ZERO && !otherMenuPoppedUp:
 				mainPlayer.inInventory = true
 				isPoppedUp = true
 				#print(self.rect_position)

@@ -56,10 +56,10 @@ var minDifficulty = 0.5
 
 var maxDifficulty = 1.5
 
-var enemyWarriorDifficulty = 7
-var enemyNinjaDifficulty = 7
-var enemyBarrierDifficulty = 7
-var enemyMageDifficulty = 7
+var enemyWarriorDifficulty = 1
+var enemyNinjaDifficulty = 1
+var enemyBarrierDifficulty = 1
+var enemyMageDifficulty = 1
 
 var hitByWarrior = 0
 var hitByNinja = 0
