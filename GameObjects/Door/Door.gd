@@ -93,7 +93,6 @@ func request_door_unlock(playerItemsInPosession):
 # warning-ignore:unused_argument
 func unlock_Door():
 	isUnlocked=true
-
 	Grid.create_doors(doorRoomLeftMostCorner, false, roomSize.x, roomSize.y, roomSizeMultiplier, doorLocationDirection)
 
 	var randRoomType = randi()%100

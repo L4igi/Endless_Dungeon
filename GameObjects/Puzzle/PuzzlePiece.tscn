@@ -131,4 +131,5 @@ anims/wrong = SubResource( 5 )
 [node name="Tween" type="Tween" parent="."]
 
 [node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+volume_db = 10.0
 pitch_scale = 1.1

@@ -30,6 +30,8 @@ enum MOVEMENTATTACKCALCMODE {PREVIEW = 0, ACTION = 1}
 
 enum DIFFICULTYLEVELS {AUTO=0, EASY=1, NORMAL=2, HARD=3}
 
+enum ROOMLAYOUT {MIXED = 0, SMALL = 1, LONG = 2, BIG = 3, BIGSMALL = 4, BIGLONG = 5, SMALLLONG = 6}
+
 var chosenDifficulty = DIFFICULTYLEVELS.AUTO
 
 var upgradeCosts = [3,3,4,6,1,2,6,2]
@@ -52,19 +54,23 @@ var firstCall = true
 
 var globalDifficultyMultiplier = 1.0
 
+var globaleRoomLayout = ROOMLAYOUT.MIXED
+
 var minDifficulty = 0.5 
 
 var maxDifficulty = 1.5
 
-var enemyWarriorDifficulty = 8
-var enemyNinjaDifficulty = 8
-var enemyBarrierDifficulty = 8
-var enemyMageDifficulty = 8
+var enemyWarriorDifficulty = 1
+var enemyNinjaDifficulty = 1
+var enemyBarrierDifficulty = 1
+var enemyMageDifficulty = 1
 
 var hitByWarrior = 0
 var hitByNinja = 0
 var hitByMage = 0
 var hitByBarrier = 0
+
+var countEnemyRoomsCleared = 0
 
 var timesActivatedPuzzleWrong = 0
 var countPuzzleRoomsCleared = 0

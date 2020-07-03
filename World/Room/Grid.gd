@@ -181,7 +181,7 @@ func _ready():
 		GlobalVariables.firstCall=false
 		var newPlayer = Player.instance()
 		newPlayer.set_z_index(2)
-		newPlayer.position = Vector2(80,80)
+		newPlayer.position = Vector2(112,112)
 		newPlayer.set_name("Player")
 		add_child(newPlayer)
 		get_node("Player").connect("playerAttacked", self, "_on_Player_Attacked")
@@ -247,6 +247,8 @@ func request_move(pawn, direction):
 					save_game()
 					GlobalVariables.currentFloor+=1
 					GlobalVariables.maxNumberRooms = int(GlobalVariables.maxNumberRooms*1.5)
+					if GlobalVariables.maxNumberRooms == 1:
+						GlobalVariables.maxNumberRooms = 2
 					if GlobalVariables.currentFloor%5:
 						GlobalVariables.roomDimensions += 1
 					get_tree().reload_current_scene()
@@ -877,6 +879,8 @@ func create_puzzle_room(unlockedDoor):
 		#spawn additional counting blocks for bonus loot
 	
 	var countingBlocksRand = randi()%100
+	if GlobalVariables.countPuzzleRoomsCleared < 2:
+		countingBlocksRand = 0
 	if countingBlocksRand < 50-int(GlobalVariables.puzzleBonusLootDropped*2): 
 		countingBlocksRand = 0
 	elif countingBlocksRand < 80-int(GlobalVariables.puzzleBonusLootDropped*2):
@@ -1935,6 +1939,7 @@ func _on_enemy_defeated(enemy):
 		mainPlayer.inClearedRoom = true
 		allEnemiesAlreadySaved = false
 		GlobalVariables.turnController.on_enemy_taken_damage(enemy, true)
+		GlobalVariables.countEnemyRoomsCleared += 1
 		return 
 	#if you were able to save help enemy it eliminates itself and gives extra reward
 	else:
@@ -2078,11 +2083,26 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 	var disableRight = false
 	var disableLong = false
 	var disableBig = false
+	var disableSmall = false
+	var horizontalRandom = randi()%2+1
+	var verticalRandom = randi()%2+1
+	var randUpDown = randi()%2+1
+	var randLeftRight = randi()%2+1
 	if(startingRoom):
 		leftmostCorner = GlobalVariables.tileOffset
 	else:
 		var minRoomSize = roomSizeHorizontal
-
+		print("GlobalVariables.globaleRoomLayout " + str(GlobalVariables.globaleRoomLayout))
+		match GlobalVariables.globaleRoomLayout:
+			GlobalVariables.ROOMLAYOUT.MIXED:
+				pass
+			GlobalVariables.ROOMLAYOUT.SMALL:
+				horizontalRandom=1
+				verticalRandom=1
+			GlobalVariables.ROOMLAYOUT.BIG:
+				horizontalRandom = 2
+				verticalRandom = 2
+		
 		match door.doorDirection:
 			"LEFT":
 				#see if there are any cross section and diasble this option to keep tiles from intersecting
@@ -2104,10 +2124,6 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == TILETYPES.WALL):
 					disableBig = true
 				#print("Corner Location: " + str(leftmostCorner+Vector2(minRoomSize, minRoomSize)) + " LEFT disableBig " + str(disableBig))
-				
-				var horizontalRandom = randi()%2+1
-				var verticalRandom = randi()%2+1
-				var randUpDown = randi()%2+1
 				
 				if(disableBig == true && horizontalRandom == 2 && horizontalRandom == 2):
 					if(randi()%2+1 == 1):
@@ -2176,11 +2192,7 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == TILETYPES.WALL):
 					disableBig = true
 				#print("Corner Location: " + str(leftmostCorner+Vector2(minRoomSize, minRoomSize)) + " RIGHT disableBig " + str(disableBig))
-				
-				var horizontalRandom = randi()%2+1
-				var verticalRandom = randi()%2+1
-				var randUpDown = randi()%2+1
-				
+
 				if(disableBig == true && horizontalRandom == 2 && horizontalRandom == 2):
 					if(randi()%2+1 == 1):
 						verticalRandom = 1 
@@ -2247,11 +2259,7 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == TILETYPES.WALL):
 					disableBig = true
 				#print("Corner Location: " + str(leftmostCorner+Vector2(minRoomSize, minRoomSize)) + " UP disableBig " + str(disableBig))
-				
-				var horizontalRandom = randi()%2+1
-				var verticalRandom = randi()%2+1
-				var randLeftRight = randi()%2+1
-				
+
 				if(disableBig == true && horizontalRandom == 2 && horizontalRandom == 2):
 					if(randi()%2+1 == 1):
 						verticalRandom = 1 
@@ -2319,10 +2327,6 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 					disableBig = true
 				#print("Corner Location: " + str(leftmostCorner+Vector2(minRoomSize, minRoomSize)) + " DOWN disableBig " + str(disableBig))
 				
-				var horizontalRandom = randi()%2+1
-				var verticalRandom = randi()%2+1
-				var randLeftRight = randi()%2+1
-				
 				if(disableBig == true && horizontalRandom == 2 && horizontalRandom == 2):
 					if(randi()%2+1 == 1):
 						verticalRandom = 1 
@@ -2342,9 +2346,6 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 					randLeftRight = 1
 				if (disableLong == true):
 					verticalRandom = 1
-					
-				
-					
 					 
 				roomSizeHorizontal = roomSizeHorizontal * horizontalRandom
 				roomSizeVertical = roomSizeVertical* verticalRandom
@@ -2434,11 +2435,10 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 			object_pawn.queue_free()
 		
 	if(createDoors == true):
-
 		create_doors(leftmostCorner, startingRoom, roomSizeHorizontal, roomSizeVertical)
 
 
-func create_doors(roomLeftMostCorner, startingRoom=false, roomSizeHorizontal = 13, roomSizeVertical = 13, roomsizeMultiplyer = Vector2(1,1), doorLocationDirection = "LEFT"):
+func create_doors(roomLeftMostCorner, startingRoom=false, roomSizeHorizontal = 13, roomSizeVertical = 13, roomsizeMultiplier = Vector2(1,1), doorLocationDirection = "LEFT"):
 	randomize()
 	roomSizeHorizontal = roomSizeHorizontal-1
 	roomSizeVertical = roomSizeVertical-1
@@ -2454,8 +2454,7 @@ func create_doors(roomLeftMostCorner, startingRoom=false, roomSizeHorizontal = 1
 		doorEvenOddModifier = 1
 	#todo: include remaning doors numbers
 	if startingRoom:
-		doorCount = randi()%3+1
-		print(doorCount)
+		doorCount = randi()%4+1
 	
 	if doorCount == 0 && numberRoomsBeenTo == currentNumberRoomsgenerated-1:
 		doorCount = randi()%3+1
@@ -2485,13 +2484,13 @@ func create_doors(roomLeftMostCorner, startingRoom=false, roomSizeHorizontal = 1
 		var alternateSpawnLocation = false
 		if(randi()%2+1 == 1):
 			alternateSpawnLocation = true
-		canCreateDoor = can_create_door(element, newDoor, roomLeftMostCorner, roomsizeMultiplyer, roomSizeHorizontal, roomSizeVertical, doorEvenOddModifier, alternateSpawnLocation)
+		canCreateDoor = can_create_door(element, newDoor, roomLeftMostCorner, roomsizeMultiplier, roomSizeHorizontal, roomSizeVertical, doorEvenOddModifier, alternateSpawnLocation)
 		if(!canCreateDoor):
 			if alternateSpawnLocation:
 				alternateSpawnLocation = false
 			else: 
 				alternateSpawnLocation = true
-			if !can_create_door(element, newDoor, roomLeftMostCorner, roomsizeMultiplyer, roomSizeHorizontal, roomSizeVertical, doorEvenOddModifier, alternateSpawnLocation):
+			if !can_create_door(element, newDoor, roomLeftMostCorner, roomsizeMultiplier, roomSizeHorizontal, roomSizeVertical, doorEvenOddModifier, alternateSpawnLocation):
 				doorLocationArray+=doorLocationsRemoved
 				doorCount += doorLocationsRemoved.size()
 				
@@ -2524,69 +2523,69 @@ func create_doors(roomLeftMostCorner, startingRoom=false, roomSizeHorizontal = 1
 		update_bitmask_region()
 		#print(str(newDoor.position) + " element "+ str(element))
 
-func can_create_door(element, newDoor, roomLeftMostCorner, roomsizeMultiplyer, roomSizeHorizontal, roomSizeVertical, doorEvenOddModifier, alternateSpawnLocation):
+func can_create_door(element, newDoor, roomLeftMostCorner, roomsizeMultiplier, roomSizeHorizontal, roomSizeVertical, doorEvenOddModifier, alternateSpawnLocation):
 	randomize()
 	var locationToSpawnModifier = Vector2.ZERO
 	match element:
 		"LEFT":
-			match roomsizeMultiplyer:
+			match roomsizeMultiplier:
 				Vector2(1,1):
-					locationToSpawnModifier = Vector2(0, int(roomSizeVertical/(2*roomsizeMultiplyer.y)))
+					locationToSpawnModifier = Vector2(0, int(roomSizeVertical/(2*roomsizeMultiplier.y)))
 				Vector2(2,1):
-					locationToSpawnModifier = Vector2(0, int(roomSizeVertical/(2*roomsizeMultiplyer.y)))
+					locationToSpawnModifier = Vector2(0, int(roomSizeVertical/(2*roomsizeMultiplier.y)))
 				Vector2(1,2):
-					locationToSpawnModifier = Vector2(0, int(roomSizeVertical/(2*roomsizeMultiplyer.y)))
+					locationToSpawnModifier = Vector2(0, int(roomSizeVertical/(2*roomsizeMultiplier.y)))
 					if(alternateSpawnLocation):
-						locationToSpawnModifier = Vector2(0, int(3*roomSizeVertical/(2*roomsizeMultiplyer.y)+doorEvenOddModifier))
+						locationToSpawnModifier = Vector2(0, int(3*roomSizeVertical/(2*roomsizeMultiplier.y)+doorEvenOddModifier))
 				Vector2(2,2):
-					locationToSpawnModifier = Vector2(0, int(roomSizeVertical/(2*roomsizeMultiplyer.y)))
+					locationToSpawnModifier = Vector2(0, int(roomSizeVertical/(2*roomsizeMultiplier.y)))
 					if(alternateSpawnLocation):
-						locationToSpawnModifier = Vector2(0, int(3*roomSizeVertical/(2*roomsizeMultiplyer.y)+doorEvenOddModifier))
+						locationToSpawnModifier = Vector2(0, int(3*roomSizeVertical/(2*roomsizeMultiplier.y)+doorEvenOddModifier))
 			newDoor.doorDirection = "LEFT"
 		"RIGHT":
-			match roomsizeMultiplyer:
+			match roomsizeMultiplier:
 				Vector2(1,1):
-					locationToSpawnModifier = Vector2(roomSizeHorizontal, int(roomSizeVertical/(2*roomsizeMultiplyer.y)))
+					locationToSpawnModifier = Vector2(roomSizeHorizontal, int(roomSizeVertical/(2*roomsizeMultiplier.y)))
 				Vector2(2,1):
-					locationToSpawnModifier = Vector2(roomSizeHorizontal, int(roomSizeVertical/(2*roomsizeMultiplyer.y)))
+					locationToSpawnModifier = Vector2(roomSizeHorizontal, int(roomSizeVertical/(2*roomsizeMultiplier.y)))
 				Vector2(1,2):
-					locationToSpawnModifier = Vector2(roomSizeHorizontal, int(roomSizeVertical/(2*roomsizeMultiplyer.y)))
+					locationToSpawnModifier = Vector2(roomSizeHorizontal, int(roomSizeVertical/(2*roomsizeMultiplier.y)))
 					if(alternateSpawnLocation):
-						locationToSpawnModifier = Vector2(roomSizeHorizontal, int(3*roomSizeVertical/(2*roomsizeMultiplyer.y)+doorEvenOddModifier))
+						locationToSpawnModifier = Vector2(roomSizeHorizontal, int(3*roomSizeVertical/(2*roomsizeMultiplier.y)+doorEvenOddModifier))
 				Vector2(2,2):
-					locationToSpawnModifier = Vector2(roomSizeHorizontal, int(roomSizeVertical/(2*roomsizeMultiplyer.y)))
+					locationToSpawnModifier = Vector2(roomSizeHorizontal, int(roomSizeVertical/(2*roomsizeMultiplier.y)))
 					if(alternateSpawnLocation):
-						locationToSpawnModifier = Vector2(roomSizeHorizontal, int(3*roomSizeVertical/(2*roomsizeMultiplyer.y)+doorEvenOddModifier))
+						locationToSpawnModifier = Vector2(roomSizeHorizontal, int(3*roomSizeVertical/(2*roomsizeMultiplier.y)+doorEvenOddModifier))
 			newDoor.doorDirection = "RIGHT"
 		"UP":
-			match roomsizeMultiplyer:
+			match roomsizeMultiplier:
 				Vector2(1,1):
-					locationToSpawnModifier = Vector2(int(roomSizeHorizontal/(2*roomsizeMultiplyer.x)), 0)
+					locationToSpawnModifier = Vector2(int(roomSizeHorizontal/(2*roomsizeMultiplier.x)), 0)
 				Vector2(2,1):
-					locationToSpawnModifier = Vector2(int(roomSizeHorizontal/(2*roomsizeMultiplyer.x)), 0)
+					locationToSpawnModifier = Vector2(int(roomSizeHorizontal/(2*roomsizeMultiplier.x)), 0)
 					if(alternateSpawnLocation):
-						locationToSpawnModifier = Vector2(int(3*roomSizeHorizontal/(2*roomsizeMultiplyer.x))+doorEvenOddModifier, 0)
+						locationToSpawnModifier = Vector2(int(3*roomSizeHorizontal/(2*roomsizeMultiplier.x))+doorEvenOddModifier, 0)
 				Vector2(1,2):
-					locationToSpawnModifier = Vector2(int(roomSizeHorizontal/(2*roomsizeMultiplyer.x)), 0)
+					locationToSpawnModifier = Vector2(int(roomSizeHorizontal/(2*roomsizeMultiplier.x)), 0)
 				Vector2(2,2):
 					if(alternateSpawnLocation):
-						locationToSpawnModifier = Vector2(int(3*roomSizeHorizontal/(2*roomsizeMultiplyer.x))+doorEvenOddModifier, 0)
-					locationToSpawnModifier = Vector2(int(roomSizeHorizontal/(2*roomsizeMultiplyer.x)), 0)
+						locationToSpawnModifier = Vector2(int(3*roomSizeHorizontal/(2*roomsizeMultiplier.x))+doorEvenOddModifier, 0)
+					locationToSpawnModifier = Vector2(int(roomSizeHorizontal/(2*roomsizeMultiplier.x)), 0)
 			newDoor.doorDirection = "UP"
 		"DOWN":
-			match roomsizeMultiplyer:
+			match roomsizeMultiplier:
 				Vector2(1,1):
-					locationToSpawnModifier = Vector2(int(roomSizeHorizontal/(2*roomsizeMultiplyer.x)), roomSizeVertical)
+					locationToSpawnModifier = Vector2(int(roomSizeHorizontal/(2*roomsizeMultiplier.x)), roomSizeVertical)
 				Vector2(2,1):
-					locationToSpawnModifier = Vector2(int(roomSizeHorizontal/(2*roomsizeMultiplyer.x)), roomSizeVertical)
+					locationToSpawnModifier = Vector2(int(roomSizeHorizontal/(2*roomsizeMultiplier.x)), roomSizeVertical)
 					if(alternateSpawnLocation):
-						locationToSpawnModifier = Vector2(int(3*roomSizeHorizontal/(2*roomsizeMultiplyer.x)+doorEvenOddModifier), roomSizeVertical)
+						locationToSpawnModifier = Vector2(int(3*roomSizeHorizontal/(2*roomsizeMultiplier.x)+doorEvenOddModifier), roomSizeVertical)
 				Vector2(1,2):
-					locationToSpawnModifier = Vector2(int(roomSizeHorizontal/(2*roomsizeMultiplyer.x)), roomSizeVertical)
+					locationToSpawnModifier = Vector2(int(roomSizeHorizontal/(2*roomsizeMultiplier.x)), roomSizeVertical)
 				Vector2(2,2):
-					locationToSpawnModifier = Vector2(int(roomSizeHorizontal/(2*roomsizeMultiplyer.x)), roomSizeVertical)
+					locationToSpawnModifier = Vector2(int(roomSizeHorizontal/(2*roomsizeMultiplier.x)), roomSizeVertical)
 					if(alternateSpawnLocation):
-						locationToSpawnModifier = Vector2(int(3*roomSizeHorizontal/(2*roomsizeMultiplyer.x)+doorEvenOddModifier), roomSizeVertical)
+						locationToSpawnModifier = Vector2(int(3*roomSizeHorizontal/(2*roomsizeMultiplier.x)+doorEvenOddModifier), roomSizeVertical)
 			newDoor.doorDirection = "DOWN"
 	
 	newDoor.position = roomLeftMostCorner + map_to_world(locationToSpawnModifier)
@@ -2717,7 +2716,7 @@ func load_game():
 		get_node(node_data["parent"]).add_child(new_object)
 		mainPlayer = new_object
 		new_object.set_z_index(2)
-		new_object.position = Vector2(80,80)
+		new_object.position = Vector2(112,112)
 		new_object.set_name("Player")
 		get_node("Player").connect("playerAttacked", self, "_on_Player_Attacked")
 		get_node("Player").connect("puzzleBlockInteractionSignal", self, "on_puzzle_Block_interaction")

@@ -886,8 +886,10 @@ func generateEnemy(enemieToGenerate, currentGrid, unlockedDoor):
 			movementCount = baseMovementCount
 			get_node("Sprite").set_visible(true)
 			#randomly make to save enemy 
-			if !isBarrier && randi()%2:
-				baseLifePoints = 1
+			if !isBarrier && randi()%2 && GlobalVariables.countEnemyRoomsCleared > 2:
+				baseLifePoints = 3 - GlobalVariables.globalDifficultyMultiplier
+				if baseLifePoints <= 0: 
+					baseLifePoints = 0.5
 				baseAttackDamage = 0
 				baseAttackRange = 0
 				baseMovementCount = 1

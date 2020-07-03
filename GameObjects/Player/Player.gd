@@ -127,7 +127,12 @@ func _ready():
 	add_child(mainCamera)
 	
 	Grid.connect("enemyTurnDoneSignal", self, "_on_enemy_turn_done_signal")
-
+	
+	disablePlayerInput = true
+	$AnimationPlayer.play("Spawn", -1, 3.5)
+	yield($AnimationPlayer, "animation_finished")
+	disablePlayerInput = false
+	
 func _process(_delta):
 	if !disablePlayerInput && !inInventory:
 		if movedThroughDoorDirection!=Vector2.ZERO:
