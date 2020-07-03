@@ -1160,7 +1160,6 @@ visible = false
 position = Vector2( -1.69407e-21, -8 )
 scale = Vector2( 0.625, 0.625 )
 frames = SubResource( 37 )
-frame = 5
 playing = true
 
 [node name="Light2D" type="Light2D" parent="."]
@@ -1170,3 +1169,4 @@ color = Color( 1, 1, 1, 0.631373 )
 
 [node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
 stream = ExtResource( 20 )
+volume_db = 10.0

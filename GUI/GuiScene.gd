@@ -56,10 +56,13 @@ func change_health(attackDamage):
 	HealthBarFill.rect_size.x -= attackDamage * healthRectSize
 	
 func change_max_health(amount):
-	PlayerStats.rect_size.x = amount*4-6
+	if PlayerStats.rect_size.x < amount*4-6:
+		PlayerStats.rect_size.x = amount*4-6
 	HealthBarEmpty.rect_size.x = (amount)*healthRectSize
 	
 func change_max_potions(amount):
+	if PlayerStats.rect_size.x < amount*8:
+		PlayerStats.rect_size.x = amount*8
 	PotionBarEmpty.rect_size.x = amount*potionRectSize
 	
 func set_health(lifepoints):

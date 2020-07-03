@@ -52,6 +52,9 @@ func open_close_Inventory():
 func return_to_menu():
 	mainPlayer.resetStats()
 	mainPlayer.get_parent().save_game()
+	GlobalVariables.globalAudioPlayer.inMenu = true
+	GlobalVariables.globalAudioPlayer.stream = load("res://GlobalVariables/GameLoop-Menu.ogg")
+	GlobalVariables.globalAudioPlayer.play()
 	get_tree().change_scene("res://StartScreen/StartScreen.tscn")
 	
 func quick_restart():

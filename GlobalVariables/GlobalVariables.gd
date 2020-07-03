@@ -2,7 +2,7 @@ extends Node
 
 var roomDimensions = 8
 
-var maxNumberRooms = 2
+var maxNumberRooms = 5
 
 enum BARRIERTYPE {DOOR = 0, ENEMY = 1, PUZZLE = 2}
 
@@ -88,5 +88,3 @@ var globalAudioPlayer = null
 func _ready():
 	globalAudioPlayer = globalAudioPlayerScene.instance()
 	add_child(globalAudioPlayer)
-	globalAudioPlayer.stream = load("res://GlobalVariables/GameLoop.ogg")
-	globalAudioPlayer.play()

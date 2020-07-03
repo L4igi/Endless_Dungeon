@@ -135,12 +135,18 @@ func _ready():
 #	else:
 #		spriteToToggle.set_visible(true)
 func update_preview_healthBar(damage):
-	previewHealthBar.set_value((lifePoints-damage)*10)
+	if !self.isBarrier:
+		previewHealthBar.set_value((lifePoints-damage)*10)
+	else:
+		previewHealthBar.set_value(lifePoints*10)
+		for item in Grid.mainPlayer.itemsInPosession:
+			if item.keyValue == barrierKeyValue && Grid.mainPlayer.attackType == GlobalVariables.ATTACKTYPE.SWORD:
+				previewHealthBar.set_value(0)
 			
 func on_toggle_danger_area(enemyToToggleArea, toggleAll=false):
 	#print("enemyToToggleArea " + str(enemyToToggleArea))
 	if !helpEnemy:
-		previewHealthBar.set_value((lifePoints-Grid.mainPlayer.get_equip_attack_damage())*10)
+		update_preview_healthBar(Grid.mainPlayer.get_equip_attack_damage())
 		if lifePoints>0:
 			if !isDisabled && toggleAll:
 				if dangerFieldsVisible:
@@ -184,6 +190,8 @@ func turn_off_danger_fields_on_exit_room():
 		child.set_visible(false)
 		dangerFieldsVisible = false
 		individualDangerFieldVisible = false
+	healthBar.set_visible(true)
+	previewHealthBar.set_visible(false)
 			
 func calc_mage_towards():
 	var distance = Grid.world_to_map(Grid.mainPlayer.playerWalkedThroughDoorPosition) - Grid.world_to_map(position)
@@ -636,7 +644,14 @@ func make_enemy_turn():
 	if !isDisabled:
 		movedMage = false
 		enemyTurnDone = false
-			
+		match Grid.mainPlayer.attackType:
+			GlobalVariables.ATTACKTYPE.SWORD:
+				update_preview_healthBar(Grid.mainPlayer.swordAttackDamage)
+			GlobalVariables.ATTACKTYPE.MAGIC:
+				update_preview_healthBar(Grid.mainPlayer.magicAttackDamage)
+			GlobalVariables.ATTACKTYPE.BLOCK:
+				update_preview_healthBar(Grid.mainPlayer.powerBlockAttackDamage)
+
 func adapt_difficulty():
 	var difficultyLevel = 0
 	match enemyType:
@@ -990,10 +1005,10 @@ func inflictDamage(inflictattackDamageVar, inflictattackTypeVar, takeDamagePosit
 		if !barrierDefeatItem:
 			print("need weapon: " + str(barrierKeyValue) + " to defeat enemy ")
 
-	if !self.isBarrier:
+	elif !self.isBarrier:
 		lifePoints -= inflictattackDamageVar
 		healthBar.set_value(lifePoints*10)
-		previewHealthBar.set_value(lifePoints*10)
+		update_preview_healthBar(inflictattackDamageVar)
 	if lifePoints <= 0:
 		enemyDefeated = true
 		if CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYER || CURRENTPHASE == GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE || CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE || CURRENTPHASE == GlobalVariables.CURRENTPHASE.ENEMYATTACK:

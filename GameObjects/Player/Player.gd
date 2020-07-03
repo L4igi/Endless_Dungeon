@@ -223,7 +223,6 @@ func player_attack(attackDirection):
 		var restMultiplier = 1
 		if restMovesAttack:
 			restMultiplier = maxTurnActions-movementCount-attackCount
-		print("sowrddamage " + str(swordAttackDamage*restMultiplier))
 		if attackType == GlobalVariables.ATTACKTYPE.MAGIC:
 			emit_signal("playerAttacked", self, attackDirection, magicAttackDamage*restMultiplier, attackType)
 		elif attackType == GlobalVariables.ATTACKTYPE.SWORD:
@@ -311,9 +310,9 @@ func get_attack_direction():
 	if Input.is_action_just_pressed("restActionsAction"):
 		match attackType:
 			GlobalVariables.ATTACKTYPE.SWORD:
-				update_enemy_preview(swordAttackDamage*(maxTurnActions-movementCount))
+				update_enemy_preview(swordAttackDamage*(maxTurnActions-(movementCount+attackCount)))
 			GlobalVariables.ATTACKTYPE.MAGIC:
-				update_enemy_preview(magicAttackDamage*(maxTurnActions-movementCount))
+				update_enemy_preview(magicAttackDamage*(maxTurnActions-(movementCount+attackCount)))
 	if Input.is_action_just_released("restActionsAction"):
 		match attackType:
 			GlobalVariables.ATTACKTYPE.SWORD:
@@ -610,6 +609,8 @@ func get_equip_attack_damage():
 			return magicAttackDamage
 		GlobalVariables.ATTACKTYPE.BLOCK:
 			return powerBlockAttackDamage
+		_:
+			return 0
 
 func update_enemy_preview(damage):
 	if Grid.activeRoom != null:

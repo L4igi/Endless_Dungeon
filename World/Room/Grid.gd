@@ -246,6 +246,9 @@ func request_move(pawn, direction):
 					GlobalVariables.maxDifficulty += 1
 					save_game()
 					GlobalVariables.currentFloor+=1
+					GlobalVariables.maxNumberRooms = int(GlobalVariables.maxNumberRooms*1.5)
+					if GlobalVariables.currentFloor%5:
+						GlobalVariables.roomDimensions += 1
 					get_tree().reload_current_scene()
 				elif object_pawn.itemType == GlobalVariables.ITEMTYPE.COIN:
 					pawn.add_nonkey_items(object_pawn.itemType, object_pawn.coinValue)

@@ -18,6 +18,7 @@ onready var roomSizeLabel = $Menu/CenterRow/VBoxContainer/OptionsButton/OptionsP
 onready var roomCountLabel = $Menu/CenterRow/VBoxContainer/OptionsButton/OptionsPopup/HBoxContainer/ItemList/VBoxContainer/roomCountLabel/value
 onready var roomDifficultyLabel = $Menu/CenterRow/VBoxContainer/OptionsButton/OptionsPopup/HBoxContainer/ItemList/VBoxContainer/difficultyLabel/value
 onready var optionsItemList = $Menu/CenterRow/VBoxContainer/OptionsButton/OptionsPopup/HBoxContainer/ItemList
+onready var exitGameButton = $Menu/CenterRow/VBoxContainer/ExitGame
 
 onready var newGameButton = $Menu/CenterRow/VBoxContainer/NewGameButton
 # Called when the node enters the scene tree for the first time.
@@ -26,7 +27,14 @@ func _ready():
 	roomSizeLabel.set_text(str(GlobalVariables.roomDimensions))
 	roomCountLabel.set_text(str(GlobalVariables.maxNumberRooms))
 	roomDifficultyLabel.set_text(str("Auto"))
-	
+	currentRoomsToGenerate = GlobalVariables.maxNumberRooms
+	if GlobalVariables.globalAudioPlayer.inMenu:
+		GlobalVariables.globalAudioPlayer.stream = load("res://GlobalVariables/GameLoop-Menu.ogg")
+		GlobalVariables.globalAudioPlayer.play()
+	else:
+		GlobalVariables.globalAudioPlayer.stream = load("res://GlobalVariables/GameLoop-Menu_Boot.ogg")
+		GlobalVariables.globalAudioPlayer.play()
+	GlobalVariables.globalAudioPlayer.inMenu = true
 
 
 func _process(delta):
@@ -37,6 +45,8 @@ func _process(delta):
 	changeOptionValue()
 	
 	start_new_game()
+	
+	exit_game()
 
 
 func changeOptionValue():
@@ -95,3 +105,8 @@ func start_new_game():
 		newGameStarted = true
 		print("NEWGAME")
 		get_tree().change_scene("res://World/World.tscn")
+		GlobalVariables.globalAudioPlayer.inMenu = false
+
+func exit_game():
+	if exitGameButton.is_pressed():
+		get_tree().quit()

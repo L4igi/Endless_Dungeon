@@ -52,18 +52,22 @@ func updatePrice():
 	
 func do_upgrade(player):
 	if player.coinCount >= int(upgradeCost.get_text()):
-		$AnimationPlayer.play("ActivateUpgrade", -1, 1.5)
-		player.on_upgradeContainer_interaction(upgradeType, GlobalVariables.upgradeAmount[upgradeType-1],int(upgradeCost.get_text()))
 		match upgradeType:
 			GlobalVariables.UPGRADETYPE.ACTIONSUP:
 				GlobalVariables.upgradeCosts[upgradeType-1]*=1.5
 				if GlobalVariables.upgradeCosts[upgradeType-1] >= int(20 * GlobalVariables.globalDifficultyMultiplier):
 					GlobalVariables.upgradeCosts[upgradeType-1] = int(20 * GlobalVariables.globalDifficultyMultiplier)
 			GlobalVariables.UPGRADETYPE.FILLFLASK:
+				if player.currentPotions == player.maxPotions:
+					$AnimationPlayer.play("NotEnoughMoney", -1, 1.0)
+					return
 				GlobalVariables.upgradeCosts[upgradeType-1]*=1.5
 				if GlobalVariables.upgradeCosts[upgradeType-1] >= int(10 * GlobalVariables.globalDifficultyMultiplier):
 					GlobalVariables.upgradeCosts[upgradeType-1] = int(10 * GlobalVariables.globalDifficultyMultiplier)
 			GlobalVariables.UPGRADETYPE.FILLHEART:
+				if player.lifePoints == player.maxLifePoints:
+					$AnimationPlayer.play("NotEnoughMoney", -1, 1.0)
+					return
 				GlobalVariables.upgradeCosts[upgradeType-1]*=1.5
 				if GlobalVariables.upgradeCosts[upgradeType-1] >= int(3 * GlobalVariables.globalDifficultyMultiplier):
 					GlobalVariables.upgradeCosts[upgradeType-1] = int(3 * GlobalVariables.globalDifficultyMultiplier)
@@ -87,6 +91,8 @@ func do_upgrade(player):
 				GlobalVariables.upgradeCosts[upgradeType-1]*=1.5
 				if GlobalVariables.upgradeCosts[upgradeType-1] >= int(8 * GlobalVariables.globalDifficultyMultiplier):
 					GlobalVariables.upgradeCosts[upgradeType-1] = int(8 * GlobalVariables.globalDifficultyMultiplier)
+		$AnimationPlayer.play("ActivateUpgrade", -1, 1.5)
+		player.on_upgradeContainer_interaction(upgradeType, GlobalVariables.upgradeAmount[upgradeType-1],int(upgradeCost.get_text()))
 		updatePrice()
 	else:
 		$AnimationPlayer.play("NotEnoughMoney", -1, 1.0)
