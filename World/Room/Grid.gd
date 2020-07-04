@@ -38,6 +38,8 @@ var numberRoomsCleared = 0
 
 var numberRoomsSurroundedByWalls = 0
 
+var startingRoomDoorsCount = 0
+
 var activeRoom = null
 
 var movedThroughDoor = false
@@ -249,7 +251,7 @@ func request_move(pawn, direction):
 					GlobalVariables.maxNumberRooms = int(GlobalVariables.maxNumberRooms*1.5)
 					if GlobalVariables.maxNumberRooms == 1:
 						GlobalVariables.maxNumberRooms = 2
-					if GlobalVariables.currentFloor%5:
+					if GlobalVariables.currentFloor%5 == 0:
 						GlobalVariables.roomDimensions += 1
 					get_tree().reload_current_scene()
 				elif object_pawn.itemType == GlobalVariables.ITEMTYPE.COIN:
@@ -824,12 +826,15 @@ func create_puzzle_room(unlockedDoor):
 	if  randPieces >= int(4* GlobalVariables.globalDifficultyMultiplier):
 		randPieces = int(4* GlobalVariables.globalDifficultyMultiplier)
 	var puzzlePiecesToSpwan = randi()%(randPieces+1)+2
+	for sizeModifier in range (9, GlobalVariables.roomDimensions+1):
+		if sizeModifier%2 == 0:
+			puzzlePiecesToSpwan+=1
 	if unlockedDoor.roomSizeMultiplier == Vector2(1,2) || unlockedDoor.roomSizeMultiplier == Vector2(2,1):
 		puzzlePiecesToSpwan = int(puzzlePiecesToSpwan*1.5)
 	elif unlockedDoor.roomSizeMultiplier == Vector2(2,2):
 		puzzlePiecesToSpwan = int(puzzlePiecesToSpwan*2.0)
-	if puzzlePiecesToSpwan >= 9: 
-		puzzlePiecesToSpwan = 9
+	if puzzlePiecesToSpwan >= 11: 
+		puzzlePiecesToSpwan = 11
 	print("Random rolled result : " + str(puzzlePiecesToSpwan))
 	var calculateSpawnAgain = true
 	var alreadyUsedColors = []
@@ -1001,6 +1006,10 @@ func create_enemy_room(unlockedDoor):
 	if enemyType == GlobalVariables.ENEMYTYPE.MAGEENEMY && multipleMages!= 0:
 		enemiesToSpawn += randi()%(multipleMages+1)+1
 		mixEnemies = false
+	for sizeModifier in range (9, GlobalVariables.roomDimensions+1):
+		print("SIZEMODIFIER " + str(sizeModifier))
+		if sizeModifier%2 == 0:
+			enemiesToSpawn+=1
 	if unlockedDoor.roomSizeMultiplier == Vector2(1,2) || unlockedDoor.roomSizeMultiplier == Vector2(2,1):
 		enemiesToSpawn = int(enemiesToSpawn*1.5)
 	elif unlockedDoor.roomSizeMultiplier == Vector2(2,2):
@@ -1971,11 +1980,11 @@ func dropLootInActiveRoom():
 	elif currentNumberRoomsgenerated-numberRoomsCleared > 0:
 		if randi()%100 > randi()%30+20:
 			dropKeyItem = true
-			print("DROPKEYITEM")
 	if !barrierKeysNoSolution.empty() && dropKeyItem:
 		#create key and spawn it on floor spawn one left of player if player is in the middle of the room
 		var itemToGenerate = barrierKeysNoSolution[randi()%barrierKeysNoSolution.size()]
 		barrierKeysSolutionSpawned.append(itemToGenerate)
+		print("BarrierKeyNoSolution " + str(barrierKeysNoSolution))
 		barrierKeysNoSolution.erase(itemToGenerate)
 		var newItemPosition = activeRoom.doorRoomLeftMostCorner + map_to_world(activeRoom.roomSize/2)
 		var itemPosMover = Vector2(0,1)
@@ -2012,14 +2021,17 @@ func dropLootInActiveRoom():
 		if  get_cellv(world_to_map(newItemPosition)) == TILETYPES.ENEMY:
 			get_cell_pawn(world_to_map(newItem.position)).queue_free()
 		newItem.keyValue = str(0)
+		var spawnedExit = false
 		if numberRoomsCleared == GlobalVariables.maxNumberRooms && !exitSpawned:
 			newItem.setTexture(GlobalVariables.ITEMTYPE.EXIT)
 			exitSpawned = true
+			spawnedExit = true
 		elif numberRoomsCleared >= GlobalVariables.maxNumberRooms*0.7 && !exitSpawned:
 			if randi()%(GlobalVariables.maxNumberRooms - numberRoomsCleared) == 0:
 				newItem.setTexture(GlobalVariables.ITEMTYPE.EXIT)
 				exitSpawned = true
-		else:
+				spawnedExit = true
+		if !spawnedExit:
 			var nonKeyItemToDrop = randi()%100
 			if nonKeyItemToDrop < 5:
 				newItem.setTexture(GlobalVariables.ITEMTYPE.COIN)
@@ -2115,6 +2127,9 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 				verticalRandom = randi()%2+1
 	var randUpDown = randi()%2+1
 	var randLeftRight = randi()%2+1
+	if startingRoomDoorsCount > 2 && GlobalVariables.globaleRoomLayout == GlobalVariables.ROOMLAYOUT.BIG:
+		randUpDown = 1
+		randLeftRight = 1
 	if(startingRoom):
 		leftmostCorner = GlobalVariables.tileOffset
 	else:
@@ -2201,6 +2216,8 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 				door.roomSizeMultiplier = Vector2(horizontalRandom, verticalRandom)
 				door.roomSize = Vector2(roomSizeHorizontal, roomSizeVertical)
 			"RIGHT":
+				if randUpDown == 1 && GlobalVariables.globaleRoomLayout == GlobalVariables.ROOMLAYOUT.BIG:
+					randUpDown=2
 				#see if there are any cross section and diasble this option to keep tiles from intersecting
 				leftmostCorner=world_to_map(door.position+map_to_world(Vector2(1,0)-Vector2(0, minRoomSize/2 - evenOddModifier)))
 				#print("RIGHT LEftMost Corner " + str(leftmostCorner))
@@ -2268,6 +2285,8 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 				door.roomSizeMultiplier = Vector2(horizontalRandom, verticalRandom)
 				door.roomSize = Vector2(roomSizeHorizontal, roomSizeVertical)
 			"UP":
+				if randLeftRight == 1 && GlobalVariables.globaleRoomLayout == GlobalVariables.ROOMLAYOUT.BIG:
+					randLeftRight = 2
 				#see if there are any cross section and diasble this option to keep tiles from intersecting
 				leftmostCorner=world_to_map(door.position-map_to_world(Vector2(minRoomSize/2  - evenOddModifier, minRoomSize)))
 				#print("UP LEftMost Corner " + str(leftmostCorner))	
@@ -2537,7 +2556,10 @@ func create_doors(roomLeftMostCorner, startingRoom=false, roomSizeHorizontal = 1
 			#todo: maybe numberofroomsgenerated -1 check later 
 			print("creating exit")
 			newDoor.createExit = true
-	
+
+	if startingRoom:
+		startingRoomDoorsCount = doorArray.size()
+		print("GlobalVars RoomLayout " + str(GlobalVariables.globaleRoomLayout))
 	for door in doorArray:
 		currentNumberRoomsgenerated+=1
 		if !startingRoom:
@@ -2547,6 +2569,7 @@ func create_doors(roomLeftMostCorner, startingRoom=false, roomSizeHorizontal = 1
 		door.setBoxMapBG()
 		door.rotateDoor()
 		update_bitmask_region()
+	startingRoomDoorsCount = 0 
 		#print(str(newDoor.position) + " element "+ str(element))
 
 func can_create_door(element, newDoor, roomLeftMostCorner, roomsizeMultiplier, roomSizeHorizontal, roomSizeVertical, doorEvenOddModifier, alternateSpawnLocation):

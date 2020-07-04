@@ -512,7 +512,7 @@ func add_key_item_to_inventory(item):
 	var newInventoryItem = InventoryItem.instance()
 	newInventoryItem.itemKeyValue = item.keyValue
 	newInventoryItem.get_node("ItemTexture").set_texture(item.get_node("Sprite").get_texture())
-	newInventoryItem.get_node("ItemTexture").set_modulate(item.modulation)
+	newInventoryItem.get_node("ItemTexture").set_modulate(item.get_node("Sprite").get_modulate())
 	newInventoryItem.get_node("ItemLabel").set_text(str(item.keyValue))
 	if item.itemType == GlobalVariables.ITEMTYPE.KEY:
 		inventoryElements.get_node("Tabs/Key/KeyList").add_child(newInventoryItem)
