@@ -29,8 +29,8 @@ func _ready():
 	newGameButton.grab_focus()
 	roomSizeLabel.set_text(str(GlobalVariables.roomDimensions))
 	roomCountLabel.set_text(str(GlobalVariables.maxNumberRooms))
-	roomDifficultyLabel.set_text(str(GlobalVariables.chosenDifficulty))
-	roomLayoutLabel.set_text(str(GlobalVariables.globaleRoomLayout))
+	roomDifficultyLabel.set_text(str(match_difficulty_enum(GlobalVariables.chosenDifficulty)))
+	roomLayoutLabel.set_text(str(match_layout_enum(GlobalVariables.globaleRoomLayout)))
 	currentRoomsToGenerate = GlobalVariables.maxNumberRooms
 	if GlobalVariables.globalAudioPlayer.inMenu:
 		GlobalVariables.globalAudioPlayer.stream = load("res://GlobalVariables/GameLoop-Menu.ogg")

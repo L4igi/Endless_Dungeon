@@ -4,6 +4,7 @@ var baseCount = 2
 var currentCount = 0
 var interActed = false
 var activationDelay = 0
+var reverseFill = false
 var countSound = preload("res://GameObjects/CountingBlock/countingSound.wav")
 onready var countLabel = $Sprite/Count
 
@@ -13,12 +14,14 @@ func _ready():
 	adjust_base_count()
 	currentCount = baseCount
 	countLabel.set_text(str(baseCount))
+	get_node("Sprite/TextureProgress").set_value(0)
 
 func adjust_base_count():
 	var adjustCount = int(GlobalVariables.puzzleBonusLootDropped/3)
-	if adjustCount >= 6: 
-		adjustCount = 6
+	if adjustCount >= 8: 
+		adjustCount = 8
 	baseCount = int((randi()%(adjustCount+1)+2)* GlobalVariables.globalDifficultyMultiplier)
+	get_node("Sprite/TextureProgress").set_max(baseCount)
 	
 func decrease_count():
 	if !Grid.cancelMagicPuzzleRoom:
@@ -26,11 +29,21 @@ func decrease_count():
 		get_node("AudioStreamPlayer2D").play()
 		interActed = true
 		currentCount-=1
-		countLabel.set_text(str(currentCount))
+		if !reverseFill:
+			get_node("Sprite/TextureProgress").set_value(get_node("Sprite/TextureProgress").get_value()+1)
+			countLabel.set_text(str(currentCount))
+		else:
+			get_node("Sprite/TextureProgress").set_value(get_node("Sprite/TextureProgress").get_value()-1)
+			countLabel.set_text(str(currentCount*-1))
+		if currentCount == 0:
+			reverseFill = true
+		
 	
 func reset_count():
 	interActed = false
 	currentCount = baseCount
+	reverseFill = false
+	get_node("Sprite/TextureProgress").set_value(0)
 	countLabel.set_text(str(currentCount))
 	
 func checkLootDrop():
