@@ -490,3 +490,4 @@ anims/to_mini_projectile = SubResource( 12 )
 [node name="Tween" type="Tween" parent="."]
 
 [node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+volume_db = -2.0

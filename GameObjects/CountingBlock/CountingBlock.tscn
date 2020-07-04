@@ -172,3 +172,4 @@ anims/nothing = SubResource( 2 )
 anims/penny = SubResource( 3 )
 
 [node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+volume_db = 4.0
