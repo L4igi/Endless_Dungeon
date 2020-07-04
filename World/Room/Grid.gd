@@ -2086,22 +2086,49 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 	var disableSmall = false
 	var horizontalRandom = randi()%2+1
 	var verticalRandom = randi()%2+1
+	match GlobalVariables.globaleRoomLayout:
+		GlobalVariables.ROOMLAYOUT.MIXED:
+			horizontalRandom = randi()%2+1
+			verticalRandom = randi()%2+1
+		GlobalVariables.ROOMLAYOUT.SMALL:
+			horizontalRandom = 1
+			verticalRandom = 1
+		GlobalVariables.ROOMLAYOUT.BIG:
+			horizontalRandom = 2
+			verticalRandom = 2
+		GlobalVariables.ROOMLAYOUT.BIGSMALL:
+			disableSmall = true
+			while horizontalRandom == 1 && verticalRandom == 2 || horizontalRandom == 2 && verticalRandom == 1:
+				horizontalRandom = randi()%2+1
+				verticalRandom = randi()%2+1
+		GlobalVariables.ROOMLAYOUT.LONG:
+			while horizontalRandom == 1 && verticalRandom == 1 || horizontalRandom == 2 && verticalRandom == 2:
+				horizontalRandom = randi()%2+1
+				verticalRandom = randi()%2+1
+		GlobalVariables.ROOMLAYOUT.SMALLLONG:
+			while horizontalRandom == 2 && verticalRandom == 2:
+				horizontalRandom = randi()%2+1
+				verticalRandom = randi()%2+1
+		GlobalVariables.ROOMLAYOUT.BIGLONG:
+			while horizontalRandom == 1 && verticalRandom == 1:
+				horizontalRandom = randi()%2+1
+				verticalRandom = randi()%2+1
 	var randUpDown = randi()%2+1
 	var randLeftRight = randi()%2+1
 	if(startingRoom):
 		leftmostCorner = GlobalVariables.tileOffset
 	else:
 		var minRoomSize = roomSizeHorizontal
-		print("GlobalVariables.globaleRoomLayout " + str(GlobalVariables.globaleRoomLayout))
-		match GlobalVariables.globaleRoomLayout:
-			GlobalVariables.ROOMLAYOUT.MIXED:
-				pass
-			GlobalVariables.ROOMLAYOUT.SMALL:
-				horizontalRandom=1
-				verticalRandom=1
-			GlobalVariables.ROOMLAYOUT.BIG:
-				horizontalRandom = 2
-				verticalRandom = 2
+#		print("GlobalVariables.globaleRoomLayout " + str(GlobalVariables.globaleRoomLayout))
+#		match GlobalVariables.globaleRoomLayout:
+#			GlobalVariables.ROOMLAYOUT.MIXED:
+#				pass
+#			GlobalVariables.ROOMLAYOUT.SMALL:
+#				horizontalRandom=1
+#				verticalRandom=1
+#			GlobalVariables.ROOMLAYOUT.BIG:
+#				horizontalRandom = 2
+#				verticalRandom = 2
 		
 		match door.doorDirection:
 			"LEFT":
@@ -2121,16 +2148,16 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 					disableLong = true
 				#print("LEFT LONG modifier : " + str(leftmostCorner-Vector2(1,0))+ " " + str(get_cellv(leftmostCorner-Vector2(1,0))))
 				#randomize and create different room sizes and layout types
-				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == TILETYPES.WALL):
+				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == TILETYPES.WALL && get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == TILETYPES.WALL && get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == TILETYPES.WALL && get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == TILETYPES.WALL):
 					disableBig = true
 				#print("Corner Location: " + str(leftmostCorner+Vector2(minRoomSize, minRoomSize)) + " LEFT disableBig " + str(disableBig))
 				
 				if(disableBig == true && horizontalRandom == 2 && horizontalRandom == 2):
 					if(randi()%2+1 == 1):
 						verticalRandom = 1 
-						horizontalRandom = 2
+						horizontalRandom = randi()%2+1
 					else:
-						verticalRandom = 2
+						verticalRandom = randi()%2+1
 						horizontalRandom = 1
 						
 				if(disableUp == true && disableDown == true && disableLong == true):
@@ -2189,16 +2216,16 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 				if(get_cellv(leftmostCorner+Vector2(minRoomSize,0)) == TILETYPES.WALL):
 					disableLong = true
 				#print("RIGHT LONG modifier : " + str(leftmostCorner+Vector2(minRoomSize,0))+ " " + str(get_cellv(leftmostCorner+Vector2(minRoomSize,0))))
-				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == TILETYPES.WALL):
+				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == TILETYPES.WALL && get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == TILETYPES.WALL && get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == TILETYPES.WALL && get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == TILETYPES.WALL):
 					disableBig = true
 				#print("Corner Location: " + str(leftmostCorner+Vector2(minRoomSize, minRoomSize)) + " RIGHT disableBig " + str(disableBig))
-
+				
 				if(disableBig == true && horizontalRandom == 2 && horizontalRandom == 2):
 					if(randi()%2+1 == 1):
 						verticalRandom = 1 
-						horizontalRandom = 2
+						horizontalRandom = randi()%2+1
 					else:
-						verticalRandom = 2
+						verticalRandom = randi()%2+1
 						horizontalRandom = 1
 						
 				if(disableUp == true && disableDown == true && disableLong == true):
@@ -2256,16 +2283,16 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 				if(get_cellv(leftmostCorner-Vector2(0,1)) == TILETYPES.WALL):
 					disableLong = true
 				#print("UP LONG modifier : " + str(leftmostCorner-Vector2(0,1))+ " " + str(get_cellv(leftmostCorner-Vector2(0,1))))
-				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == TILETYPES.WALL):
+				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == TILETYPES.WALL && get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == TILETYPES.WALL && get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == TILETYPES.WALL && get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == TILETYPES.WALL):
 					disableBig = true
 				#print("Corner Location: " + str(leftmostCorner+Vector2(minRoomSize, minRoomSize)) + " UP disableBig " + str(disableBig))
-
+				
 				if(disableBig == true && horizontalRandom == 2 && horizontalRandom == 2):
 					if(randi()%2+1 == 1):
 						verticalRandom = 1 
-						horizontalRandom = 2
+						horizontalRandom = randi()%2+1
 					else:
-						verticalRandom = 2
+						verticalRandom = randi()%2+1
 						horizontalRandom = 1
 						
 				if(disableLeft == true && disableRight == true && disableLong == true):
@@ -2279,10 +2306,10 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 					randLeftRight = 1
 				if (disableLong == true):
 					verticalRandom = 1
-
+					
 				roomSizeHorizontal = roomSizeHorizontal * horizontalRandom
 				roomSizeVertical = roomSizeVertical* verticalRandom
-
+				
 				#print(str(disableRight) +  " disableRight " + str(disableLeft) + " disableLeft " + str(disableLong) + " disablelong ")
 				
 				if(horizontalRandom == 2 && verticalRandom == 2):
@@ -2320,19 +2347,19 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 					disableRight = true
 				#print("DOWN Right modifier : " + str(leftmostCorner+Vector2(minRoomSize,0)) + " " + str(get_cellv(leftmostCorner+Vector2(minRoomSize,0))))
 				#randomize and create different room sizes and layout types 
-				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == TILETYPES.WALL || get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == TILETYPES.WALL):
+				if get_cellv(leftmostCorner+Vector2(0, minRoomSize)) == TILETYPES.WALL:
 					disableLong = true
 				#print("DOWN LONG modifier : "  + str(leftmostCorner+Vector2(0,minRoomSize))+ " " + str(get_cellv(leftmostCorner+Vector2(0,minRoomSize))))
-				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == TILETYPES.WALL):
+				if(get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize)) == TILETYPES.WALL && get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize)) == TILETYPES.WALL && get_cellv(leftmostCorner+Vector2(minRoomSize, minRoomSize-1)) == TILETYPES.WALL && get_cellv(leftmostCorner+Vector2(minRoomSize-1, minRoomSize-1)) == TILETYPES.WALL):
 					disableBig = true
 				#print("Corner Location: " + str(leftmostCorner+Vector2(minRoomSize, minRoomSize)) + " DOWN disableBig " + str(disableBig))
 				
 				if(disableBig == true && horizontalRandom == 2 && horizontalRandom == 2):
 					if(randi()%2+1 == 1):
 						verticalRandom = 1 
-						horizontalRandom = 2
+						horizontalRandom = randi()%2+1
 					else:
-						verticalRandom = 2
+						verticalRandom = randi()%2+1
 						horizontalRandom = 1
 				
 				if(disableLeft == true && disableRight == true && disableDown == true):
@@ -2376,8 +2403,7 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 				door.doorLocationDirection = "DOWN"
 				door.roomSizeMultiplier = Vector2(horizontalRandom, verticalRandom)
 				door.roomSize = Vector2(roomSizeHorizontal, roomSizeVertical)
-						
-
+				
 	var verticalAddcount = 0
 	while verticalAddcount < roomSizeVertical:
 		var horizontalAddcount = 0
@@ -2511,7 +2537,7 @@ func create_doors(roomLeftMostCorner, startingRoom=false, roomSizeHorizontal = 1
 			#todo: maybe numberofroomsgenerated -1 check later 
 			print("creating exit")
 			newDoor.createExit = true
-		
+	
 	for door in doorArray:
 		currentNumberRoomsgenerated+=1
 		if !startingRoom:
@@ -2589,25 +2615,43 @@ func can_create_door(element, newDoor, roomLeftMostCorner, roomsizeMultiplier, r
 			newDoor.doorDirection = "DOWN"
 	
 	newDoor.position = roomLeftMostCorner + map_to_world(locationToSpawnModifier)
-
 	
-	match element:
-		"LEFT":
-			if (get_cellv(world_to_map(newDoor.position)-Vector2(1,0)) == TILETYPES.WALL):
-				return false
-			return true
-		"RIGHT":
-			if (get_cellv(world_to_map(newDoor.position)+Vector2(1,0)) == TILETYPES.WALL):
-				return false
-			return true
-		"UP":
-			if (get_cellv(world_to_map(newDoor.position)-Vector2(0,1)) == TILETYPES.WALL):
-				return false
-			return true
-		"DOWN":
-			if (get_cellv(world_to_map(newDoor.position)+Vector2(0,1)) == TILETYPES.WALL):
-				return false
-			return true
+	if GlobalVariables.globaleRoomLayout == GlobalVariables.ROOMLAYOUT.BIG:
+		match element:
+			"LEFT":
+				if get_cellv(world_to_map(newDoor.position)-Vector2(1,0)) == TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)-Vector2(roomDimensions*2,0)) ==TILETYPES.WALL:
+					return false
+				return true
+			"RIGHT":
+				if get_cellv(world_to_map(newDoor.position)+Vector2(1,0)) == TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)+Vector2(roomDimensions*2,0)) ==TILETYPES.WALL:
+					return false
+				return true
+			"UP":
+				if get_cellv(world_to_map(newDoor.position)-Vector2(0,1)) == TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)-Vector2(0,roomDimensions*2)) ==TILETYPES.WALL:
+					return false
+				return true
+			"DOWN":
+				if get_cellv(world_to_map(newDoor.position)+Vector2(0,1)) == TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)+Vector2(0,roomDimensions*2)) ==TILETYPES.WALL:
+					return false
+				return true
+	else:
+		match element:
+			"LEFT":
+				if (get_cellv(world_to_map(newDoor.position)-Vector2(1,0)) == TILETYPES.WALL):
+					return false
+				return true
+			"RIGHT":
+				if (get_cellv(world_to_map(newDoor.position)+Vector2(1,0)) == TILETYPES.WALL):
+					return false
+				return true
+			"UP":
+				if (get_cellv(world_to_map(newDoor.position)-Vector2(0,1)) == TILETYPES.WALL):
+					return false
+				return true
+			"DOWN":
+				if (get_cellv(world_to_map(newDoor.position)+Vector2(0,1)) == TILETYPES.WALL):
+					return false
+				return true
 
 
 func remove_opposite_doorlocation(doorLocationDirectionsArray, direction):

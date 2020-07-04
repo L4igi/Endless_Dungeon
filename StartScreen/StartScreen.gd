@@ -9,7 +9,7 @@ var currentRoomsToGenerate = 10
 
 var currentDifficulty = GlobalVariables.DIFFICULTYLEVELS.AUTO
 
-var currentRoomLayout = GlobalVariables.ROOMLAYOUT.MIXED
+var currentRoomLayout = GlobalVariables.globaleRoomLayout
 
 var optionPoppedUp = false
 
