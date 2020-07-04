@@ -50,6 +50,7 @@ func open_close_Inventory():
 	return false
 	
 func return_to_menu():
+	GlobalVariables.firstCall = true
 	mainPlayer.resetStats()
 	mainPlayer.get_parent().save_game()
 	GlobalVariables.globalAudioPlayer.inMenu = true
@@ -58,6 +59,7 @@ func return_to_menu():
 	get_tree().change_scene("res://StartScreen/StartScreen.tscn")
 	
 func quick_restart():
+	GlobalVariables.firstCall = true
 	mainPlayer.resetStats()
 	mainPlayer.get_parent().save_game()
 	get_tree().change_scene("res://World/World.tscn")

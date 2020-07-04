@@ -186,6 +186,7 @@ func _ready():
 		newPlayer.position = Vector2(112,112)
 		newPlayer.set_name("Player")
 		add_child(newPlayer)
+		newPlayer.resetStats()
 		get_node("Player").connect("playerAttacked", self, "_on_Player_Attacked")
 		get_node("Player").connect("puzzleBlockInteractionSignal", self, "on_puzzle_Block_interaction")
 	#	get_parent().get_node("MainCamera").connect_grid_camera_signal()

@@ -2,12 +2,12 @@ extends Control
 
 var roomSizeMin = 8
 var roomSizeMax = 12
-var currentRoomSize = 8
+var currentRoomSize = GlobalVariables.roomDimensions
 
 var roomsToGenerateMin = 1
-var currentRoomsToGenerate = 10
+var currentRoomsToGenerate = GlobalVariables.maxNumberRooms
 
-var currentDifficulty = GlobalVariables.DIFFICULTYLEVELS.AUTO
+var currentDifficulty = GlobalVariables.chosenDifficulty
 
 var currentRoomLayout = GlobalVariables.globaleRoomLayout
 
@@ -31,7 +31,7 @@ func _ready():
 	roomCountLabel.set_text(str(GlobalVariables.maxNumberRooms))
 	roomDifficultyLabel.set_text(str(match_difficulty_enum(GlobalVariables.chosenDifficulty)))
 	roomLayoutLabel.set_text(str(match_layout_enum(GlobalVariables.globaleRoomLayout)))
-	currentRoomsToGenerate = GlobalVariables.maxNumberRooms
+	currentDifficulty = GlobalVariables.chosenDifficulty
 	if GlobalVariables.globalAudioPlayer.inMenu:
 		GlobalVariables.globalAudioPlayer.stream = load("res://GlobalVariables/GameLoop-Menu.ogg")
 		GlobalVariables.globalAudioPlayer.play()
@@ -147,7 +147,7 @@ func adjust_global_difficulty(multiplier):
 func start_new_game():
 	if newGameButton.is_pressed() && !newGameStarted:
 		newGameStarted = true
-		print("NEWGAME")
+		#print("NEWGAME")
 		get_tree().change_scene("res://World/World.tscn")
 		GlobalVariables.globalAudioPlayer.inMenu = false
 

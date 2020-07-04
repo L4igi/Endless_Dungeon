@@ -30,7 +30,7 @@ var magicAttackDamage = 0.5
 
 var powerBlockAttackDamage = 1.0
 
-var coinCount = 70
+var coinCount = 0
 
 var maxLifePoints = 10
 
@@ -38,7 +38,7 @@ var lifePoints = 10
 
 var maxPotions = 2
 
-var currentPotions = 1
+var currentPotions = 0
 
 var itemsInPosession = []
 
@@ -109,6 +109,7 @@ signal puzzleBlockInteractionSignal (player, puzzleBlockDirection)
 var restMovesAttack = false
 
 func _ready():
+	print(GlobalVariables.chosenDifficulty)
 	guiElements = GUI.instance()
 	add_child(guiElements)
 	#GlobalVariables.turnController.player_next_action(self)
@@ -133,6 +134,7 @@ func _ready():
 	yield($AnimationPlayer, "animation_finished")
 	disablePlayerInput = false
 	
+		
 func _process(_delta):
 	if !disablePlayerInput && !inInventory:
 		if movedThroughDoorDirection!=Vector2.ZERO:
@@ -648,11 +650,40 @@ func save():
 	return save_dict
 	
 func resetStats():
-	maxTurnActions = 5
+	match GlobalVariables.chosenDifficulty:
+		GlobalVariables.DIFFICULTYLEVELS.EASY:
+			coinCount = 10
+			currentPotions = 1
+			maxPotions = 3
+			maxLifePoints = 12
+			lifePoints = 12
+			maxTurnActions = 7
+		GlobalVariables.DIFFICULTYLEVELS.NORMAL:
+			coinCount = 5
+			currentPotions = 0
+			maxPotions = 2
+			maxLifePoints = 10
+			lifePoints = 10
+			maxTurnActions = 6
+		GlobalVariables.DIFFICULTYLEVELS.AUTO:
+			coinCount = 5
+			currentPotions = 0
+			maxPotions = 2
+			maxLifePoints = 10
+			lifePoints = 10
+			maxTurnActions = 6
+		GlobalVariables.DIFFICULTYLEVELS.HARD:
+			coinCount = 0
+			currentPotions = 0
+			maxPotions = 1
+			maxLifePoints = 8
+			lifePoints = 8
+			maxTurnActions = 5
+	
 	attackDamage = 1
 	swordAttackDamage = 0.75
 	magicAttackDamage = 0.5
 	powerBlockAttackDamage = 1.0
-	coinCount = 0
 	lifePoints = maxLifePoints
-	currentPotions = 0 
+	
+	guiElements.setUpGUI(maxTurnActions, maxLifePoints, lifePoints, coinCount, maxPotions, currentPotions)
