@@ -1,3 +1,5 @@
+#puzzlepieces have to be activated in a ceratin order 
+#mainly sets pieces as activated or repeats color animation
 extends Node2D
 
 onready var Grid = get_parent()

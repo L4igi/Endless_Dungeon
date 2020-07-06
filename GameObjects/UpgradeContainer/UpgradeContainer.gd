@@ -1,3 +1,5 @@
+#player interacts with upgrad container spent coins and upgrade stats
+#different types of container available 
 extends Node2D
 
 var wandTexture = preload ("res://GameObjects/Item/WandItem.png")

@@ -1,3 +1,5 @@
+#handles all types of projectiles
+#could be more modular by making each projectile type a seperate scene 
 extends Node2D
 
 onready var Grid = get_parent()

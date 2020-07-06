@@ -1,3 +1,6 @@
+#The Door is the root of every Room 
+# It holds the roomType, elements in the Room etc. 
+#can be a barrier 
 extends Node2D
 
 onready var Grid = get_parent()

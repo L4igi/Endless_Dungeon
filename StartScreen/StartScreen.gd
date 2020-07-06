@@ -1,3 +1,5 @@
+#start screen to start new game and adjust settings 
+
 extends Control
 
 var roomSizeMin = 8

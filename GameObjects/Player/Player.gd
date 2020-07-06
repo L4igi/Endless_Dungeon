@@ -1,3 +1,6 @@
+#main Player of the game
+#on creation also creates GUI, Inventory and the mainCamera
+#on traversing to the next floor is created anew and loads save stats from last floor 
 extends Node2D
 
 onready var Grid = get_parent()

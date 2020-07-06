@@ -1,3 +1,6 @@
+#the main camera
+#moves to the current room player is in 
+#has a free controle mode, to navigate the map rest of the game is paused
 extends Camera2D
 
 onready var Grid = get_parent()

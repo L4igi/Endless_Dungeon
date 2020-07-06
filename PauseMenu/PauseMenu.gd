@@ -1,3 +1,5 @@
+#pausemenu to return to title scrren or quickly restart game 
+#pauses rest of the game while in menu
 extends PopupPanel
 
 var isPoppedUp = false

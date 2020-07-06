@@ -1,3 +1,5 @@
+#holds the main audio loop playing in the bakground
+#keeps playing when entering new floor 
 extends AudioStreamPlayer
 
 var inMenu = false

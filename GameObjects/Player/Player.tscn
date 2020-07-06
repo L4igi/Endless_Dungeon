@@ -28,7 +28,7 @@ tracks/0/keys = {
 "values": [ 40, 40, 41, 42, 43, 44, 45, 46, 40, 41, 42 ]
 }
 
-[sub_resource type="Animation" id=16]
+[sub_resource type="Animation" id=2]
 resource_name = "Spawn"
 length = 4.2
 tracks/0/type = "value"
@@ -68,8 +68,7 @@ tracks/2/keys = {
 "values": [ Vector2( 0, -40 ), Vector2( 0, 0 ) ]
 }
 
-[sub_resource type="Animation" id=2]
-resource_name = "attack_down"
+[sub_resource type="Animation" id=3]
 length = 3.0
 tracks/0/type = "value"
 tracks/0/path = NodePath("../Sprite:frame")
@@ -98,8 +97,7 @@ tracks/1/keys = {
 "times": PoolRealArray( 2 )
 }
 
-[sub_resource type="Animation" id=3]
-resource_name = "Spawn"
+[sub_resource type="Animation" id=4]
 length = 2.1
 tracks/0/type = "value"
 tracks/0/path = NodePath("../Sprite:frame")
@@ -132,7 +130,7 @@ tracks/1/keys = {
 "times": PoolRealArray( 0.6, 1.1 )
 }
 
-[sub_resource type="Animation" id=4]
+[sub_resource type="Animation" id=5]
 length = 2.7
 tracks/0/type = "value"
 tracks/0/path = NodePath("../Sprite:frame")
@@ -161,8 +159,7 @@ tracks/1/keys = {
 "times": PoolRealArray( 1.8 )
 }
 
-[sub_resource type="Animation" id=5]
-resource_name = "attack_magic"
+[sub_resource type="Animation" id=6]
 length = 3.0
 tracks/0/type = "value"
 tracks/0/path = NodePath("../Sprite:frame")
@@ -191,8 +188,7 @@ tracks/1/keys = {
 "times": PoolRealArray( 1.1 )
 }
 
-[sub_resource type="Animation" id=6]
-resource_name = "attack_pickaxe"
+[sub_resource type="Animation" id=7]
 length = 2.8
 tracks/0/type = "value"
 tracks/0/path = NodePath("../Sprite:frame")
@@ -221,7 +217,7 @@ tracks/1/keys = {
 "times": PoolRealArray( 1.6 )
 }
 
-[sub_resource type="Animation" id=7]
+[sub_resource type="Animation" id=8]
 length = 2.7
 tracks/0/type = "value"
 tracks/0/path = NodePath("../Sprite:frame")
@@ -250,7 +246,7 @@ tracks/1/keys = {
 "times": PoolRealArray( 1.8 )
 }
 
-[sub_resource type="Animation" id=8]
+[sub_resource type="Animation" id=9]
 length = 2.7
 tracks/0/type = "value"
 tracks/0/path = NodePath("../Sprite:frame")
@@ -279,8 +275,7 @@ tracks/1/keys = {
 "times": PoolRealArray( 1.4 )
 }
 
-[sub_resource type="Animation" id=9]
-resource_name = "defeat"
+[sub_resource type="Animation" id=10]
 length = 2.7
 tracks/0/type = "value"
 tracks/0/path = NodePath("../Sprite:frame")
@@ -309,8 +304,7 @@ tracks/1/keys = {
 "times": PoolRealArray( 0.2 )
 }
 
-[sub_resource type="Animation" id=10]
-resource_name = "take_damage_magic"
+[sub_resource type="Animation" id=11]
 length = 0.9
 tracks/0/type = "value"
 tracks/0/path = NodePath("../Sprite:frame")
@@ -339,8 +333,7 @@ tracks/1/keys = {
 "times": PoolRealArray( 0.51 )
 }
 
-[sub_resource type="Animation" id=11]
-resource_name = "take_damage_physical"
+[sub_resource type="Animation" id=12]
 length = 0.5
 tracks/0/type = "value"
 tracks/0/path = NodePath("../Sprite:frame")
@@ -369,7 +362,7 @@ tracks/1/keys = {
 "times": PoolRealArray( 0.2 )
 }
 
-[sub_resource type="Animation" id=12]
+[sub_resource type="Animation" id=13]
 tracks/0/type = "value"
 tracks/0/path = NodePath("../Sprite:frame")
 tracks/0/interp = 1
@@ -397,7 +390,7 @@ tracks/1/keys = {
 "times": PoolRealArray( 0.4 )
 }
 
-[sub_resource type="Animation" id=13]
+[sub_resource type="Animation" id=14]
 tracks/0/type = "value"
 tracks/0/path = NodePath("../Sprite:frame")
 tracks/0/interp = 1
@@ -425,7 +418,7 @@ tracks/1/keys = {
 "times": PoolRealArray( 0.4 )
 }
 
-[sub_resource type="Animation" id=14]
+[sub_resource type="Animation" id=15]
 tracks/0/type = "value"
 tracks/0/path = NodePath("../Sprite:frame")
 tracks/0/interp = 1
@@ -453,7 +446,7 @@ tracks/1/keys = {
 "times": PoolRealArray( 0.4 )
 }
 
-[sub_resource type="Animation" id=15]
+[sub_resource type="Animation" id=16]
 tracks/0/type = "value"
 tracks/0/path = NodePath("../Sprite:frame")
 tracks/0/interp = 1
@@ -500,21 +493,21 @@ __meta__ = {
 root_node = NodePath(".")
 autoplay = "Idle"
 anims/Idle = SubResource( 1 )
-anims/Spawn = SubResource( 16 )
-anims/attack_down = SubResource( 2 )
-anims/attack_hand = SubResource( 3 )
-anims/attack_left = SubResource( 4 )
-anims/attack_magic = SubResource( 5 )
-anims/attack_pickaxe = SubResource( 6 )
-anims/attack_right = SubResource( 7 )
-anims/attack_up = SubResource( 8 )
-anims/defeat = SubResource( 9 )
-anims/take_damage_magic = SubResource( 10 )
-anims/take_damage_physical = SubResource( 11 )
-anims/walk_down = SubResource( 12 )
-anims/walk_left = SubResource( 13 )
-anims/walk_right = SubResource( 14 )
-anims/walk_up = SubResource( 15 )
+anims/Spawn = SubResource( 2 )
+anims/attack_down = SubResource( 3 )
+anims/attack_hand = SubResource( 4 )
+anims/attack_left = SubResource( 5 )
+anims/attack_magic = SubResource( 6 )
+anims/attack_pickaxe = SubResource( 7 )
+anims/attack_right = SubResource( 8 )
+anims/attack_up = SubResource( 9 )
+anims/defeat = SubResource( 10 )
+anims/take_damage_magic = SubResource( 11 )
+anims/take_damage_physical = SubResource( 12 )
+anims/walk_down = SubResource( 13 )
+anims/walk_left = SubResource( 14 )
+anims/walk_right = SubResource( 15 )
+anims/walk_up = SubResource( 16 )
 
 [node name="Tween" type="Tween" parent="."]
 

@@ -155,7 +155,6 @@ margin_top = -16.0
 margin_right = 24.0
 margin_bottom = 24.0
 max_value = 3.0
-step = 1.0
 value = 1.0
 rounded = true
 allow_greater = true

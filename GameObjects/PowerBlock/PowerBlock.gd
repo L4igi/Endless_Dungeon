@@ -1,3 +1,5 @@
+#depending on the room type either act as exploding blocks or puzzle blocks
+#handles interaction with self
 extends Node2D
 
 onready var Grid = get_parent()

@@ -1,3 +1,6 @@
+#Overlay of the Game
+#shows all importent stats at all time
+#updates depending on difficulty and game events 
 extends Node
 
 var wandTexture = preload ("res://GUI/Wand.png")

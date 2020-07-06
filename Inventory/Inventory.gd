@@ -1,3 +1,6 @@
+#Inventory System to show Key Items 
+#scales to windows size to be readable even if camera zoomed out
+
 extends PopupPanel
 
 var isPoppedUp = false

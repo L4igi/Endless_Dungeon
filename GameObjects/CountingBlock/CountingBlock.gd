@@ -1,3 +1,7 @@
+#Game Object that is spawned in Puzzle rooms
+#presents an optinal challange to get extra rewards
+#player has to activate it a certain amount of time during solving th puzzle correctly
+#visual feedback extended with Texture Progress 
 extends Node2D
 
 var baseCount = 2

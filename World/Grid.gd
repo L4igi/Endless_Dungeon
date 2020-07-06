@@ -1,3 +1,9 @@
+#main control over the game 
+#includes room creation logic 
+#handles move requests and sets tiles to types 
+#acts as centerpiece to connect the whole game 
+#communicates with turn controller to handle interaction if safe
+
 extends TileMap
 
 enum TILETYPES { EMPTY, PLAYER, WALL, ENEMY, PUZZLEPIECE, ITEM, DOOR, UNLOCKEDDOOR, MAGICPROJECTILE, BLOCK, FLOOR, UPGRADECONTAINER, COUNTINGBLOCK}
