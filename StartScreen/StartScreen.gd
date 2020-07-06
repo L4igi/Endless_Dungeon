@@ -54,7 +54,7 @@ func _process(delta):
 
 
 func changeOptionValue():
-	if Input.is_action_just_pressed("Mode_Sword"):	
+	if Input.is_action_just_pressed("ui_left"):	
 		if optionsItemList.is_selected(0):
 			if currentRoomSize > roomSizeMin:
 				currentRoomSize -= 1
@@ -79,7 +79,7 @@ func changeOptionValue():
 				GlobalVariables.globaleRoomLayout = currentRoomLayout
 				
 			
-	elif Input.is_action_just_pressed("Mode_Block"):
+	elif Input.is_action_just_pressed("ui_right"):
 		if optionsItemList.is_selected(0):
 			if currentRoomSize < roomSizeMax:
 				currentRoomSize += 1
@@ -106,19 +106,19 @@ func match_difficulty_enum(value):
 	match value:
 		GlobalVariables.DIFFICULTYLEVELS.AUTO:
 			GlobalVariables.globalDifficultyMultiplier = 1.0
-			adjust_global_difficulty(2)
+			adjust_global_difficulty(3)
 			return "Auto"
 		GlobalVariables.DIFFICULTYLEVELS.EASY:
 			GlobalVariables.globalDifficultyMultiplier = 0.5
-			adjust_global_difficulty(1)
+			adjust_global_difficulty(2)
 			return "Easy"
 		GlobalVariables.DIFFICULTYLEVELS.NORMAL:
 			GlobalVariables.globalDifficultyMultiplier = 1.0
-			adjust_global_difficulty(2)
+			adjust_global_difficulty(3)
 			return "Norm"
 		GlobalVariables.DIFFICULTYLEVELS.HARD:
 			GlobalVariables.globalDifficultyMultiplier = 1.5
-			adjust_global_difficulty(3)
+			adjust_global_difficulty(4)
 			return "Hard"
 
 func match_layout_enum(value):

@@ -886,7 +886,7 @@ func generateEnemy(enemieToGenerate, currentGrid, unlockedDoor):
 			movementCount = baseMovementCount
 			get_node("Sprite").set_visible(true)
 			#randomly make to save enemy 
-			if !isBarrier && randi()%2 && GlobalVariables.countEnemyRoomsCleared > 2:
+			if !isBarrier && randi()%2 && GlobalVariables.countEnemyRoomsCleared >= 2:
 				baseLifePoints = 3 - GlobalVariables.globalDifficultyMultiplier
 				if baseLifePoints <= 0: 
 					baseLifePoints = 0.5
@@ -1112,12 +1112,28 @@ func play_defeat_animation(mainPlayer, CURRENTPHASE):
 	match enemyType:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
 			GlobalVariables.enemyBarrierDifficulty += 0.5 * GlobalVariables.globalDifficultyMultiplier
+			if int(GlobalVariables.enemyBarrierDifficulty)%5 == 0:
+				GlobalVariables.enemyWarriorDifficulty += 0.5 * GlobalVariables.globalDifficultyMultiplier
+				GlobalVariables.enemyMageDifficulty += 0.5 * GlobalVariables.globalDifficultyMultiplier
+				GlobalVariables.enemyNinjaDifficulty += 0.5 * GlobalVariables.globalDifficultyMultiplier
 		GlobalVariables.ENEMYTYPE.WARRIROENEMY:
 			GlobalVariables.enemyWarriorDifficulty += 0.5 * GlobalVariables.globalDifficultyMultiplier
+			if int(GlobalVariables.enemyWarriorDifficulty)%5 == 0:
+				GlobalVariables.enemyBarrierDifficulty += 0.5 * GlobalVariables.globalDifficultyMultiplier
+				GlobalVariables.enemyMageDifficulty += 0.5 * GlobalVariables.globalDifficultyMultiplier
+				GlobalVariables.enemyNinjaDifficulty += 0.5 * GlobalVariables.globalDifficultyMultiplier
 		GlobalVariables.ENEMYTYPE.MAGEENEMY:
 			GlobalVariables.enemyMageDifficulty += 0.5 * GlobalVariables.globalDifficultyMultiplier
+			if int(GlobalVariables.enemyMageDifficulty)%5 == 0:
+				GlobalVariables.enemyWarriorDifficulty += 0.5 * GlobalVariables.globalDifficultyMultiplier
+				GlobalVariables.enemyBarrierDifficulty += 0.5 * GlobalVariables.globalDifficultyMultiplier
+				GlobalVariables.enemyNinjaDifficulty += 0.5 * GlobalVariables.globalDifficultyMultiplier
 		GlobalVariables.ENEMYTYPE.NINJAENEMY:
 			GlobalVariables.enemyNinjaDifficulty += 0.5 * GlobalVariables.globalDifficultyMultiplier
+			if int(GlobalVariables.enemyNinjaDifficulty)%5 == 0:
+				GlobalVariables.enemyWarriorDifficulty += 0.5 * GlobalVariables.globalDifficultyMultiplier
+				GlobalVariables.enemyMageDifficulty += 0.5 * GlobalVariables.globalDifficultyMultiplier
+				GlobalVariables.enemyBarrierDifficulty += 0.5 * GlobalVariables.globalDifficultyMultiplier
 	emit_signal("enemyDefeated", self)
 		
 func makeEnemyBarrier(currentGrid, unlockedDoor):

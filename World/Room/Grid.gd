@@ -884,8 +884,8 @@ func create_puzzle_room(unlockedDoor):
 		unlockedDoor.puzzlePiecesInRoom.append(newPuzzlePiece)
 		#spawn additional counting blocks for bonus loot
 	
-	var countingBlocksRand = randi()%100
-	if GlobalVariables.countPuzzleRoomsCleared < 2:
+	var countingBlocksRand = 80
+	if GlobalVariables.countPuzzleRoomsCleared <= 2:
 		countingBlocksRand = 0
 	if countingBlocksRand < 50-int(GlobalVariables.puzzleBonusLootDropped*2): 
 		countingBlocksRand = 0
@@ -991,15 +991,15 @@ func create_enemy_room(unlockedDoor):
 	var mixEnemiesAndMage = false
 	var multipleMages = 0
 	var totalDifficultyLevel = GlobalVariables.enemyBarrierDifficulty + GlobalVariables.enemyMageDifficulty + GlobalVariables.enemyNinjaDifficulty + GlobalVariables.enemyWarriorDifficulty
-	if totalDifficultyLevel >= 7:
-		enemiesToSpawn = int(totalDifficultyLevel/7)
+	if totalDifficultyLevel >= 6:
+		enemiesToSpawn = int(totalDifficultyLevel/6)
 		if enemiesToSpawn >= 4:
 			enemiesToSpawn = 4
-	if totalDifficultyLevel >=20:
+	if totalDifficultyLevel >=16:
 		mixEnemies = true
 	if GlobalVariables.enemyMageDifficulty >= 10:
 		multipleMages += GlobalVariables.enemyMageDifficulty/10
-	if totalDifficultyLevel >=40:
+	if totalDifficultyLevel >=25:
 		mixEnemiesAndMage = true
 	var enemyType = randi()%4
 	#enemyType = 2
@@ -2040,14 +2040,14 @@ func dropLootInActiveRoom():
 				newItem.get_node("Sprite").set_offset(Vector2(0,10))
 				newItem.keyValue = str(0)
 				newItem.make_nickel()
-			elif nonKeyItemToDrop < (15*GlobalVariables.globalDifficultyMultiplier):
+			elif nonKeyItemToDrop < (40*GlobalVariables.globalDifficultyMultiplier):
 				newItem.setTexture(GlobalVariables.ITEMTYPE.COIN)
 				newItem.get_node("Sprite").set_scale(Vector2(0.5,0.5))
 				newItem.get_node("Sprite").set_offset(Vector2(0,10))
 				newItem.keyValue = str(0)
-			elif nonKeyItemToDrop < 60:
+			elif nonKeyItemToDrop < 70:
 				newItem.setTexture(GlobalVariables.ITEMTYPE.FILLUPHALFHEART)
-			elif nonKeyItemToDrop < 85:
+			elif nonKeyItemToDrop < 95:
 				newItem.setTexture(GlobalVariables.ITEMTYPE.FILLUPHEART)
 			else:
 				newItem.setTexture(GlobalVariables.ITEMTYPE.POTION)

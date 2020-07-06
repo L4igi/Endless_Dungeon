@@ -63,10 +63,13 @@ margin_bottom = 130.0
 [node name="HBoxContainer" type="HBoxContainer" parent="Menu/CenterRow/VBoxContainer/OptionsButton/OptionsPopup"]
 margin_right = 40.0
 margin_bottom = 40.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="ItemList" type="ItemList" parent="Menu/CenterRow/VBoxContainer/OptionsButton/OptionsPopup/HBoxContainer"]
 margin_right = 135.0
-margin_bottom = 120.0
+margin_bottom = 129.0
 rect_min_size = Vector2( 135, 120 )
 items = [ "Size", null, false, "Rooms", null, false, "Mode", null, false, "Layout", null, false ]
 auto_height = true
@@ -86,22 +89,21 @@ __meta__ = {
 
 [node name="roomSizeLabel" parent="Menu/CenterRow/VBoxContainer/OptionsButton/OptionsPopup/HBoxContainer/ItemList/VBoxContainer" instance=ExtResource( 2 )]
 margin_left = 0.0
-margin_bottom = 20.0
+margin_bottom = 18.0
 
 [node name="roomCountLabel" parent="Menu/CenterRow/VBoxContainer/OptionsButton/OptionsPopup/HBoxContainer/ItemList/VBoxContainer" instance=ExtResource( 2 )]
 margin_left = 0.0
-margin_top = 24.0
-margin_bottom = 44.0
+margin_top = 22.0
 
 [node name="difficultyLabel" parent="Menu/CenterRow/VBoxContainer/OptionsButton/OptionsPopup/HBoxContainer/ItemList/VBoxContainer" instance=ExtResource( 2 )]
 margin_left = 0.0
-margin_top = 47.0
-margin_bottom = 67.0
+margin_top = 44.0
+margin_bottom = 62.0
 
 [node name="roomLayoutLabel" parent="Menu/CenterRow/VBoxContainer/OptionsButton/OptionsPopup/HBoxContainer/ItemList/VBoxContainer" instance=ExtResource( 2 )]
 margin_left = 0.0
-margin_top = 70.0
-margin_bottom = 90.0
+margin_top = 66.0
+margin_bottom = 84.0
 
 [node name="ExitGame" type="Button" parent="Menu/CenterRow/VBoxContainer"]
 margin_top = 56.0

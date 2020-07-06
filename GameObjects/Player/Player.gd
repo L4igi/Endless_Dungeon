@@ -630,6 +630,7 @@ func update_gui_elements():
 	guiElements.set_health(lifePoints)
 	guiElements.fill_potions(currentPotions)
 	guiElements.change_max_potions(maxPotions)
+	guiElements.set_maxturn_actions(maxTurnActions)
 	
 func save():
 	var save_dict = {
@@ -666,7 +667,7 @@ func resetStats():
 			lifePoints = 10
 			maxTurnActions = 6
 		GlobalVariables.DIFFICULTYLEVELS.AUTO:
-			coinCount = 5
+			coinCount = 0
 			currentPotions = 0
 			maxPotions = 2
 			maxLifePoints = 10
