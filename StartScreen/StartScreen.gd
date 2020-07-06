@@ -24,7 +24,6 @@ onready var optionsItemList = $Menu/CenterRow/VBoxContainer/OptionsButton/Option
 onready var exitGameButton = $Menu/CenterRow/VBoxContainer/ExitGame
 
 onready var newGameButton = $Menu/CenterRow/VBoxContainer/NewGameButton
-# Called when the node enters the scene tree for the first time.
 func _ready():
 	newGameButton.grab_focus()
 	roomSizeLabel.set_text(str(GlobalVariables.roomDimensions))
@@ -41,7 +40,7 @@ func _ready():
 	GlobalVariables.globalAudioPlayer.inMenu = true
 
 
-func _process(delta):
+func _process(_delta):
 	if optionsButton.is_pressed():
 		$Menu/CenterRow/VBoxContainer/OptionsButton/OptionsPopup.popup_centered()
 		optionPoppedUp = true
@@ -147,7 +146,6 @@ func adjust_global_difficulty(multiplier):
 func start_new_game():
 	if newGameButton.is_pressed() && !newGameStarted:
 		newGameStarted = true
-		#print("NEWGAME")
 		get_tree().change_scene("res://World/World.tscn")
 		GlobalVariables.globalAudioPlayer.inMenu = false
 

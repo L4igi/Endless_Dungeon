@@ -28,9 +28,7 @@ var healthRectSize = 16
 var currentTurnActionCount = 0
 var potionRectSize = 32
 
-func _ready():
-	pass
-
+#set up GUI elements with Player stats
 func setUpGUI(maxTurnActions, maxLifePoints, lifePoints, coinCount, maxPotions, currentPotions):
 	PlayerStats.rect_size.x = maxLifePoints*4-6
 	HealthBarEmpty.rect_size.x = (maxLifePoints)*healthRectSize
@@ -78,7 +76,7 @@ func use_potion():
 		PotionBarFill.rect_size.x -= 1*potionRectSize
 		return true
 	return false
-
+#update hand attack texture to reflect current room type
 func change_hand_on_room(roomMode):
 	self.roomMode = roomMode
 	if roomMode == GlobalVariables.ROOM_TYPE.PUZZLEROOM && currentAttackMode == GlobalVariables.ATTACKTYPE.HAND:

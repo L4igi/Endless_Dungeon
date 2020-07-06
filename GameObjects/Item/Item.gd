@@ -69,5 +69,6 @@ func make_nickel():
 func on_item_pickUp(newPosition):
 	$AnimationPlayer.play("itemPickUp")
 	yield($AnimationPlayer, "animation_finished")
-	set_visible(false)
-	position = newPosition
+	Grid.remove_child(self)
+#	set_visible(false)
+#	position = newPosition

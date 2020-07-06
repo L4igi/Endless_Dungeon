@@ -25,13 +25,11 @@ var otherAdjacentRoom = {}
 
 var isBarrier = false 
 
+var roomCleared = false 
+
 var enemiesInRoom = []
 
-var isEnemyBarrier = false
-
 var puzzlePiecesInRoom = []
-
-var isPuzzleBarrier = false
 
 var powerBlocksInRoom = []
 
@@ -41,26 +39,15 @@ var countingBlocksInRoom = []
 
 var roomType = ROOM_TYPE.EMPTYTREASUREROOM
 
-var roomCleared = false
-
-var createExit = false
-
 func _ready():
 	var player = Grid.get_node("Player")
 	for child in player.get_children():
 		if child is Camera2D:
 			child.connect("toggleMapSignal", self, "on_toggle_map")
-			
 	get_node("Sprite").set_frame(6)
-		
 	
-# warning-ignore:unused_argument
-func _process(delta):
-	pass
-		
 
-func rotateDoor():
-	print(doorLocationDirection)
+func rotate_door_sprite():
 	match doorLocationDirection:
 		"LEFT":
 			get_node("Sprite").rotation_degrees = 270
@@ -90,16 +77,14 @@ func request_door_unlock(playerItemsInPosession):
 	get_node("Sprite").set_visible(false)
 	return true
 	
-# warning-ignore:unused_argument
+#creates adjacent rooms 
+#decides roomType for room just entered 
+#adaptes roomtype spawn probability 
 func unlock_Door():
 	isUnlocked=true
 	Grid.create_doors(doorRoomLeftMostCorner, false, roomSize.x, roomSize.y, roomSizeMultiplier, doorLocationDirection)
-
 	var randRoomType = randi()%100
-	print("randRoomType " +str(randRoomType))
-#		randRoomType = 90
 	if(randRoomType <= GlobalVariables.enemyRoomChance):
-		#print("create enemy room " + str(randRoomType))
 		roomType = ROOM_TYPE.ENEMYROOM
 		GlobalVariables.turnController.inRoomType = ROOM_TYPE.ENEMYROOM
 		Grid.create_enemy_room(self)
@@ -108,7 +93,6 @@ func unlock_Door():
 			GlobalVariables.puzzleRoomChance += 1
 			GlobalVariables.emptyTreasureRoomChance += 1
 	elif(randRoomType > GlobalVariables.enemyRoomChance && randRoomType < (GlobalVariables.enemyRoomChance+GlobalVariables.puzzleRoomChance)):
-		#print("creating puzzle room " + str(randRoomType))
 		roomType = ROOM_TYPE.PUZZLEROOM
 		GlobalVariables.turnController.inRoomType = ROOM_TYPE.PUZZLEROOM
 		Grid.create_puzzle_room(self)
@@ -117,7 +101,6 @@ func unlock_Door():
 			GlobalVariables.enemyRoomChance += 2
 			GlobalVariables.emptyTreasureRoomChance += 1
 	elif(randRoomType >= (GlobalVariables.enemyRoomChance+GlobalVariables.puzzleRoomChance)):
-		#print("creating empty/Treasure room " + str(randRoomType))
 		GlobalVariables.turnController.inRoomType = ROOM_TYPE.EMPTYTREASUREROOM
 		roomType = ROOM_TYPE.EMPTYTREASUREROOM
 		Grid.create_empty_treasure_room(self)
@@ -125,9 +108,7 @@ func unlock_Door():
 			GlobalVariables.emptyTreasureRoomChance -= 4
 			GlobalVariables.puzzleRoomChance += 2
 			GlobalVariables.enemyRoomChance += 2
-		#set room to cleared because its empty room
-
-
+			
 func set_other_adjacent_room(otherRoom, direction):
 	var reversedDirection 
 	match direction:
@@ -139,32 +120,27 @@ func set_other_adjacent_room(otherRoom, direction):
 			reversedDirection="RIGHT"
 		"RIGHT":
 			reversedDirection="LEFT"
-		
 	otherAdjacentRoom [reversedDirection] = otherRoom
 	
-	#print("set_other_adjacent_room " + str(otherRoom)+ " this room node " + str(self))
-		
 func get_room_by_movement_direction(direction):
-	#print("Other room: " + str(otherAdjacentRoom) + " self room " + str(self))
 	if(otherAdjacentRoom.has(direction) == true):
 		return otherAdjacentRoom.get(direction)
 	return self
 
-func dropLoot():
+func drop_loot():
 	Grid.numberRoomsCleared+=1
 	on_room_solved()
 	return true
 	
-func updateContainerPrices():
+func update_container_prices():
 	for container in upgradeContainersInRoom:
 		container.updatePrice()
 	
-func makeDoorBarrier(currentGrid):
+func make_door_barrier(currentGrid):
 	var barrierChance = randi()%3
 	print("BarrierChance == " + str(barrierChance))
 	var checkBarrierPossible = currentGrid.manage_barrier_creation(GlobalVariables.BARRIERTYPE.DOOR)
 	if(barrierChance == 1 && currentGrid.currentNumberRoomsgenerated!=0 && checkBarrierPossible):
-		#print("generating door barrier")
 		isBarrier = true
 		get_node("Sprite").set_modulate(Color(randf(),randf(),randf(),1.0))
 		barrierKeyValue = str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10) + str(randi()%10)
@@ -176,7 +152,7 @@ func makeDoorBarrier(currentGrid):
 		currentGrid.generate_keyValue_item(barrierKeyValue, get_node("Sprite").get_modulate(), GlobalVariables.ITEMTYPE.KEY, self)
 
 
-#functions to add/change Map Boxes 
+#functions to add/change Map TextureRects
 func setBoxMapBG():
 	get_node("showBarrierItemsTextRekt").set_dimensions(roomSize, position, doorRoomLeftMostCorner)
 	

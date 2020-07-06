@@ -6,11 +6,6 @@ onready var mainPlayer = get_parent().get_parent()
 
 onready var window_size = OS.get_window_size()
 
-var currentPlayerPosition
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	set_exclusive(true)
-
 func _process(delta):
 	var openInventory = open_close_Inventory()
 	if openInventory:

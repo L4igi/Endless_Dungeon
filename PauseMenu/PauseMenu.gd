@@ -10,44 +10,48 @@ onready var yesButton = $HBoxContainer/VBoxContainer/ButtonYes
 onready var noButton = $HBoxContainer/VBoxContainer/ButtonNo
 onready var restartButton = $HBoxContainer/ButtonQuickR
 
-# Called when the node enters the scene tree for the first time.
 func _ready():
 	set_exclusive(true)
 
 func _process(delta):
 	var openInventory = open_close_Inventory()
 	if openInventory:
-		if isPoppedUp:
-			isPoppedUp = false
-			self.set_visible(false)
-			mainPlayer.inInventory = false
-		else:
-			var otherMenuPoppedUp = false
-			for child in get_parent().get_children():
-				if child is PopupPanel && child != self:
-					if child.isPoppedUp:
-						otherMenuPoppedUp = true
-			if mainPlayer.movedThroughDoorDirection == Vector2.ZERO && !otherMenuPoppedUp:
-				mainPlayer.inInventory = true
-				isPoppedUp = true
-				#print(self.rect_position)
-				#print(get_parent().position)
-				self.popup()
-				self.rect_position = Vector2(50,50)
-				yesButton.grab_focus()
-	if isPoppedUp && noButton.is_pressed():
-		isPoppedUp = false
-		self.set_visible(false)
-		mainPlayer.inInventory = false
-	elif isPoppedUp && yesButton.is_pressed():
-		return_to_menu()
-	elif isPoppedUp && restartButton.is_pressed():
-		quick_restart()
+		open_inventory_interaction()
+	if isPoppedUp:
+		popup_interactions()
 	
 func open_close_Inventory():
 	if Input.is_action_just_pressed("open_pauseMenu"):
 		return true
 	return false
+	
+func open_inventory_interaction():
+	if isPoppedUp:
+		isPoppedUp = false
+		self.set_visible(false)
+		mainPlayer.inInventory = false
+	else:
+		var otherMenuPoppedUp = false
+		for child in get_parent().get_children():
+			if child is PopupPanel && child != self:
+				if child.isPoppedUp:
+					otherMenuPoppedUp = true
+		if mainPlayer.movedThroughDoorDirection == Vector2.ZERO && !otherMenuPoppedUp:
+			mainPlayer.inInventory = true
+			isPoppedUp = true
+			self.popup()
+			self.rect_position = Vector2(50,50)
+			yesButton.grab_focus()
+	
+func popup_interactions():
+	if noButton.is_pressed():
+		isPoppedUp = false
+		self.set_visible(false)
+		mainPlayer.inInventory = false
+	elif yesButton.is_pressed():
+		return_to_menu()
+	elif restartButton.is_pressed():
+		quick_restart()
 	
 func return_to_menu():
 	GlobalVariables.firstCall = true

@@ -22,13 +22,12 @@ signal puzzlePlayedAnimation(puzzlePiece)
 
 signal puzzlePieceActivated
 
-# Called when the node enters the scene tree for the first time.
+
 func _ready():
 	baseModulation = get_node("Sprite").get_self_modulate()
 	Grid.connect("puzzleBarrierDisableSignal", self, "_on_puzzlepiece_barrier_disable")
-
 	
-func playColor(puzzlePieceArray, count, onRoomEnter):
+func play_color(puzzlePieceArray, count, onRoomEnter):
 	set_process(false)
 	var playDuration = 1.1
 	if count == 0 && onRoomEnter:
@@ -39,8 +38,6 @@ func playColor(puzzlePieceArray, count, onRoomEnter):
 	else:
 		get_node("Sprite").set_self_modulate(color)
 		$AnimationPlayer.play("playColor", -1, playDuration)
-#	$Tween.interpolate_property(self, "position", position, position , $AnimationPlayer.current_animation_length*1.1, Tween.TRANS_LINEAR, Tween.EASE_IN)
-#	$Tween.start()
 	yield($AnimationPlayer, "animation_finished")
 	if !isBarrier:
 		$AnimationPlayer.play("Idle")
@@ -49,9 +46,9 @@ func playColor(puzzlePieceArray, count, onRoomEnter):
 	emit_signal("puzzlePlayedAnimation", self)
 	count += 1
 	if count < puzzlePieceArray.size():
-		puzzlePieceArray[count].playColor(puzzlePieceArray, count, onRoomEnter)
+		puzzlePieceArray[count].play_color(puzzlePieceArray, count, onRoomEnter)
 
-func activatePuzzlePiece():
+func activate_puzzle_piece():
 	if !isActivated && !Grid.activeRoom.roomCleared:
 		isActivated = true
 		if !isBarrier:
@@ -61,7 +58,7 @@ func activatePuzzlePiece():
 			get_node("AudioStreamPlayer2D").play()
 		emit_signal("puzzlePieceActivated")
 	
-func playWrongWriteAnimation(right = true):
+func play_wrong_right_animation(right = true):
 	if right:
 		get_node("Sprite").set_self_modulate(baseModulation)
 		$AnimationPlayer.play("inactive")
@@ -72,11 +69,10 @@ func playWrongWriteAnimation(right = true):
 		else:
 			$AnimationPlayer.play("wrong")
 
-func makePuzzleBarrier(currentGrid, unlockedDoor):
+func make_puzzle_barrier(currentGrid, unlockedDoor):
 	randomize()
 	var barrierChance = randi()%3
 	var checkBarrierPossible = currentGrid.manage_barrier_creation(GlobalVariables.BARRIERTYPE.PUZZLE)
-	#currentGrid.barrierPuzzlePieceAlreadySpawned = true
 	if(barrierChance == 1 && currentGrid.currentNumberRoomsgenerated!=0 && checkBarrierPossible):
 		isBarrier = true
 		inRoom = unlockedDoor

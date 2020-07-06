@@ -109,14 +109,11 @@ signal puzzleBlockInteractionSignal (player, puzzleBlockDirection)
 var restMovesAttack = false
 
 func _ready():
-	print(GlobalVariables.chosenDifficulty)
 	guiElements = GUI.instance()
 	add_child(guiElements)
-	#GlobalVariables.turnController.player_next_action(self)
 	guiElements.setUpGUI(maxTurnActions, maxLifePoints, lifePoints, coinCount, maxPotions, currentPotions)
 	
 	inventoryElements = Inventory.instance()
-	inventoryElements.currentPlayerPosition = self.position
 	guiElements.add_child(inventoryElements)
 	
 	pauseMenu = PauseMenu.instance()
@@ -139,15 +136,12 @@ func _process(_delta):
 	if !disablePlayerInput && !inInventory:
 		if movedThroughDoorDirection!=Vector2.ZERO:
 			player_passed_door()
-			guiElements.update_current_turns(true)
-			toggledDangerArea = false
-			movedThroughDoorDirection=Vector2.ZERO
 			return 
 			
 		toggle_enemy_danger_areas()
 		get_use_nonkey_items()
-		var  attackMode = get_attack_mode()
-		if attackMode:
+		var attackMode = get_attack_mode()
+		if get_attack_mode():
 			attackType = attackMode
 		
 		if puzzleBlockInteraction:
@@ -194,7 +188,6 @@ func player_movement(movementDirection):
 				enemyQueueAttackDamage = 0
 				enemyQueueAttackType = null
 			set_process(true)
-#			update_enemy_move_attack()
 			movementCount += 1
 			guiElements.update_current_turns()
 			GlobalVariables.turnController.player_turn_done(self)
@@ -203,7 +196,6 @@ func player_movement(movementDirection):
 func player_attack(attackDirection):
 	if attackDirection && (attackCount + movementCount) < maxTurnActions:
 		set_process(false)
-		#play attack animation 
 		var animationPlay = str("attack_right")
 		match attackDirection:
 			Vector2(1,0):
@@ -227,6 +219,7 @@ func player_attack(attackDirection):
 		yield($AnimationPlayer, "animation_finished")
 		$AnimationPlayer.play("Idle")
 		set_process(true)
+#uses remaining moves for one attack multiplied by these
 		var restMultiplier = 1
 		if restMovesAttack:
 			restMultiplier = maxTurnActions-movementCount-attackCount
@@ -245,6 +238,8 @@ func player_attack(attackDirection):
 			guiElements.update_current_turns()
 		GlobalVariables.turnController.player_turn_done(self)
 	
+#pushes player through door tile into next room 
+#disable player input until all side effects are done 
 func player_passed_door():
 	var targetPosition = Grid.request_move(self,movedThroughDoorDirection)
 	if (targetPosition):
@@ -263,28 +258,25 @@ func player_passed_door():
 		$AnimationPlayer.play(animationPlay, -1, 8.0)
 		$Tween.interpolate_property(self, "position", position, targetPosition , $AnimationPlayer.current_animation_length/8.0, Tween.TRANS_LINEAR, Tween.EASE_IN)
 		playerPreviousPosition = position
-		#position = target_position
 		$Tween.start()
 		yield($AnimationPlayer, "animation_finished")
 		$AnimationPlayer.play("Idle")
 		set_process(true)
-#		update_enemy_move_attack()
 		if Grid.activeRoom != null && Grid.activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 			guiElements.change_hand_on_room(GlobalVariables.ROOM_TYPE.PUZZLEROOM)
 			disablePlayerInput = false
-#			emit_signal("playerMadeMove")
-			#GlobalVariables.turnController.player_turn_done(self)
 		else:
-			#GlobalVariables.turnController.player_turn_done(self)
 			guiElements.change_hand_on_room(GlobalVariables.ROOM_TYPE.ENEMYROOM)
 			disablePlayerInput = false
 			
+	guiElements.update_current_turns(true)
+	toggledDangerArea = false
+	movedThroughDoorDirection=Vector2.ZERO
 	
 func player_interact_puzzle_block(puzzleBlockDirection):
 	if puzzleBlockDirection:
 		emit_signal("puzzleBlockInteractionSignal", self, puzzleBlockDirection)
-		#checkNextAction = GlobalVariables.turnController.player_turn_done(self)
-	
+		
 func get_free_movement_direction():
 	if Input.is_action_pressed("player_up"):
 		puzzleBlockInteraction = false
@@ -377,6 +369,7 @@ func get_attack_mode():
 		puzzleBlockInteraction = false
 		return GlobalVariables.ATTACKTYPE.HAND
 		
+#currently only includes potion 
 func get_use_nonkey_items():
 	if lifePoints < maxLifePoints:
 		if Input.is_action_just_pressed("Potion"):
@@ -393,7 +386,6 @@ func get_use_nonkey_items():
 func toggle_enemy_danger_areas():
 	if Grid.activeRoom != null && !Grid.activeRoom.enemiesInRoom.empty():
 		if Input.is_action_just_pressed("toggle_danger_area_next") and Input.is_action_just_pressed("toggle_danger_area_previous") || Input.is_action_pressed("toggle_danger_area_next") and Input.is_action_just_pressed("toggle_danger_area_previous") ||Input.is_action_pressed("toggle_danger_area_previous") and Input.is_action_just_pressed("toggle_danger_area_next"):
-			#print("pressed both at once")
 			if toggledDangerArea:
 				toggledDangerArea = false
 			else: 
@@ -477,7 +469,6 @@ func inflict_damage_playerDefeated(attackDamageVar, attackTypeVar, enemyType):
 		waitingForEventBeforeContinue = false
 		GlobalVariables.turnController.on_player_taken_damage(self)
 	else:
-		print ("in player defeated")
 		toggledDangerArea = false
 		set_process(false)
 		$AnimationPlayer.play("defeat", -1, 2.0)
@@ -520,8 +511,6 @@ func add_key_item_to_inventory(item):
 		inventoryElements.get_node("Tabs/Key/KeyList").add_child(newInventoryItem)
 	if item.itemType == GlobalVariables.ITEMTYPE.WEAPON:
 		inventoryElements.get_node("Tabs/Weapon/WeaponList").add_child(newInventoryItem)
-#	inventoryElements.popup()
-#	inventoryElements.rect_position = self.position
 
 func remove_key_item_from_inventory(item):
 	itemsInPosession.erase(item)
@@ -572,13 +561,13 @@ func on_upgradeContainer_interaction(upgradeType, addAmount, spentAmount):
 			swordAttackDamage+=addAmount
 	
 func _on_enemy_turn_done_signal():
-	#print("Player turn again ")
 	checkNextAction = true
 	if movementCount + attackCount == maxTurnActions:
 		movementCount = 0
 		attackCount = 0
 		guiElements.update_current_turns(true)
 
+#reset player to start on floor and reset stats if defeated 
 func do_on_player_defeated():
 	position = Vector2(80,80)
 	Grid.activeRoom = null
@@ -597,16 +586,9 @@ func do_on_player_defeated():
 func end_player_turn():
 	disablePlayerInput=true
 	playerTurnDone=true
-
 	
 func get_actions_left():
 	return maxTurnActions-movementCount-attackCount
-#update enemy attack after each Player move/attack
-#func update_enemy_move_attack():
-#	if Grid.activeRoom != null: 
-#		if !Grid.activeRoom.enemiesInRoom.empty():
-#			for enemy in Grid.activeRoom.enemiesInRoom:
-#				enemy.calc_enemy_attack_to(GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW)
 
 func get_equip_attack_damage():
 	match attackType:
@@ -632,6 +614,8 @@ func update_gui_elements():
 	guiElements.change_max_potions(maxPotions)
 	guiElements.set_maxturn_actions(maxTurnActions)
 	
+#saves player stats
+#currently used for transition to next floor 
 func save():
 	var save_dict = {
 		"filename" : get_filename(),
@@ -650,6 +634,7 @@ func save():
 	}
 	return save_dict
 	
+#set up player base stats according to difficulty 
 func resetStats():
 	match GlobalVariables.chosenDifficulty:
 		GlobalVariables.DIFFICULTYLEVELS.EASY:

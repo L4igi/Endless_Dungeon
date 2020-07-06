@@ -24,6 +24,7 @@ signal tickingProjectileMadeMove(projectile, type)
 func _ready():
 	pass
 	
+#pre calcualtes projectiles move to position including proper interactions
 func calc_projectiles_move_to(calcMode, count, playerEnemy = "player"):
 	var calcArray = null
 	match playerEnemy:
@@ -31,7 +32,6 @@ func calc_projectiles_move_to(calcMode, count, playerEnemy = "player"):
 			calcArray = GlobalVariables.turnController.playerProjectilesToMove
 		"enemy":
 			calcArray = GlobalVariables.turnController.enemyProjectilesToMove
-			
 	if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
 		var cell_target = Grid.world_to_map(position) + movementDirection
 		if calcMode == GlobalVariables.MOVEMENTATTACKCALCMODE.PREVIEW:
@@ -46,12 +46,9 @@ func calc_projectiles_move_to(calcMode, count, playerEnemy = "player"):
 		elif calcMode == GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION:
 			if movementDirection != Vector2(0,0):
 				var target_position = Grid.request_move(self, movementDirection)
-				
 				if target_position && deleteProjectilePlayAnimation==null:
-					#print("target position " + str(Grid.world_to_map(target_position)) + " deleteProjectilePlayAnimation " +str(deleteProjectilePlayAnimation))
 					moveTo = target_position
 				else:
-					#print("projectiles cant move to targt position " +str(deleteProjectilePlayAnimation))
 					moveTo = null
 			else:
 				moveTo = null
@@ -61,15 +58,14 @@ func calc_projectiles_move_to(calcMode, count, playerEnemy = "player"):
 			else:
 				calcArray[count].calc_projectiles_move_to(GlobalVariables.MOVEMENTATTACKCALCMODE.ACTION, count, playerEnemy)
 		
+#moves projectiles according to their type
 func move_projectile(type = null):
 	if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY || projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
-		#print("COUNT PROJECTILES CALLING MOVETO " + str(self))
 		if moveTo:
 			$Tween.interpolate_property(self, "position", position, moveTo , 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN)
 			$Tween.start()
 			yield($Tween, "tween_completed")
 			if deleteProjectilePlayAnimation == null:
-				#print("moving projectile not deleting " + str(self))
 				emit_signal("playerEnemieProjectileMadeMove",self)
 			else:
 				play_projectile_animation(false, deleteProjectilePlayAnimation)
@@ -97,7 +93,6 @@ func move_projectile(type = null):
 		$Tween.start()
 		yield($Tween, "tween_completed")
 		tickAlreadyMoved = false
-		#print("Tick Tock")
 		emit_signal("tickingProjectileMadeMove", self, projectileType)
 		
 	elif type == "allProjectiles":
@@ -136,20 +131,13 @@ func play_powerBlock_projectile_animation():
 func play_projectile_animation(onSpot=true, projectileAnimation="attack",projectileInteraction = false, setTileEnemy= false):
 	if !GlobalVariables.turnController.projectileInteraction.has(self):
 		GlobalVariables.turnController.projectileInteraction.append(self)
-	#print("ProjectileAnimation " + str(projectileAnimation) + ( " current node ") + str(self))
-	#print("current active turn waiting " + str(GlobalVariables.turnController.currentTurnWaiting ))
 	var animationMode = 1
 	if GlobalVariables.turnController.currentTurnWaiting != GlobalVariables.CURRENTPHASE.PLAYERPROJECTILE && GlobalVariables.turnController.currentTurnWaiting != GlobalVariables.CURRENTPHASE.ENEMYPROJECTILE && GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.PLAYER || GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMY || GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMYATTACK:
 		animationMode = 1
-		#print(GlobalVariables.turnController.currentTurnWaiting)
-		#Grid.mainPlayer.waitingForEventBeforeContinue = true
-		#print("Phase1")
 	elif Grid.activeRoom != null && Grid.activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 		animationMode = 2
-		#print("Phase2")
 	else:
 		animationMode = 3
-		#print("Phase3")
 	
 	var animationToPlay = projectileAnimation
 	match projectileAnimation : 
@@ -174,7 +162,6 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack",project
 				attackDamage = 1.0
 				animationToPlay = "playerPoweredUpProjectile"
 		"mini":
-			#print("IN mini")
 			if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
 				animationToPlay = "enemy_shoot"
 			elif projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
@@ -190,18 +177,12 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack",project
 		yield($AnimationPlayer, "animation_finished")
 		set_process(true)
 	if projectileAnimation == "merge": 
-		#print("in merge")
-		#play idle animation 
 		if projectileType == GlobalVariables.PROJECTILETYPE.ENEMY:
 			$AnimationPlayer.play("enemy_shoot")
 		elif projectileType == GlobalVariables.PROJECTILETYPE.PLAYER:
-			#print("playing shoot " + str(projectileAnimation))
 			$AnimationPlayer.play("shoot")
-		#print("merge done " + str(self))
 		GlobalVariables.turnController.on_projectile_interaction(self, false)
-	#player enemy phase
 	elif projectileAnimation == "mini":
-		#print("In second mini")
 		var target_position = Grid.request_move(self, movementDirection)
 		Grid.set_cellv(Grid.world_to_map(position), Grid.get_tileset().find_tile_by_name("FLOOR"))
 		if target_position:
@@ -214,10 +195,8 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack",project
 				$AnimationPlayer.play("mini1shoot")
 			set_process(true)
 		if deleteProjectilePlayAnimation == "delete":
-			#print("mini delete done " + str(self))
 			GlobalVariables.turnController.on_projectile_interaction(self, true)
 		else:
-			#print("mini done " + str(self))
 			GlobalVariables.turnController.on_projectile_interaction(self, false)
 	elif animationMode == 1:
 		Grid.projectilesInActiveRoom.erase(self)
@@ -227,25 +206,19 @@ func play_projectile_animation(onSpot=true, projectileAnimation="attack",project
 			pass
 		elif projectileType == GlobalVariables.PROJECTILETYPE.ENEMY && GlobalVariables.turnController.currentTurnWaiting == GlobalVariables.CURRENTPHASE.ENEMYATTACK:
 			pass
-			#Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
 		GlobalVariables.turnController.on_projectile_interaction(self, true)
-		#print("delete phase 1 done")
-	#puzzle room interactions
 	elif animationMode == 2:
 		Grid.projectilesInActiveRoom.erase(self)
 		emit_signal("projectileMadeMove", self)
-	#projectile phase
 	elif animationMode == 3:
-		#print("projectile phase deleting "+ str(self))
 		Grid.projectilesInActiveRoom.erase(self)
 		if !hitObstacleOnDelete:
 			Grid.set_cellv(Grid.world_to_map(position),Grid.get_tileset().find_tile_by_name("FLOOR"))
-#		else
 		GlobalVariables.turnController.on_projectile_interaction(self, true)
 		emit_signal("playerEnemieProjectileMadeMove",self)
 		
 	
-
+#ticking projectiles are used in puzzle rooms to handle interaction timing between projectiles
 func create_ticking_projectile(currentRoomLeftMostCorner):
 	projectileType = GlobalVariables.PROJECTILETYPE.TICKERPROJECTILE
 	position = currentRoomLeftMostCorner

@@ -3,14 +3,10 @@ extends Node2D
 onready var Grid = get_parent()
 
 var counters = 0
-var inPuzzleRoom = false
 var activeDirections = []
 var backupActiveDirections = []
-var loopLevel = 0
 var shootDelay = 0
-var powerBlockSpawnDone = true
 
-# Called when the node enters the scene tree for the first time.
 func _ready():
 	if Grid.activeRoom != null:
 		if Grid.activeRoom.roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
@@ -18,7 +14,7 @@ func _ready():
 	else:
 		$AnimationPlayer.play("Counter0")
 
-func interactPowerBlock(direction, roomType):
+func interact_power_block(direction, roomType):
 	if roomType != null && roomType == GlobalVariables.ROOM_TYPE.PUZZLEROOM:
 		match direction:
 			Vector2(-1,0):
@@ -84,7 +80,7 @@ func interactPowerBlock(direction, roomType):
 			
 	backupActiveDirections = activeDirections.duplicate()
 
-func addCount():
+func add_count():
 	if counters == 5:
 		return
 	counters += 1
@@ -103,7 +99,7 @@ func addCount():
 			$AnimationPlayer.play("Counter5")
 
 
-func explodeBlock():
+func explode_block():
 	if counters < 1:
 		return false 
 	GlobalVariables.turnController.blocksExploding.append(self)
@@ -117,22 +113,5 @@ func explodeBlock():
 	Grid.on_Power_Block_explode(self)
 	return true
 	
-func removeDirection (direction):
-	
-	if activeDirections.has(reverseDirection(direction)):
-		activeDirections.erase(reverseDirection(direction))
-	
-func spawnMagicFromBlock(signalSpawnMagic):
+func spawn_magic_from_block(signalSpawnMagic):
 	Grid.on_powerBlock_spawn_magic(self, signalSpawnMagic)
-
-func reverseDirection(direction):
-	match direction:
-		GlobalVariables.DIRECTION.LEFT:
-			return GlobalVariables.DIRECTION.RIGHT
-		GlobalVariables.DIRECTION.RIGHT:
-			return GlobalVariables.DIRECTION.LEFT
-		GlobalVariables.DIRECTION.UP:
-			return GlobalVariables.DIRECTION.DOWN
-		GlobalVariables.DIRECTION.DOWN:
-			return GlobalVariables.DIRECTION.UP
-	

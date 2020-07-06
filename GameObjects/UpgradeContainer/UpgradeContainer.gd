@@ -8,17 +8,12 @@ var powerBlockTexture = preload ("res://GameObjects/Item/Bomb.png")
 var actionUpTexture = preload ("res://GameObjects/Item/TurnUp.png")
 var fillUpFlaskTexture = preload("res://GameObjects/Item/FillUpFlask.png")
 var fillUpHeartTexture = preload("res://GameObjects/Item/FillUpHealth.png")
-#var fillHealthTexture = preload()
 
 onready var upgradeCost = $Sprite/UpgradeCost
 onready var upgradeItem = $Sprite/UpgradeItem
 
 var upradePrice = 1
 var upgradeType = GlobalVariables.UPGRADETYPE.SWORD
-
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	pass
 
 func set_upgrade_container(containerType):
 	match containerType:
