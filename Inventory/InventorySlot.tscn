@@ -15,6 +15,6 @@ margin_bottom = 150.0
 
 [node name="ItemLabel" type="Label" parent="."]
 margin_left = 4.0
-margin_top = 68.0
+margin_top = 66.0
 margin_right = 4.0
-margin_bottom = 82.0
+margin_bottom = 84.0

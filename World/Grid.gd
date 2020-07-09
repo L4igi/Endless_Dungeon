@@ -2249,6 +2249,7 @@ func create_doors(roomLeftMostCorner, startingRoom=false, roomSizeHorizontal = 1
 		if(randi()%2+1 == 1):
 			alternateSpawnLocation = true
 		canCreateDoor = can_create_door(element, newDoor, roomLeftMostCorner, roomsizeMultiplier, roomSizeHorizontal, roomSizeVertical, doorEvenOddModifier, alternateSpawnLocation)
+		print(world_to_map(newDoor.position)-Vector2(roomDimensions*2,0))
 		if(!canCreateDoor):
 			if alternateSpawnLocation:
 				alternateSpawnLocation = false
@@ -2359,19 +2360,19 @@ func can_create_door(element, newDoor, roomLeftMostCorner, roomsizeMultiplier, r
 	if GlobalVariables.globaleRoomLayout == GlobalVariables.ROOMLAYOUT.BIG:
 		match element:
 			"LEFT":
-				if get_cellv(world_to_map(newDoor.position)-Vector2(1,0)) == TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)-Vector2(roomDimensions*2,0)) ==TILETYPES.WALL:
+				if get_cellv(world_to_map(newDoor.position)-Vector2(1,0)) == TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)-Vector2(roomDimensions*2,0)) ==TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)-Vector2(roomDimensions*2,0)) ==TILETYPES.FLOOR:
 					return false
 				return true
 			"RIGHT":
-				if get_cellv(world_to_map(newDoor.position)+Vector2(1,0)) == TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)+Vector2(roomDimensions*2,0)) ==TILETYPES.WALL:
+				if get_cellv(world_to_map(newDoor.position)+Vector2(1,0)) == TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)+Vector2(roomDimensions*2,0)) ==TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)+Vector2(roomDimensions*2,0)) ==TILETYPES.FLOOR:
 					return false
 				return true
 			"UP":
-				if get_cellv(world_to_map(newDoor.position)-Vector2(0,1)) == TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)-Vector2(0,roomDimensions*2)) ==TILETYPES.WALL:
+				if get_cellv(world_to_map(newDoor.position)-Vector2(0,1)) == TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)-Vector2(0,roomDimensions*2)) ==TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)-Vector2(0,roomDimensions*2)) ==TILETYPES.FLOOR:
 					return false
 				return true
 			"DOWN":
-				if get_cellv(world_to_map(newDoor.position)+Vector2(0,1)) == TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)+Vector2(0,roomDimensions*2)) ==TILETYPES.WALL:
+				if get_cellv(world_to_map(newDoor.position)+Vector2(0,1)) == TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)+Vector2(0,roomDimensions*2)) ==TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)+Vector2(0,roomDimensions*2)) ==TILETYPES.FLOOR:
 					return false
 				return true
 	else:
