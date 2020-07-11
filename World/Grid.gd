@@ -86,6 +86,8 @@ var bonusLootArray = []
 
 var exitSpawned = false
 
+var worldAudioStreamPlayer = AudioStreamPlayer2D.new()
+
 func match_Enum(var index):
 	match index:
 		0:
@@ -150,6 +152,7 @@ func set_enum_index(var enumName, var setTo):
 			pass
 			
 func _ready():
+	add_child(worldAudioStreamPlayer)
 	GlobalVariables.turnController.set_Grid_to_use(self)
 	GlobalVariables.turnController.currentTurnWaiting = GlobalVariables.CURRENTPHASE.PLAYER
 	GlobalVariables.turnController.inRoomType = GlobalVariables.ROOM_TYPE.ENEMYROOM
@@ -588,8 +591,8 @@ func update_pawn_position(pawn, cell_start, cell_target):
 				direction = "DOWN"
 				pawn.movedThroughDoorDirection = Vector2(0,1)
 			if(oldCellTargetType == get_tileset().find_tile_by_name("DOOR")):
-				get_node("AudioStreamPlayer2D").stream = unlockDoorAudio
-				get_node("AudioStreamPlayer2D").play()
+				worldAudioStreamPlayer.stream = unlockDoorAudio
+				worldAudioStreamPlayer.play()
 				oldCellTargetNode.set_other_adjacent_room(activeRoom, direction)
 				if !projectilesInActiveRoom.empty():
 					var tempProjectiles = projectilesInActiveRoom.duplicate()
@@ -2182,7 +2185,7 @@ func create_walls (door = null, startingRoom = false, createDoors = false):
 			var floorSpawnPos =  leftmostCorner + Vector2(countHorizontal*GlobalVariables.tileSize, countVert*GlobalVariables.tileSize)
 			set_cellv(world_to_map(floorSpawnPos), get_tileset().find_tile_by_name("FLOOR"))
 	
-	#replace wall pieces with doors if there is room for another room
+	#replace wall pieces with floor if a door connects them
 	if(startingRoom == false):
 		var object_pawn = null
 		match door.doorDirection:
@@ -2212,7 +2215,7 @@ func create_doors(roomLeftMostCorner, startingRoom=false, roomSizeHorizontal = 1
 	var doorLocationDirectionsArray = ["LEFT", "RIGHT", "UP", "DOWN"]
 	var doorLocationArray = []
 	var doorArray = []
-	var doorCount = randi()%4
+	var doorCount = 3
 	var canCreateDoor = true
 	var doorEvenOddModifier = 0
 	var doorLocationsRemoved = []
@@ -2360,19 +2363,19 @@ func can_create_door(element, newDoor, roomLeftMostCorner, roomsizeMultiplier, r
 	if GlobalVariables.globaleRoomLayout == GlobalVariables.ROOMLAYOUT.BIG:
 		match element:
 			"LEFT":
-				if get_cellv(world_to_map(newDoor.position)-Vector2(1,0)) == TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)-Vector2(roomDimensions*2,0)) ==TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)-Vector2(roomDimensions*2,0)) ==TILETYPES.FLOOR:
+				if get_cellv(world_to_map(newDoor.position)-Vector2(1,0)) == TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)-Vector2(roomDimensions*2,0)) ==TILETYPES.FLOOR:
 					return false
 				return true
 			"RIGHT":
-				if get_cellv(world_to_map(newDoor.position)+Vector2(1,0)) == TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)+Vector2(roomDimensions*2,0)) ==TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)+Vector2(roomDimensions*2,0)) ==TILETYPES.FLOOR:
+				if get_cellv(world_to_map(newDoor.position)+Vector2(1,0)) == TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)+Vector2(roomDimensions*2,0)) ==TILETYPES.FLOOR:
 					return false
 				return true
 			"UP":
-				if get_cellv(world_to_map(newDoor.position)-Vector2(0,1)) == TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)-Vector2(0,roomDimensions*2)) ==TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)-Vector2(0,roomDimensions*2)) ==TILETYPES.FLOOR:
+				if get_cellv(world_to_map(newDoor.position)-Vector2(0,1)) == TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)-Vector2(0,roomDimensions*2)) ==TILETYPES.FLOOR:
 					return false
 				return true
 			"DOWN":
-				if get_cellv(world_to_map(newDoor.position)+Vector2(0,1)) == TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)+Vector2(0,roomDimensions*2)) ==TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)+Vector2(0,roomDimensions*2)) ==TILETYPES.FLOOR:
+				if get_cellv(world_to_map(newDoor.position)+Vector2(0,1)) == TILETYPES.WALL || get_cellv(world_to_map(newDoor.position)+Vector2(0,roomDimensions*2)) ==TILETYPES.FLOOR:
 					return false
 				return true
 	else:
