@@ -29,7 +29,10 @@ func set_Grid_to_use(gridToUse):
 
 #if all conditions are met gives signals turn waiting to go
 func check_turn_done_conditions():
-	if playerTakeDamage.empty() && enemyTakeDamage.empty() && projectileSpawned.empty() && projectileInteraction.empty() && blocksExploding.empty() && puzzlePiecesToPattern.empty() && enemiesAttacking.empty() && countingBlocksToDelete.empty():
+	if playerTakeDamage.empty() && enemyTakeDamage.empty() &&\
+	projectileSpawned.empty() && projectileInteraction.empty() && \
+	blocksExploding.empty() && puzzlePiecesToPattern.empty() && \
+	enemiesAttacking.empty() && countingBlocksToDelete.empty():
 		match currentTurnWaiting:
 			GlobalVariables.CURRENTPHASE.PLAYER:
 				if Grid.mainPlayer.get_actions_left() == 0 && !playerMovedDoor:
@@ -50,7 +53,8 @@ func check_turn_done_conditions():
 				if enemyProjectilesToMove.empty():
 					return true
 			GlobalVariables.CURRENTPHASE.PLAYERDEFEAT:
-				if enemyProjectilesToMove.empty() && enemiesToMove.empty() && enemiesAttacking.empty() && playerProjectilesToMove.empty():
+				if enemyProjectilesToMove.empty() && enemiesToMove.empty() &&\
+				enemiesAttacking.empty() && playerProjectilesToMove.empty():
 					return true
 			GlobalVariables.CURRENTPHASE.ENEMYATTACK:
 				if enemiesAttacking.empty():

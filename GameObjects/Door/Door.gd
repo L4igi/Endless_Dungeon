@@ -64,18 +64,16 @@ func rotate_door_sprite():
 		"DOWN":
 			get_node("Sprite").rotation_degrees = 180
 			get_node("Gate").rotation_degrees = 180
-	
+
+#checks if player is in posession of key item to unlock door
+#else if door is no barrier, door will be unlocked
 func request_door_unlock(playerItemsInPosession):
-	for item in playerItemsInPosession:
-		print("Player items in posession " + str(item.keyValue))
 	if(isBarrier):
 		for item in playerItemsInPosession:
 			if item.keyValue == barrierKeyValue:
-				print("Door Barrier " + str(barrierKeyValue) + " was unlocked using item key " + str(item.keyValue))
 				isBarrier = false
 				get_node("Sprite").set_visible(false)
 				return item
-		print("need key: " + str(barrierKeyValue) + " to unlock door ")
 		return null
 	get_node("Sprite").set_visible(false)
 	return true
