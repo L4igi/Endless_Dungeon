@@ -1,4 +1,4 @@
-[gd_scene load_steps=58 format=2]
+[gd_scene load_steps=59 format=2]
 
 [ext_resource path="res://GameObjects/Enemy/Enemy_spritesheet.png" type="Texture" id=1]
 [ext_resource path="res://GameObjects/Enemy/Enemy.gd" type="Script" id=2]
@@ -8,6 +8,7 @@
 [ext_resource path="res://GameObjects/Enemy/Warrior_Enemy_SpriteSheet.png" type="Texture" id=6]
 [ext_resource path="res://GameObjects/Enemy/enemy_health_fill.png" type="Texture" id=7]
 [ext_resource path="res://GameObjects/Enemy/HelpLabel.png" type="Texture" id=8]
+[ext_resource path="res://GameObjects/Enemy/spot.png" type="Texture" id=9]
 [ext_resource path="res://GameObjects/Enemy/Mage_Magic.wav" type="AudioStream" id=10]
 [ext_resource path="res://GameObjects/Enemy/Mage_enemy_move.wav" type="AudioStream" id=11]
 [ext_resource path="res://GameObjects/Enemy/slime_walk.wav" type="AudioStream" id=12]
@@ -1159,8 +1160,12 @@ visible = false
 position = Vector2( -1.69407e-21, -8 )
 scale = Vector2( 0.625, 0.625 )
 frames = SubResource( 37 )
-frame = 2
 playing = true
+
+[node name="Light2D" type="Light2D" parent="."]
+visible = false
+texture = ExtResource( 9 )
+color = Color( 1, 1, 1, 0.631373 )
 
 [node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
 stream = ExtResource( 20 )

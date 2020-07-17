@@ -460,6 +460,7 @@ func inflict_damage_playerDefeated(attackDamageVar, attackTypeVar, enemyType):
 		if attackTypeVar == GlobalVariables.ATTACKTYPE.MAGIC:
 			animationToPlay = str("take_damage_magic")
 		set_process(false)
+		#print("Playing hit animation")
 		$AnimationPlayer.play(animationToPlay, -1)
 		$Tween.interpolate_property($Sprite, "position", Vector2(), Vector2() , $AnimationPlayer.current_animation_length, Tween.TRANS_LINEAR, Tween.EASE_IN)
 		$Tween.start()

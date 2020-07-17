@@ -1,5 +1,3 @@
-#enemy scene creates different enemy types
-#could be split up in different scenes to make it more modular, for each enemy
 extends Node2D
 
 onready var Grid = get_parent()
@@ -644,9 +642,7 @@ func adapt_difficulty():
 						attackRangeArray[2].append(1)
 						attackRangeArray[2].append(2)
 					if attackRangeArray.size() >= 4:
-						mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, 
-						GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN, 
-						GlobalVariables.DIRECTION.RIGHT]
+						mirrorDirectionsArray = [GlobalVariables.DIRECTION.LEFT, GlobalVariables.DIRECTION.UP, GlobalVariables.DIRECTION.DOWN, GlobalVariables.DIRECTION.RIGHT]
 					if attackRangeArray.size() >=5:
 						attackRangeArray[2].append(0)
 						attackRangeArray[3].append(1)
@@ -779,7 +775,7 @@ func adapt_difficulty():
 func generateEnemy(enemieToGenerate, currentGrid, unlockedDoor): 
 	match enemieToGenerate:
 		GlobalVariables.ENEMYTYPE.BARRIERENEMY:
-			make_enemy_barrier(currentGrid, unlockedDoor)
+			makeEnemyBarrier(currentGrid, unlockedDoor)
 			enemyType = GlobalVariables.ENEMYTYPE.BARRIERENEMY
 			attackType = GlobalVariables.ATTACKTYPE.SWORD
 			baseLifePoints = 1
@@ -1028,7 +1024,7 @@ func play_defeat_animation(mainPlayer, CURRENTPHASE):
 				GlobalVariables.enemyBarrierDifficulty += 0.5 * GlobalVariables.globalDifficultyMultiplier
 	emit_signal("enemyDefeated", self)
 		
-func make_enemy_barrier(currentGrid, unlockedDoor):
+func makeEnemyBarrier(currentGrid, unlockedDoor):
 	randomize()
 	var barrierChance = randi()%3
 	var checkBarrierPossible = currentGrid.manage_barrier_creation(GlobalVariables.BARRIERTYPE.ENEMY)
