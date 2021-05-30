@@ -2,7 +2,7 @@
 
 [ext_resource path="res://GUI/pixelFont.tres" type="DynamicFont" id=1]
 [ext_resource path="res://GameObjects/Item/Coin_Item.png" type="Texture" id=2]
-[ext_resource path="res://GUI/GUIScene.gd" type="Script" id=5]
+[ext_resource path="res://GUI/GuiScene.gd" type="Script" id=3]
 [ext_resource path="res://GUI/label_HP_bg.png" type="Texture" id=6]
 [ext_resource path="res://GUI/Sword.png" type="Texture" id=7]
 [ext_resource path="res://GUI/Heart_Empty.png" type="Texture" id=8]
@@ -11,7 +11,7 @@
 [ext_resource path="res://GUI/Flask_Empty.png" type="Texture" id=11]
 
 [node name="GUI" type="CanvasLayer"]
-script = ExtResource( 5 )
+script = ExtResource( 3 )
 
 [node name="AttackMode" type="TextureRect" parent="."]
 margin_left = 135.17
